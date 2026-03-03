@@ -80,7 +80,7 @@ export type Database = {
       repair_status:
         | "received"
         | "diagnosing"
-        | "waiting_approval"
+        | "waiting_for_parts"
         | "repairing"
         | "testing"
         | "completed"
@@ -216,7 +216,7 @@ export const Constants = {
       repair_status: [
         "received",
         "diagnosing",
-        "waiting_approval",
+        "waiting_for_parts",
         "repairing",
         "testing",
         "completed",
