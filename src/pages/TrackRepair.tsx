@@ -10,17 +10,30 @@ const TrackRepair = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<RepairOrder | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (trackingId) {
-      const found = findByTrackingId(trackingId);
-      if (found) {
-        setOrder(found);
-      } else {
-        setNotFound(true);
+    const load = async () => {
+      if (trackingId) {
+        const found = await findByTrackingId(trackingId);
+        if (found) {
+          setOrder(found);
+        } else {
+          setNotFound(true);
+        }
       }
-    }
+      setLoading(false);
+    };
+    load();
   }, [trackingId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   if (notFound) {
     return (
@@ -42,19 +55,12 @@ const TrackRepair = () => {
     );
   }
 
-  if (!order) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
+  if (!order) return null;
 
   const currentIndex = STATUS_ORDER.indexOf(order.status);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="gradient-hero text-primary-foreground">
         <div className="container mx-auto py-4">
           <Link to="/" className="inline-flex items-center gap-2 text-primary-foreground/70 hover:text-primary-foreground text-sm">
@@ -126,7 +132,7 @@ const TrackRepair = () => {
           </div>
         </div>
 
-        {/* Quotation & Payment */}
+        {/* Payment */}
         <div className="bg-card rounded-2xl p-6 shadow-card border border-border animate-fade-in" style={{ animationDelay: "0.2s" }}>
           <h2 className="font-display text-lg font-semibold mb-4">Payment Details</h2>
           <div className="flex items-center justify-between mb-4">
@@ -164,7 +170,6 @@ const TrackRepair = () => {
           )}
         </div>
 
-        {/* Repair Details */}
         {order.repairDetails && (
           <div className="bg-card rounded-2xl p-6 shadow-card border border-border mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <h2 className="font-display text-lg font-semibold mb-3">Repair Details</h2>

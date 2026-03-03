@@ -1,36 +1,95 @@
+import { supabase } from "@/integrations/supabase/client";
 import { RepairOrder } from "@/types/repair";
 
-const STORAGE_KEY = "repair_orders";
-const ADMIN_PASSWORD = "admin123"; // Simple password for demo
-
-export function getOrders(): RepairOrder[] {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
+// Map DB snake_case to frontend camelCase
+function mapFromDb(row: any): RepairOrder {
+  return {
+    id: row.id,
+    trackingId: row.tracking_id,
+    customerName: row.customer_name,
+    customerPhone: row.customer_phone,
+    mobileBrand: row.mobile_brand,
+    mobileModel: row.mobile_model,
+    imeiNumber: row.imei_number || "",
+    issueDescription: row.issue_description || "",
+    repairDetails: row.repair_details || "",
+    status: row.status,
+    quotation: Number(row.quotation),
+    paymentStatus: row.payment_status,
+    paymentLink: row.payment_link || "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
-export function saveOrders(orders: RepairOrder[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+export async function getOrders(): Promise<RepairOrder[]> {
+  const { data, error } = await supabase
+    .from("repair_orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapFromDb);
 }
 
-export function addOrder(order: RepairOrder): void {
-  const orders = getOrders();
-  orders.push(order);
-  saveOrders(orders);
+export async function addOrder(order: Omit<RepairOrder, "id" | "createdAt" | "updatedAt">): Promise<RepairOrder> {
+  const { data, error } = await supabase
+    .from("repair_orders")
+    .insert({
+      tracking_id: order.trackingId,
+      customer_name: order.customerName,
+      customer_phone: order.customerPhone,
+      mobile_brand: order.mobileBrand,
+      mobile_model: order.mobileModel,
+      imei_number: order.imeiNumber,
+      issue_description: order.issueDescription,
+      repair_details: order.repairDetails,
+      status: order.status,
+      quotation: order.quotation,
+      payment_status: order.paymentStatus,
+      payment_link: order.paymentLink,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapFromDb(data);
 }
 
-export function updateOrder(updated: RepairOrder): void {
-  const orders = getOrders().map((o) => (o.id === updated.id ? updated : o));
-  saveOrders(orders);
+export async function updateOrder(order: RepairOrder): Promise<void> {
+  const { error } = await supabase
+    .from("repair_orders")
+    .update({
+      customer_name: order.customerName,
+      customer_phone: order.customerPhone,
+      mobile_brand: order.mobileBrand,
+      mobile_model: order.mobileModel,
+      imei_number: order.imeiNumber,
+      issue_description: order.issueDescription,
+      repair_details: order.repairDetails,
+      status: order.status,
+      quotation: order.quotation,
+      payment_status: order.paymentStatus,
+      payment_link: order.paymentLink,
+    })
+    .eq("id", order.id);
+  if (error) throw error;
 }
 
-export function deleteOrder(id: string): void {
-  saveOrders(getOrders().filter((o) => o.id !== id));
+export async function deleteOrder(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("repair_orders")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
 }
 
-export function findByTrackingId(trackingId: string): RepairOrder | undefined {
-  return getOrders().find(
-    (o) => o.trackingId.toLowerCase() === trackingId.toLowerCase()
-  );
+export async function findByTrackingId(trackingId: string): Promise<RepairOrder | null> {
+  const { data, error } = await supabase
+    .from("repair_orders")
+    .select("*")
+    .ilike("tracking_id", trackingId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapFromDb(data) : null;
 }
 
 export function generateTrackingId(): string {
@@ -40,10 +99,6 @@ export function generateTrackingId(): string {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
-}
-
-export function verifyAdmin(password: string): boolean {
-  return password === ADMIN_PASSWORD;
 }
 
 export function getWhatsAppLink(phone: string, message: string): string {

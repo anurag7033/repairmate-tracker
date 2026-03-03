@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink
 } from "@/lib/repairStore";
+import { supabase } from "@/integrations/supabase/client";
 import {
   RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER
 } from "@/types/repair";
@@ -44,51 +45,64 @@ const AdminDashboard = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (sessionStorage.getItem("admin_auth") !== "true") {
-      navigate("/admin");
-      return;
-    }
-    setOrders(getOrders());
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/admin");
+        return;
+      }
+      await refreshOrders();
+      setLoading(false);
+    };
+    checkAuth();
   }, [navigate]);
 
-  const refreshOrders = () => setOrders(getOrders());
+  const refreshOrders = async () => {
+    try {
+      const data = await getOrders();
+      setOrders(data);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingOrder) return;
     if (!editingOrder.customerName || !editingOrder.customerPhone || !editingOrder.mobileBrand || !editingOrder.mobileModel) {
       toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
       return;
     }
 
-    if (isEditing && editingOrder.id) {
-      updateOrder({
-        ...editingOrder,
-        updatedAt: new Date().toISOString(),
-      } as RepairOrder);
-      toast({ title: "Updated", description: "Repair order updated successfully." });
-    } else {
-      const newOrder: RepairOrder = {
-        ...(editingOrder as RepairOrder),
-        id: crypto.randomUUID(),
-        trackingId: generateTrackingId(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      addOrder(newOrder);
-      toast({ title: "Created", description: `Tracking ID: ${newOrder.trackingId}` });
+    try {
+      if (isEditing && editingOrder.id) {
+        await updateOrder(editingOrder as RepairOrder);
+        toast({ title: "Updated", description: "Repair order updated successfully." });
+      } else {
+        const newOrder = await addOrder({
+          ...editingOrder as any,
+          trackingId: generateTrackingId(),
+        });
+        toast({ title: "Created", description: `Tracking ID: ${newOrder.trackingId}` });
+      }
+      setDialogOpen(false);
+      setEditingOrder(null);
+      await refreshOrders();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-
-    setDialogOpen(false);
-    setEditingOrder(null);
-    refreshOrders();
   };
 
-  const handleDelete = (id: string) => {
-    deleteOrder(id);
-    refreshOrders();
-    toast({ title: "Deleted", description: "Order removed." });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteOrder(id);
+      await refreshOrders();
+      toast({ title: "Deleted", description: "Order removed." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const openEdit = (order: RepairOrder) => {
@@ -115,6 +129,14 @@ const AdminDashboard = () => {
       o.mobileModel.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
@@ -130,8 +152,8 @@ const AdminDashboard = () => {
             variant="ghost"
             size="sm"
             className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
-            onClick={() => {
-              sessionStorage.removeItem("admin_auth");
+            onClick={async () => {
+              await supabase.auth.signOut();
               navigate("/");
             }}
           >
