@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      repair_orders: {
+        Row: {
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          imei_number: string | null
+          issue_description: string | null
+          mobile_brand: string
+          mobile_model: string
+          payment_link: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          quotation: number
+          repair_details: string | null
+          status: Database["public"]["Enums"]["repair_status"]
+          tracking_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          imei_number?: string | null
+          issue_description?: string | null
+          mobile_brand: string
+          mobile_model: string
+          payment_link?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          quotation?: number
+          repair_details?: string | null
+          status?: Database["public"]["Enums"]["repair_status"]
+          tracking_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          imei_number?: string | null
+          issue_description?: string | null
+          mobile_brand?: string
+          mobile_model?: string
+          payment_link?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          quotation?: number
+          repair_details?: string | null
+          status?: Database["public"]["Enums"]["repair_status"]
+          tracking_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +76,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      payment_status: "pending" | "partial" | "paid"
+      repair_status:
+        | "received"
+        | "diagnosing"
+        | "waiting_approval"
+        | "repairing"
+        | "testing"
+        | "completed"
+        | "delivered"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +211,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      payment_status: ["pending", "partial", "paid"],
+      repair_status: [
+        "received",
+        "diagnosing",
+        "waiting_approval",
+        "repairing",
+        "testing",
+        "completed",
+        "delivered",
+      ],
+    },
   },
 } as const
