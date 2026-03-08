@@ -74,14 +74,9 @@ const AdminLogin = () => {
               disabled={loading}
               className="w-full h-12 gradient-primary hover:opacity-90 rounded-xl font-semibold"
             >
-              {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Login"}
+              {loading ? "Please wait..." : "Login"}
             </Button>
           </div>
-          <p className="text-muted-foreground text-xs text-center mt-4">
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline">
-              {isSignUp ? "Already have an account? Login" : "Need an account? Sign Up"}
-            </button>
-          </p>
         </div>
       </div>
     </div>
