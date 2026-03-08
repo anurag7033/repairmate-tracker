@@ -42,9 +42,9 @@ const AdminLogin = () => {
           <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-6">
             <Shield className="w-7 h-7 text-primary-foreground" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-center mb-2">Admin {isSignUp ? "Sign Up" : "Login"}</h1>
+          <h1 className="font-display text-2xl font-bold text-center mb-2">Admin Login</h1>
           <p className="text-muted-foreground text-center text-sm mb-6">
-            {isSignUp ? "Create your admin account" : "Sign in to access dashboard"}
+            Sign in to access dashboard
           </p>
 
           <div className="space-y-4">
