@@ -10,23 +10,15 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async () => {
     setLoading(true);
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        toast({ title: "Account created!", description: "You can now log in." });
-        setIsSignUp(false);
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate("/admin/dashboard");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate("/admin/dashboard");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -50,9 +42,9 @@ const AdminLogin = () => {
           <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-6">
             <Shield className="w-7 h-7 text-primary-foreground" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-center mb-2">Admin {isSignUp ? "Sign Up" : "Login"}</h1>
+          <h1 className="font-display text-2xl font-bold text-center mb-2">Admin Login</h1>
           <p className="text-muted-foreground text-center text-sm mb-6">
-            {isSignUp ? "Create your admin account" : "Sign in to access dashboard"}
+            Sign in to access dashboard
           </p>
 
           <div className="space-y-4">
@@ -82,14 +74,9 @@ const AdminLogin = () => {
               disabled={loading}
               className="w-full h-12 gradient-primary hover:opacity-90 rounded-xl font-semibold"
             >
-              {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Login"}
+              {loading ? "Please wait..." : "Login"}
             </Button>
           </div>
-          <p className="text-muted-foreground text-xs text-center mt-4">
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline">
-              {isSignUp ? "Already have an account? Login" : "Need an account? Sign Up"}
-            </button>
-          </p>
         </div>
       </div>
     </div>
