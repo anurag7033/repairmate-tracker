@@ -190,15 +190,6 @@ const AdminDashboard = () => {
       toast({ title: "Invalid", description: "Enter a valid discount amount.", variant: "destructive" });
       return;
     }
-    const minRequired = voucherAmount * 10;
-    if (voucherOrder.quotation < minRequired) {
-      toast({
-        title: "Voucher Not Valid",
-        description: `This voucher code is valid only if the total repair amount is ₹${minRequired} or more. Current amount is ₹${voucherOrder.quotation}.`,
-        variant: "destructive",
-      });
-      return;
-    }
     setVoucherLoading(true);
     try {
       const voucher = await createVoucher(voucherOrder.trackingId, voucherAmount);
