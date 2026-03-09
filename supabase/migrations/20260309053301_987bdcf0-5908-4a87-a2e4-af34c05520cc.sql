@@ -1,0 +1,1 @@
+ALTER TABLE public.repair_orders ADD COLUMN IF NOT EXISTS advance_paid numeric NOT NULL DEFAULT 0;

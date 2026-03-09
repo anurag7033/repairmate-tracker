@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,16 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
   getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink
 } from "@/lib/repairStore";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER
+  RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER, COMMON_ISSUES
 } from "@/types/repair";
 
 const emptyOrder = (): Partial<RepairOrder> => ({
@@ -34,6 +37,7 @@ const emptyOrder = (): Partial<RepairOrder> => ({
   repairDetails: "",
   status: "received",
   quotation: 0,
+  advancePaid: 0,
   paymentStatus: "pending",
   paymentLink: "",
 });
@@ -77,13 +81,25 @@ const AdminDashboard = () => {
       return;
     }
 
+    // Auto-update payment status based on advance paid
+    let paymentStatus = editingOrder.paymentStatus || "pending";
+    const quotation = editingOrder.quotation || 0;
+    const advancePaid = editingOrder.advancePaid || 0;
+    
+    if (advancePaid >= quotation && quotation > 0) {
+      paymentStatus = "paid";
+    } else if (advancePaid > 0) {
+      paymentStatus = "partial";
+    }
+
     try {
       if (isEditing && editingOrder.id) {
-        await updateOrder(editingOrder as RepairOrder);
+        await updateOrder({ ...editingOrder, paymentStatus } as RepairOrder);
         toast({ title: "Updated", description: "Repair order updated successfully." });
       } else {
         const newOrder = await addOrder({
           ...editingOrder as any,
+          paymentStatus,
           trackingId: generateTrackingId(),
         });
         toast({ title: "Created", description: `Tracking ID: ${newOrder.trackingId}` });
@@ -118,8 +134,16 @@ const AdminDashboard = () => {
     setDialogOpen(true);
   };
 
+  const addIssueToDescription = (issue: string) => {
+    if (!editingOrder) return;
+    const current = editingOrder.issueDescription || "";
+    const newDesc = current ? `${current}, ${issue}` : issue;
+    setEditingOrder({ ...editingOrder, issueDescription: newDesc });
+  };
+
   const sendWhatsApp = (order: RepairOrder) => {
-    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Quotation: ₹${order.quotation}\n💳 Payment: ${order.paymentStatus}\n\n${order.status === "completed" && order.paymentLink ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
+    const balanceDue = order.quotation - order.advancePaid;
+    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Total: ₹${order.quotation}\n💵 Advance Paid: ₹${order.advancePaid}\n💳 Balance Due: ₹${balanceDue}\n\n${order.status === "completed" && order.paymentLink && balanceDue > 0 ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
     window.open(getWhatsAppLink(order.customerPhone, msg), "_blank");
   };
 
@@ -211,10 +235,35 @@ const AdminDashboard = () => {
                     <Label className="text-xs">IMEI Number</Label>
                     <Input value={editingOrder.imeiNumber || ""} onChange={(e) => setEditingOrder({ ...editingOrder, imeiNumber: e.target.value })} className="rounded-lg mt-1" />
                   </div>
+                  
+                  {/* Issue Description with Quick Add */}
                   <div>
-                    <Label className="text-xs">Issue Description</Label>
-                    <Textarea value={editingOrder.issueDescription || ""} onChange={(e) => setEditingOrder({ ...editingOrder, issueDescription: e.target.value })} className="rounded-lg mt-1" rows={2} />
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs">Issue Description</Label>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-6 text-xs rounded-md">
+                            <Plus className="w-3 h-3 mr-1" />
+                            Quick Add
+                            <ChevronDown className="w-3 h-3 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
+                          {COMMON_ISSUES.map((issue) => (
+                            <DropdownMenuItem
+                              key={issue}
+                              onClick={() => addIssueToDescription(issue)}
+                              className="cursor-pointer"
+                            >
+                              {issue}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <Textarea value={editingOrder.issueDescription || ""} onChange={(e) => setEditingOrder({ ...editingOrder, issueDescription: e.target.value })} className="rounded-lg" rows={2} placeholder="Select from quick add or type custom issue..." />
                   </div>
+                  
                   <div>
                     <Label className="text-xs">Repair Details</Label>
                     <Textarea value={editingOrder.repairDetails || ""} onChange={(e) => setEditingOrder({ ...editingOrder, repairDetails: e.target.value })} className="rounded-lg mt-1" rows={2} />
@@ -243,16 +292,45 @@ const AdminDashboard = () => {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs">Quotation (₹)</Label>
-                      <Input type="number" value={editingOrder.quotation || 0} onChange={(e) => setEditingOrder({ ...editingOrder, quotation: Number(e.target.value) })} className="rounded-lg mt-1" />
+                  
+                  {/* Payment Section */}
+                  <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
+                    <Label className="text-xs font-semibold text-foreground">💰 Payment Details</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Total Quotation (₹)</Label>
+                        <Input 
+                          type="number" 
+                          value={editingOrder.quotation || 0} 
+                          onChange={(e) => setEditingOrder({ ...editingOrder, quotation: Number(e.target.value) })} 
+                          className="rounded-lg mt-1" 
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Advance Paid (₹)</Label>
+                        <Input 
+                          type="number" 
+                          value={editingOrder.advancePaid || 0} 
+                          onChange={(e) => setEditingOrder({ ...editingOrder, advancePaid: Number(e.target.value) })} 
+                          className="rounded-lg mt-1" 
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label className="text-xs">Payment Link</Label>
-                      <Input value={editingOrder.paymentLink || ""} onChange={(e) => setEditingOrder({ ...editingOrder, paymentLink: e.target.value })} placeholder="https://..." className="rounded-lg mt-1" />
-                    </div>
+                    {(editingOrder.quotation || 0) > 0 && (
+                      <div className="flex items-center justify-between pt-2 border-t border-border">
+                        <span className="text-xs text-muted-foreground">Balance Due</span>
+                        <span className="font-bold text-primary">
+                          ₹{(editingOrder.quotation || 0) - (editingOrder.advancePaid || 0)}
+                        </span>
+                      </div>
+                    )}
                   </div>
+                  
+                  <div>
+                    <Label className="text-xs">Payment Link</Label>
+                    <Input value={editingOrder.paymentLink || ""} onChange={(e) => setEditingOrder({ ...editingOrder, paymentLink: e.target.value })} placeholder="https://..." className="rounded-lg mt-1" />
+                  </div>
+                  
                   <Button onClick={handleSave} className="w-full h-11 gradient-primary hover:opacity-90 rounded-xl font-semibold">
                     {isEditing ? "Update Order" : "Create Order"}
                   </Button>
@@ -270,50 +348,60 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {filtered.map((order) => (
-              <div key={order.id} className="bg-card rounded-2xl p-5 shadow-card border border-border animate-fade-in">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-display font-bold text-primary">{order.trackingId}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        order.status === "completed" || order.status === "delivered"
-                          ? "bg-success/10 text-success"
-                          : "bg-secondary/10 text-secondary"
-                      }`}>
-                        {STATUS_LABELS[order.status]}
+            {filtered.map((order) => {
+              const balanceDue = order.quotation - order.advancePaid;
+              return (
+                <div key={order.id} className="bg-card rounded-2xl p-5 shadow-card border border-border animate-fade-in">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-display font-bold text-primary">{order.trackingId}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          order.status === "completed" || order.status === "delivered"
+                            ? "bg-success/10 text-success"
+                            : "bg-secondary/10 text-secondary"
+                        }`}>
+                          {STATUS_LABELS[order.status]}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium">{order.customerName}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(order)}>
+                        <Edit className="w-3 h-3 mr-1" />Edit
+                      </Button>
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10" onClick={() => sendWhatsApp(order)}>
+                        <MessageCircle className="w-3 h-3 mr-1" />WhatsApp
+                      </Button>
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/track/${order.trackingId}`, "_blank")}>
+                        <ExternalLink className="w-3 h-3 mr-1" />View
+                      </Button>
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleDelete(order.id)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs text-muted-foreground">
+                    <div>📱 {order.mobileBrand} {order.mobileModel}</div>
+                    <div><Phone className="w-3 h-3 inline mr-1" />{order.customerPhone}</div>
+                    <div>💰 ₹{order.quotation}</div>
+                    <div>💵 Adv: ₹{order.advancePaid}</div>
+                    <div>
+                      💳{" "}
+                      <span className={
+                        order.paymentStatus === "paid" 
+                          ? "text-success font-medium" 
+                          : order.paymentStatus === "partial"
+                          ? "text-warning font-medium"
+                          : "text-muted-foreground"
+                      }>
+                        {order.paymentStatus === "paid" ? "Paid" : order.paymentStatus === "partial" ? `Bal: ₹${balanceDue}` : "Pending"}
                       </span>
                     </div>
-                    <p className="text-sm font-medium">{order.customerName}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(order)}>
-                      <Edit className="w-3 h-3 mr-1" />Edit
-                    </Button>
-                    <Button size="sm" variant="outline" className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10" onClick={() => sendWhatsApp(order)}>
-                      <MessageCircle className="w-3 h-3 mr-1" />WhatsApp
-                    </Button>
-                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/track/${order.trackingId}`, "_blank")}>
-                      <ExternalLink className="w-3 h-3 mr-1" />View
-                    </Button>
-                    <Button size="sm" variant="outline" className="rounded-lg text-xs text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleDelete(order.id)}>
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-muted-foreground">
-                  <div>📱 {order.mobileBrand} {order.mobileModel}</div>
-                  <div><Phone className="w-3 h-3 inline mr-1" />{order.customerPhone}</div>
-                  <div>💰 ₹{order.quotation}</div>
-                  <div>
-                    💳{" "}
-                    <span className={order.paymentStatus === "paid" ? "text-success font-medium" : "text-warning font-medium"}>
-                      {order.paymentStatus}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -21,11 +21,30 @@ export interface RepairOrder {
   repairDetails: string;
   status: RepairStatus;
   quotation: number;
+  advancePaid: number;
   paymentStatus: PaymentStatus;
   paymentLink: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export const COMMON_ISSUES = [
+  "Screen Replacement",
+  "Battery Replacement",
+  "Charging Port Repair / Replacement",
+  "Speaker Repair",
+  "Microphone Repair",
+  "Camera Replacement (Front)",
+  "Camera Replacement (Rear)",
+  "Back Glass Replacement",
+  "Power Button Repair",
+  "Volume Button Repair",
+  "SIM Tray Repair",
+  "Software Issue",
+  "Water Damage Repair",
+  "Motherboard Repair",
+  "Other",
+];
 
 export const STATUS_LABELS: Record<RepairStatus, string> = {
   received: "Device Received",

@@ -15,6 +15,7 @@ function mapFromDb(row: any): RepairOrder {
     repairDetails: row.repair_details || "",
     status: row.status,
     quotation: Number(row.quotation),
+    advancePaid: Number(row.advance_paid || 0),
     paymentStatus: row.payment_status,
     paymentLink: row.payment_link || "",
     createdAt: row.created_at,
@@ -45,6 +46,7 @@ export async function addOrder(order: Omit<RepairOrder, "id" | "createdAt" | "up
       repair_details: order.repairDetails,
       status: order.status,
       quotation: order.quotation,
+      advance_paid: order.advancePaid,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
@@ -67,6 +69,7 @@ export async function updateOrder(order: RepairOrder): Promise<void> {
       repair_details: order.repairDetails,
       status: order.status,
       quotation: order.quotation,
+      advance_paid: order.advancePaid,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
