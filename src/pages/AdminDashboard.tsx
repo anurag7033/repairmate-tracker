@@ -53,6 +53,13 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
+  
+  // Voucher state
+  const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [voucherOrder, setVoucherOrder] = useState<RepairOrder | null>(null);
+  const [voucherAmount, setVoucherAmount] = useState(0);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [orderVouchers, setOrderVouchers] = useState<any[]>([]);
 
   useEffect(() => {
     let isMounted = true;
