@@ -52,18 +52,36 @@ const AdminDashboard = () => {
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate("/admin");
+        navigate("/admin", { replace: true });
         return;
       }
-      await refreshOrders();
-      setLoading(false);
+      if (isMounted) {
+        setAuthenticated(true);
+        await refreshOrders();
+        setLoading(false);
+      }
     };
     checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session && isMounted) {
+        setAuthenticated(false);
+        navigate("/admin", { replace: true });
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const refreshOrders = async () => {
