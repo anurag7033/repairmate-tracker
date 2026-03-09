@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Plus, LogOut, Smartphone, Search, MessageCircle, Trash2,
+  Plus, LogOut, Search, MessageCircle, Trash2,
   Edit, ExternalLink, Phone
 } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
