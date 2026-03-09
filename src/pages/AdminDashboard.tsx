@@ -168,9 +168,46 @@ const AdminDashboard = () => {
   };
 
   const sendWhatsApp = (order: RepairOrder) => {
-    const balanceDue = order.quotation - order.advancePaid;
-    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Total: ₹${order.quotation}\n💵 Advance Paid: ₹${order.advancePaid}\n💳 Balance Due: ₹${balanceDue}\n\n${order.status === "completed" && order.paymentLink && balanceDue > 0 ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
+    const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
+    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Total: ₹${order.quotation}${order.discountAmount > 0 ? `\n🎟️ Discount: -₹${order.discountAmount}` : ""}\n💵 Advance Paid: ₹${order.advancePaid}\n💳 Balance Due: ₹${balanceDue}\n\n${order.status === "completed" && order.paymentLink && balanceDue > 0 ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
     window.open(getWhatsAppLink(order.customerPhone, msg), "_blank");
+  };
+
+  const openVoucherDialog = async (order: RepairOrder) => {
+    setVoucherOrder(order);
+    setVoucherAmount(0);
+    setVoucherDialogOpen(true);
+    try {
+      const vouchers = await getVouchersForOrder(order.trackingId);
+      setOrderVouchers(vouchers);
+    } catch {
+      setOrderVouchers([]);
+    }
+  };
+
+  const handleCreateVoucher = async () => {
+    if (!voucherOrder || voucherAmount <= 0) {
+      toast({ title: "Invalid", description: "Enter a valid discount amount.", variant: "destructive" });
+      return;
+    }
+    setVoucherLoading(true);
+    try {
+      const voucher = await createVoucher(voucherOrder.trackingId, voucherAmount);
+      toast({ title: "Voucher Created", description: `Code: ${voucher.voucher_code}` });
+      
+      // Send via WhatsApp
+      const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\nHello ${voucherOrder.customerName},\n\nYou've received a discount voucher!\n\n🎫 Voucher Code: *${voucher.voucher_code}*\n💰 Discount Amount: *₹${voucherAmount}*\n🔖 For Tracking ID: ${voucherOrder.trackingId}\n\nApply this code on your tracking page to get the discount:\n${window.location.origin}/track/${voucherOrder.trackingId}\n\nThank you for choosing Anurag Mobile!`;
+      window.open(getWhatsAppLink(voucherOrder.customerPhone, msg), "_blank");
+      
+      const vouchers = await getVouchersForOrder(voucherOrder.trackingId);
+      setOrderVouchers(vouchers);
+      setVoucherAmount(0);
+      await refreshOrders();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
+    }
   };
 
   const filtered = orders.filter(
