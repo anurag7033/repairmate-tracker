@@ -174,6 +174,19 @@ export async function applyVoucher(
     throw new Error("Invalid voucher code");
   }
 
+  // Check minimum order amount (must be >= 10x discount)
+  const { data: currentOrder, error: currentOrderErr } = await supabase
+    .from("repair_orders")
+    .select("quotation, discount_amount")
+    .eq("tracking_id", currentTrackingId)
+    .single();
+  if (currentOrderErr) throw currentOrderErr;
+
+  const minRequired = Number(voucher.discount_amount) * 10;
+  if (Number(currentOrder.quotation) < minRequired) {
+    throw new Error(`This voucher is valid only if your repair amount is ₹${minRequired} or more.`);
+  }
+
   // Mark voucher as used
   const { error: updateVoucherErr } = await supabase
     .from("vouchers")
@@ -182,14 +195,7 @@ export async function applyVoucher(
   if (updateVoucherErr) throw updateVoucherErr;
 
   // Update discount on current repair order
-  const { data: order, error: orderErr } = await supabase
-    .from("repair_orders")
-    .select("discount_amount")
-    .eq("tracking_id", currentTrackingId)
-    .single();
-  if (orderErr) throw orderErr;
-
-  const newDiscount = Number(order.discount_amount || 0) + Number(voucher.discount_amount);
+  const newDiscount = Number(currentOrder.discount_amount || 0) + Number(voucher.discount_amount);
   const { error: updateErr } = await supabase
     .from("repair_orders")
     .update({ discount_amount: newDiscount })
