@@ -75,7 +75,24 @@ const TrackRepair = () => {
   if (!order) return null;
 
   const currentIndex = STATUS_ORDER.indexOf(order.status);
-  const balanceDue = order.quotation - order.advancePaid;
+  const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setVoucherLoading(true);
+    try {
+      await applyVoucher(voucherCode.trim());
+      toast({ title: "Voucher Applied!", description: `Discount applied successfully.` });
+      setVoucherCode("");
+      // Reload order
+      const updated = await findByTrackingId(trackingId!);
+      if (updated) setOrder(updated);
+    } catch (err: any) {
+      toast({ title: "Invalid Voucher", description: err.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex flex-col">
