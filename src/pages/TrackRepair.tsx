@@ -15,6 +15,9 @@ const TrackRepair = () => {
   const [order, setOrder] = useState<RepairOrder | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
