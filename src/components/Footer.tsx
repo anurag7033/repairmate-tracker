@@ -25,10 +25,16 @@ const Footer = () => {
           <div>
             <h3 className="font-display text-base font-bold text-primary-foreground mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              {["Home", "Services", "Gallery", "About", "Contact"].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-sm text-primary-foreground/60 hover:text-primary transition-colors">
-                    {link}
+              {[
+                { label: "Home", href: "https://anuragmobile.in" },
+                { label: "Services", href: "https://anuragmobile.in/services" },
+                { label: "Gallery", href: "https://anuragmobile.in/gallery" },
+                { label: "About", href: "https://anuragmobile.in/about" },
+                { label: "Contact", href: "https://anuragmobile.in/contact" },
+              ].map((link) => (
+                <li key={link.label}>
+                  <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-foreground/60 hover:text-primary transition-colors">
+                    {link.label}
                   </a>
                 </li>
               ))}
