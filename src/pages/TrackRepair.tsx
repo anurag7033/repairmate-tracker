@@ -239,6 +239,15 @@ const TrackRepair = () => {
                 <span className="font-display text-lg font-bold text-success">- ₹{order.advancePaid}</span>
               </div>
             )}
+
+            {order.discountAmount > 0 && (
+              <div className="flex items-center justify-between p-3 bg-amber-500/10 rounded-xl">
+                <span className="text-sm text-amber-600 flex items-center gap-1">
+                  <Ticket className="w-4 h-4" /> Voucher Discount
+                </span>
+                <span className="font-display text-lg font-bold text-amber-600">- ₹{order.discountAmount}</span>
+              </div>
+            )}
             
             {balanceDue > 0 && (
               <div className="flex items-center justify-between p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
