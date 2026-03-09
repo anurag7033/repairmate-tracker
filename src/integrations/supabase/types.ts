@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           customer_name: string
           customer_phone: string
+          discount_amount: number
           id: string
           imei_number: string | null
           issue_description: string | null
@@ -38,6 +39,7 @@ export type Database = {
           created_at?: string
           customer_name: string
           customer_phone: string
+          discount_amount?: number
           id?: string
           imei_number?: string | null
           issue_description?: string | null
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string
           customer_name?: string
           customer_phone?: string
+          discount_amount?: number
           id?: string
           imei_number?: string | null
           issue_description?: string | null
@@ -68,6 +71,33 @@ export type Database = {
           status?: Database["public"]["Enums"]["repair_status"]
           tracking_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      vouchers: {
+        Row: {
+          created_at: string
+          discount_amount: number
+          id: string
+          is_used: boolean
+          tracking_id: string
+          voucher_code: string
+        }
+        Insert: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          is_used?: boolean
+          tracking_id: string
+          voucher_code: string
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          is_used?: boolean
+          tracking_id?: string
+          voucher_code?: string
         }
         Relationships: []
       }
