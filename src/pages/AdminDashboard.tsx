@@ -477,6 +477,65 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Voucher Dialog */}
+      <Dialog open={voucherDialogOpen} onOpenChange={setVoucherDialogOpen}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Ticket className="w-5 h-5" />
+              Generate Voucher
+            </DialogTitle>
+          </DialogHeader>
+          {voucherOrder && (
+            <div className="space-y-4 py-2">
+              <div className="p-3 bg-muted/50 rounded-xl text-sm">
+                <p className="font-semibold">{voucherOrder.customerName}</p>
+                <p className="text-muted-foreground text-xs">Tracking ID: {voucherOrder.trackingId} • {voucherOrder.mobileBrand} {voucherOrder.mobileModel}</p>
+                <p className="text-xs text-muted-foreground mt-1">Balance: ₹{voucherOrder.quotation - voucherOrder.advancePaid - voucherOrder.discountAmount}</p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Discount Amount (₹)</Label>
+                <Input
+                  type="number"
+                  value={voucherAmount || ""}
+                  onChange={(e) => setVoucherAmount(Number(e.target.value))}
+                  placeholder="Enter discount amount"
+                  className="rounded-lg mt-1"
+                />
+              </div>
+
+              <Button
+                onClick={handleCreateVoucher}
+                disabled={voucherLoading || voucherAmount <= 0}
+                className="w-full h-11 gradient-primary hover:opacity-90 rounded-xl font-semibold"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {voucherLoading ? "Creating..." : "Generate & Send via WhatsApp"}
+              </Button>
+
+              {/* Existing vouchers */}
+              {orderVouchers.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold">Previous Vouchers</Label>
+                  {orderVouchers.map((v: any) => (
+                    <div key={v.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg text-xs">
+                      <div>
+                        <span className="font-mono font-semibold">{v.voucher_code}</span>
+                        <span className="ml-2 text-muted-foreground">₹{v.discount_amount}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.is_used ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                        {v.is_used ? "Used" : "Active"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
