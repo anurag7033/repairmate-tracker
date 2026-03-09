@@ -415,7 +415,7 @@ const AdminDashboard = () => {
         ) : (
           <div className="grid gap-4">
             {filtered.map((order) => {
-              const balanceDue = order.quotation - order.advancePaid;
+              const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
               return (
                 <div key={order.id} className="bg-card rounded-2xl p-5 shadow-card border border-border animate-fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
@@ -436,6 +436,9 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(order)}>
                         <Edit className="w-3 h-3 mr-1" />Edit
                       </Button>
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs text-amber-600 border-amber-300 hover:bg-amber-50" onClick={() => openVoucherDialog(order)}>
+                        <Ticket className="w-3 h-3 mr-1" />Voucher
+                      </Button>
                       <Button size="sm" variant="outline" className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10" onClick={() => sendWhatsApp(order)}>
                         <MessageCircle className="w-3 h-3 mr-1" />WhatsApp
                       </Button>
@@ -447,11 +450,14 @@ const AdminDashboard = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs text-muted-foreground">
                     <div>📱 {order.mobileBrand} {order.mobileModel}</div>
                     <div><Phone className="w-3 h-3 inline mr-1" />{order.customerPhone}</div>
                     <div>💰 ₹{order.quotation}</div>
                     <div>💵 Adv: ₹{order.advancePaid}</div>
+                    {order.discountAmount > 0 && (
+                      <div className="text-amber-600">🎟️ Disc: -₹{order.discountAmount}</div>
+                    )}
                     <div>
                       💳{" "}
                       <span className={
