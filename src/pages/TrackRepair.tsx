@@ -81,7 +81,7 @@ const TrackRepair = () => {
     if (!voucherCode.trim()) return;
     setVoucherLoading(true);
     try {
-      await applyVoucher(voucherCode.trim());
+      await applyVoucher(voucherCode.trim(), order.trackingId, order.customerPhone);
       toast({ title: "Voucher Applied!", description: `Discount applied successfully.` });
       setVoucherCode("");
       // Reload order
