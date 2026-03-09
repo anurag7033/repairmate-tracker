@@ -15,6 +15,7 @@ function mapFromDb(row: any): RepairOrder {
     repairDetails: row.repair_details || "",
     status: row.status,
     quotation: Number(row.quotation),
+    advancePaid: Number(row.advance_paid || 0),
     paymentStatus: row.payment_status,
     paymentLink: row.payment_link || "",
     createdAt: row.created_at,
