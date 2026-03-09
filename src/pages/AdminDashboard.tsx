@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send,
 } from "lucide-react";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import logo from "@/assets/logo.png";
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink
+  getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink, createVoucher, getVouchersForOrder
 } from "@/lib/repairStore";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -53,6 +53,13 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
+  
+  // Voucher state
+  const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [voucherOrder, setVoucherOrder] = useState<RepairOrder | null>(null);
+  const [voucherAmount, setVoucherAmount] = useState(0);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [orderVouchers, setOrderVouchers] = useState<any[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -161,9 +168,46 @@ const AdminDashboard = () => {
   };
 
   const sendWhatsApp = (order: RepairOrder) => {
-    const balanceDue = order.quotation - order.advancePaid;
-    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Total: ₹${order.quotation}\n💵 Advance Paid: ₹${order.advancePaid}\n💳 Balance Due: ₹${balanceDue}\n\n${order.status === "completed" && order.paymentLink && balanceDue > 0 ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
+    const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
+    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Total: ₹${order.quotation}${order.discountAmount > 0 ? `\n🎟️ Discount: -₹${order.discountAmount}` : ""}\n💵 Advance Paid: ₹${order.advancePaid}\n💳 Balance Due: ₹${balanceDue}\n\n${order.status === "completed" && order.paymentLink && balanceDue > 0 ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
     window.open(getWhatsAppLink(order.customerPhone, msg), "_blank");
+  };
+
+  const openVoucherDialog = async (order: RepairOrder) => {
+    setVoucherOrder(order);
+    setVoucherAmount(0);
+    setVoucherDialogOpen(true);
+    try {
+      const vouchers = await getVouchersForOrder(order.trackingId);
+      setOrderVouchers(vouchers);
+    } catch {
+      setOrderVouchers([]);
+    }
+  };
+
+  const handleCreateVoucher = async () => {
+    if (!voucherOrder || voucherAmount <= 0) {
+      toast({ title: "Invalid", description: "Enter a valid discount amount.", variant: "destructive" });
+      return;
+    }
+    setVoucherLoading(true);
+    try {
+      const voucher = await createVoucher(voucherOrder.trackingId, voucherAmount);
+      toast({ title: "Voucher Created", description: `Code: ${voucher.voucher_code}` });
+      
+      // Send via WhatsApp
+      const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\nHello ${voucherOrder.customerName},\n\nYou've received a discount voucher!\n\n🎫 Voucher Code: *${voucher.voucher_code}*\n💰 Discount Amount: *₹${voucherAmount}*\n🔖 For Tracking ID: ${voucherOrder.trackingId}\n\nApply this code on your tracking page to get the discount:\n${window.location.origin}/track/${voucherOrder.trackingId}\n\nThank you for choosing Anurag Mobile!`;
+      window.open(getWhatsAppLink(voucherOrder.customerPhone, msg), "_blank");
+      
+      const vouchers = await getVouchersForOrder(voucherOrder.trackingId);
+      setOrderVouchers(vouchers);
+      setVoucherAmount(0);
+      await refreshOrders();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
+    }
   };
 
   const filtered = orders.filter(
@@ -371,7 +415,7 @@ const AdminDashboard = () => {
         ) : (
           <div className="grid gap-4">
             {filtered.map((order) => {
-              const balanceDue = order.quotation - order.advancePaid;
+              const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
               return (
                 <div key={order.id} className="bg-card rounded-2xl p-5 shadow-card border border-border animate-fade-in">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
@@ -392,6 +436,9 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(order)}>
                         <Edit className="w-3 h-3 mr-1" />Edit
                       </Button>
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs text-amber-600 border-amber-300 hover:bg-amber-50" onClick={() => openVoucherDialog(order)}>
+                        <Ticket className="w-3 h-3 mr-1" />Voucher
+                      </Button>
                       <Button size="sm" variant="outline" className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10" onClick={() => sendWhatsApp(order)}>
                         <MessageCircle className="w-3 h-3 mr-1" />WhatsApp
                       </Button>
@@ -403,11 +450,14 @@ const AdminDashboard = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs text-muted-foreground">
                     <div>📱 {order.mobileBrand} {order.mobileModel}</div>
                     <div><Phone className="w-3 h-3 inline mr-1" />{order.customerPhone}</div>
                     <div>💰 ₹{order.quotation}</div>
                     <div>💵 Adv: ₹{order.advancePaid}</div>
+                    {order.discountAmount > 0 && (
+                      <div className="text-amber-600">🎟️ Disc: -₹{order.discountAmount}</div>
+                    )}
                     <div>
                       💳{" "}
                       <span className={
@@ -427,6 +477,65 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Voucher Dialog */}
+      <Dialog open={voucherDialogOpen} onOpenChange={setVoucherDialogOpen}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Ticket className="w-5 h-5" />
+              Generate Voucher
+            </DialogTitle>
+          </DialogHeader>
+          {voucherOrder && (
+            <div className="space-y-4 py-2">
+              <div className="p-3 bg-muted/50 rounded-xl text-sm">
+                <p className="font-semibold">{voucherOrder.customerName}</p>
+                <p className="text-muted-foreground text-xs">Tracking ID: {voucherOrder.trackingId} • {voucherOrder.mobileBrand} {voucherOrder.mobileModel}</p>
+                <p className="text-xs text-muted-foreground mt-1">Balance: ₹{voucherOrder.quotation - voucherOrder.advancePaid - voucherOrder.discountAmount}</p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Discount Amount (₹)</Label>
+                <Input
+                  type="number"
+                  value={voucherAmount || ""}
+                  onChange={(e) => setVoucherAmount(Number(e.target.value))}
+                  placeholder="Enter discount amount"
+                  className="rounded-lg mt-1"
+                />
+              </div>
+
+              <Button
+                onClick={handleCreateVoucher}
+                disabled={voucherLoading || voucherAmount <= 0}
+                className="w-full h-11 gradient-primary hover:opacity-90 rounded-xl font-semibold"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {voucherLoading ? "Creating..." : "Generate & Send via WhatsApp"}
+              </Button>
+
+              {/* Existing vouchers */}
+              {orderVouchers.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold">Previous Vouchers</Label>
+                  {orderVouchers.map((v: any) => (
+                    <div key={v.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg text-xs">
+                      <div>
+                        <span className="font-mono font-semibold">{v.voucher_code}</span>
+                        <span className="ml-2 text-muted-foreground">₹{v.discount_amount}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.is_used ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                        {v.is_used ? "Used" : "Active"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

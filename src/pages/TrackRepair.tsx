@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { findByTrackingId } from "@/lib/repairStore";
+import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
-import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench } from "lucide-react";
+import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket } from "lucide-react";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const TrackRepair = () => {
   const { trackingId } = useParams();
@@ -13,6 +15,9 @@ const TrackRepair = () => {
   const [order, setOrder] = useState<RepairOrder | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -70,7 +75,24 @@ const TrackRepair = () => {
   if (!order) return null;
 
   const currentIndex = STATUS_ORDER.indexOf(order.status);
-  const balanceDue = order.quotation - order.advancePaid;
+  const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setVoucherLoading(true);
+    try {
+      await applyVoucher(voucherCode.trim());
+      toast({ title: "Voucher Applied!", description: `Discount applied successfully.` });
+      setVoucherCode("");
+      // Reload order
+      const updated = await findByTrackingId(trackingId!);
+      if (updated) setOrder(updated);
+    } catch (err: any) {
+      toast({ title: "Invalid Voucher", description: err.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex flex-col">
@@ -217,6 +239,15 @@ const TrackRepair = () => {
                 <span className="font-display text-lg font-bold text-success">- ₹{order.advancePaid}</span>
               </div>
             )}
+
+            {order.discountAmount > 0 && (
+              <div className="flex items-center justify-between p-3 bg-amber-500/10 rounded-xl">
+                <span className="text-sm text-amber-600 flex items-center gap-1">
+                  <Ticket className="w-4 h-4" /> Voucher Discount
+                </span>
+                <span className="font-display text-lg font-bold text-amber-600">- ₹{order.discountAmount}</span>
+              </div>
+            )}
             
             {balanceDue > 0 && (
               <div className="flex items-center justify-between p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
@@ -243,7 +274,32 @@ const TrackRepair = () => {
             </span>
           </div>
 
-          {order.paymentStatus !== "paid" && order.paymentLink && order.status === "completed" && (
+          {/* Voucher Apply Section */}
+          {order.paymentStatus !== "paid" && balanceDue > 0 && (
+            <div className="p-4 bg-muted/50 rounded-xl space-y-3">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Ticket className="w-4 h-4" />
+                Have a voucher code?
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={voucherCode}
+                  onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                  placeholder="Enter voucher code"
+                  className="rounded-lg font-mono"
+                />
+                <Button
+                  onClick={handleApplyVoucher}
+                  disabled={voucherLoading || !voucherCode.trim()}
+                  className="rounded-lg px-6"
+                >
+                  {voucherLoading ? "..." : "Apply"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {order.paymentStatus !== "paid" && order.paymentLink && order.status === "completed" && balanceDue > 0 && (
             <Button
               className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02]"
               onClick={() => window.open(order.paymentLink, "_blank")}

@@ -18,6 +18,7 @@ function mapFromDb(row: any): RepairOrder {
     advancePaid: Number(row.advance_paid || 0),
     paymentStatus: row.payment_status,
     paymentLink: row.payment_link || "",
+    discountAmount: Number(row.discount_amount || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -107,4 +108,70 @@ export function generateTrackingId(): string {
 export function getWhatsAppLink(phone: string, message: string): string {
   const cleaned = phone.replace(/\D/g, "");
   return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
+}
+
+// Voucher functions
+export function generateVoucherCode(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "DISC-";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+export async function createVoucher(trackingId: string, discountAmount: number): Promise<{ voucher_code: string }> {
+  const code = generateVoucherCode();
+  const { data, error } = await supabase
+    .from("vouchers")
+    .insert({ tracking_id: trackingId, voucher_code: code, discount_amount: discountAmount })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getVouchersForOrder(trackingId: string) {
+  const { data, error } = await supabase
+    .from("vouchers")
+    .select("*")
+    .eq("tracking_id", trackingId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function applyVoucher(voucherCode: string): Promise<{ trackingId: string; discountAmount: number }> {
+  const { data: voucher, error: fetchErr } = await supabase
+    .from("vouchers")
+    .select("*")
+    .eq("voucher_code", voucherCode)
+    .eq("is_used", false)
+    .maybeSingle();
+  if (fetchErr) throw fetchErr;
+  if (!voucher) throw new Error("Invalid or already used voucher code");
+
+  // Mark voucher as used
+  const { error: updateVoucherErr } = await supabase
+    .from("vouchers")
+    .update({ is_used: true })
+    .eq("id", voucher.id);
+  if (updateVoucherErr) throw updateVoucherErr;
+
+  // Update discount on repair order
+  const { data: order, error: orderErr } = await supabase
+    .from("repair_orders")
+    .select("discount_amount")
+    .eq("tracking_id", voucher.tracking_id)
+    .single();
+  if (orderErr) throw orderErr;
+
+  const newDiscount = Number(order.discount_amount || 0) + Number(voucher.discount_amount);
+  const { error: updateErr } = await supabase
+    .from("repair_orders")
+    .update({ discount_amount: newDiscount })
+    .eq("tracking_id", voucher.tracking_id);
+  if (updateErr) throw updateErr;
+
+  return { trackingId: voucher.tracking_id, discountAmount: voucher.discount_amount };
 }
