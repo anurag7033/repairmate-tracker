@@ -46,6 +46,7 @@ export async function addOrder(order: Omit<RepairOrder, "id" | "createdAt" | "up
       repair_details: order.repairDetails,
       status: order.status,
       quotation: order.quotation,
+      advance_paid: order.advancePaid,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
