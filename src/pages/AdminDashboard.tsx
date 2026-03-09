@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone
+  Edit, ExternalLink, Phone, Smartphone
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
