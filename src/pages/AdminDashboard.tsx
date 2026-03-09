@@ -173,7 +173,7 @@ const AdminDashboard = () => {
       o.mobileModel.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
+  if (loading || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
