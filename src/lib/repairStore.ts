@@ -69,6 +69,7 @@ export async function updateOrder(order: RepairOrder): Promise<void> {
       repair_details: order.repairDetails,
       status: order.status,
       quotation: order.quotation,
+      advance_paid: order.advancePaid,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
