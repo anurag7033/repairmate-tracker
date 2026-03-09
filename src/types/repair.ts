@@ -22,6 +22,7 @@ export interface RepairOrder {
   status: RepairStatus;
   quotation: number;
   advancePaid: number;
+  discountAmount: number;
   paymentStatus: PaymentStatus;
   paymentLink: string;
   createdAt: string;
