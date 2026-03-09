@@ -234,7 +234,10 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <Label className="text-xs">IMEI Number</Label>
-                    <Input value={editingOrder.imeiNumber || ""} onChange={(e) => setEditingOrder({ ...editingOrder, imeiNumber: e.target.value })} className="rounded-lg mt-1" />
+                    <div className="flex gap-2 mt-1">
+                      <Input value={editingOrder.imeiNumber || ""} onChange={(e) => setEditingOrder({ ...editingOrder, imeiNumber: e.target.value })} className="rounded-lg flex-1" placeholder="Scan or type IMEI" />
+                      <BarcodeScanner onScan={(val) => setEditingOrder({ ...editingOrder, imeiNumber: val })} />
+                    </div>
                   </div>
                   
                   {/* Issue Description with Quick Add */}
