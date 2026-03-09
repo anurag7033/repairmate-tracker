@@ -274,7 +274,32 @@ const TrackRepair = () => {
             </span>
           </div>
 
-          {order.paymentStatus !== "paid" && order.paymentLink && order.status === "completed" && (
+          {/* Voucher Apply Section */}
+          {order.paymentStatus !== "paid" && balanceDue > 0 && (
+            <div className="p-4 bg-muted/50 rounded-xl space-y-3">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Ticket className="w-4 h-4" />
+                Have a voucher code?
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={voucherCode}
+                  onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                  placeholder="Enter voucher code"
+                  className="rounded-lg font-mono"
+                />
+                <Button
+                  onClick={handleApplyVoucher}
+                  disabled={voucherLoading || !voucherCode.trim()}
+                  className="rounded-lg px-6"
+                >
+                  {voucherLoading ? "..." : "Apply"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {order.paymentStatus !== "paid" && order.paymentLink && order.status === "completed" && balanceDue > 0 && (
             <Button
               className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02]"
               onClick={() => window.open(order.paymentLink, "_blank")}
