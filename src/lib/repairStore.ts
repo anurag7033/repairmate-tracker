@@ -18,6 +18,7 @@ function mapFromDb(row: any): RepairOrder {
     advancePaid: Number(row.advance_paid || 0),
     paymentStatus: row.payment_status,
     paymentLink: row.payment_link || "",
+    discountAmount: Number(row.discount_amount || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
