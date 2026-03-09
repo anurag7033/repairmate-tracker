@@ -142,11 +142,9 @@ const AdminDashboard = () => {
       {/* Top bar */}
       <header className="gradient-hero text-primary-foreground sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-display text-lg font-bold">FixTrack Admin</span>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Logo" className="w-9 h-9 rounded-lg" />
+            <span className="font-display text-lg font-bold">Anurag Mobile Admin</span>
           </div>
           <Button
             variant="ghost"
