@@ -520,14 +520,29 @@ const AdminDashboard = () => {
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold">Previous Vouchers</Label>
                   {orderVouchers.map((v: any) => (
-                    <div key={v.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg text-xs">
-                      <div>
+                    <div key={v.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg text-xs gap-2">
+                      <div className="flex-1 min-w-0">
                         <span className="font-mono font-semibold">{v.voucher_code}</span>
                         <span className="ml-2 text-muted-foreground">₹{v.discount_amount}</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.is_used ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                        {v.is_used ? "Used" : "Active"}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {!v.is_used && voucherOrder && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs rounded-md border-primary/30 text-primary hover:bg-primary/10"
+                            onClick={() => {
+                              const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\nHello ${voucherOrder.customerName},\n\nYou've received a discount voucher!\n\n🎫 Voucher Code: *${v.voucher_code}*\n💰 Discount Amount: *₹${v.discount_amount}*\n🔖 For Tracking ID: ${voucherOrder.trackingId}\n\nApply this code on your tracking page to get the discount:\n${window.location.origin}/track/${voucherOrder.trackingId}\n\nThank you for choosing Anurag Mobile!`;
+                              window.open(getWhatsAppLink(voucherOrder.customerPhone, msg), "_blank");
+                            }}
+                          >
+                            <Send className="w-3 h-3 mr-1" />Send
+                          </Button>
+                        )}
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.is_used ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                          {v.is_used ? "Used" : "Active"}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
