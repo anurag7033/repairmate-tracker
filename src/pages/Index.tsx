@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Search, Smartphone, Shield, ArrowRight } from "lucide-react";
+import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import Footer from "@/components/Footer";
+import logo from "@/assets/logo.png";
 
 const Index = () => {
   const [trackingId, setTrackingId] = useState("");
@@ -23,11 +25,12 @@ const Index = () => {
           <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-secondary blur-3xl" />
         </div>
         <nav className="container mx-auto flex items-center justify-between py-4 relative z-10">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-              <Smartphone className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Anurag Mobile Logo" className="w-10 h-10 rounded-lg" />
+            <div>
+              <span className="font-display text-lg font-bold leading-tight">Anurag Mobile</span>
+              <p className="text-xs text-primary-foreground/60 leading-tight">Repair Tracking</p>
             </div>
-            <span className="font-display text-xl font-bold">FixTrack</span>
           </div>
           <Button
             variant="outline"
@@ -41,7 +44,7 @@ const Index = () => {
 
         <div className="container mx-auto py-16 md:py-24 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground/90 text-sm font-medium mb-6 animate-fade-in">
-            <Smartphone className="w-4 h-4" />
+            <Wrench className="w-4 h-4" />
             Trusted Mobile Repair Service
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -80,17 +83,17 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
-              icon: <Smartphone className="w-6 h-6" />,
+              icon: <Wrench className="w-6 h-6" />,
               title: "Expert Repairs",
               desc: "Professional technicians for all brands and models.",
             },
             {
-              icon: <Search className="w-6 h-6" />,
+              icon: <Clock className="w-6 h-6" />,
               title: "Real-Time Tracking",
               desc: "Track every step of your repair from receiving to delivery.",
             },
             {
-              icon: <Shield className="w-6 h-6" />,
+              icon: <CreditCard className="w-6 h-6" />,
               title: "Secure Payments",
               desc: "Pay online securely once your device is repaired.",
             },
@@ -110,10 +113,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-auto gradient-hero text-primary-foreground/60 py-6 text-center text-sm">
-        © 2026 FixTrack. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 };

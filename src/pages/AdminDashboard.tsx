@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Plus, LogOut, Smartphone, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone
+  Plus, LogOut, Search, MessageCircle, Trash2,
+  Edit, ExternalLink, Phone, Smartphone
 } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -118,7 +119,7 @@ const AdminDashboard = () => {
   };
 
   const sendWhatsApp = (order: RepairOrder) => {
-    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Quotation: ₹${order.quotation}\n💳 Payment: ${order.paymentStatus}\n\n${order.status === "completed" && order.paymentLink ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing FixTrack!`;
+    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Quotation: ₹${order.quotation}\n💳 Payment: ${order.paymentStatus}\n\n${order.status === "completed" && order.paymentLink ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
     window.open(getWhatsAppLink(order.customerPhone, msg), "_blank");
   };
 
@@ -142,11 +143,9 @@ const AdminDashboard = () => {
       {/* Top bar */}
       <header className="gradient-hero text-primary-foreground sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-display text-lg font-bold">FixTrack Admin</span>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Logo" className="w-9 h-9 rounded-lg" />
+            <span className="font-display text-lg font-bold">Anurag Mobile Admin</span>
           </div>
           <Button
             variant="ghost"
