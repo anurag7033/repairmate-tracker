@@ -183,6 +183,7 @@ const TrackRepair = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

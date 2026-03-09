@@ -118,7 +118,7 @@ const AdminDashboard = () => {
   };
 
   const sendWhatsApp = (order: RepairOrder) => {
-    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Quotation: ₹${order.quotation}\n💳 Payment: ${order.paymentStatus}\n\n${order.status === "completed" && order.paymentLink ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing FixTrack!`;
+    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Quotation: ₹${order.quotation}\n💳 Payment: ${order.paymentStatus}\n\n${order.status === "completed" && order.paymentLink ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
     window.open(getWhatsAppLink(order.customerPhone, msg), "_blank");
   };
 
