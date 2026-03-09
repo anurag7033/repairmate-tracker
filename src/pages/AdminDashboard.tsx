@@ -532,7 +532,7 @@ const AdminDashboard = () => {
                             variant="outline"
                             className="h-6 px-2 text-xs rounded-md border-primary/30 text-primary hover:bg-primary/10"
                             onClick={() => {
-                              const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\nHello ${voucherOrder.customerName},\n\nYou've received a discount voucher!\n\n🎫 Voucher Code: *${v.voucher_code}*\n💰 Discount Amount: *₹${v.discount_amount}*\n🔖 For Tracking ID: ${voucherOrder.trackingId}\n\nApply this code on your tracking page to get the discount:\n${window.location.origin}/track/${voucherOrder.trackingId}\n\nThank you for choosing Anurag Mobile!`;
+                              const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\nHello ${voucherOrder.customerName},\n\nYou've received a discount voucher!\n\n🎫 Voucher Code: *${v.voucher_code}*\n💰 Discount Amount: *₹${v.discount_amount}*\n\n⚠️ *Note:* This voucher is valid for your *next repair* only. It cannot be used on the current repair.\n\nApply this code on your tracking page when you visit us next:\n${window.location.origin}/track\n\nThank you for choosing Anurag Mobile! 🙏`;
                               window.open(getWhatsAppLink(voucherOrder.customerPhone, msg), "_blank");
                             }}
                           >
