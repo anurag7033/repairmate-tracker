@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       repair_orders: {
         Row: {
+          advance_paid: number
           created_at: string
           customer_name: string
           customer_phone: string
@@ -33,6 +34,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          advance_paid?: number
           created_at?: string
           customer_name: string
           customer_phone: string
@@ -50,6 +52,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          advance_paid?: number
           created_at?: string
           customer_name?: string
           customer_phone?: string
