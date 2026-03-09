@@ -141,7 +141,11 @@ export async function getVouchersForOrder(trackingId: string) {
   return data || [];
 }
 
-export async function applyVoucher(voucherCode: string): Promise<{ trackingId: string; discountAmount: number }> {
+export async function applyVoucher(
+  voucherCode: string,
+  currentTrackingId: string,
+  currentCustomerPhone: string
+): Promise<{ trackingId: string; discountAmount: number }> {
   const { data: voucher, error: fetchErr } = await supabase
     .from("vouchers")
     .select("*")
@@ -151,6 +155,25 @@ export async function applyVoucher(voucherCode: string): Promise<{ trackingId: s
   if (fetchErr) throw fetchErr;
   if (!voucher) throw new Error("Invalid or already used voucher code");
 
+  // Voucher cannot be used on the same repair it was generated for
+  if (voucher.tracking_id === currentTrackingId) {
+    throw new Error("This voucher can only be used on your next repair, not the current one.");
+  }
+
+  // Verify the voucher belongs to the same customer (by phone number)
+  const { data: voucherOrder, error: voucherOrderErr } = await supabase
+    .from("repair_orders")
+    .select("customer_phone")
+    .eq("tracking_id", voucher.tracking_id)
+    .single();
+  if (voucherOrderErr) throw voucherOrderErr;
+
+  const cleanCurrent = currentCustomerPhone.replace(/\D/g, "");
+  const cleanVoucher = (voucherOrder.customer_phone || "").replace(/\D/g, "");
+  if (cleanCurrent !== cleanVoucher) {
+    throw new Error("Invalid voucher code");
+  }
+
   // Mark voucher as used
   const { error: updateVoucherErr } = await supabase
     .from("vouchers")
@@ -158,11 +181,11 @@ export async function applyVoucher(voucherCode: string): Promise<{ trackingId: s
     .eq("id", voucher.id);
   if (updateVoucherErr) throw updateVoucherErr;
 
-  // Update discount on repair order
+  // Update discount on current repair order
   const { data: order, error: orderErr } = await supabase
     .from("repair_orders")
     .select("discount_amount")
-    .eq("tracking_id", voucher.tracking_id)
+    .eq("tracking_id", currentTrackingId)
     .single();
   if (orderErr) throw orderErr;
 
@@ -170,8 +193,8 @@ export async function applyVoucher(voucherCode: string): Promise<{ trackingId: s
   const { error: updateErr } = await supabase
     .from("repair_orders")
     .update({ discount_amount: newDiscount })
-    .eq("tracking_id", voucher.tracking_id);
+    .eq("tracking_id", currentTrackingId);
   if (updateErr) throw updateErr;
 
-  return { trackingId: voucher.tracking_id, discountAmount: voucher.discount_amount };
+  return { trackingId: currentTrackingId, discountAmount: voucher.discount_amount };
 }
