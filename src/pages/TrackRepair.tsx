@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { findByTrackingId } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
 import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink } from "lucide-react";
+import Footer from "@/components/Footer";
+import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 
 const TrackRepair = () => {
