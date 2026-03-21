@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
-import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket } from "lucide-react";
+import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays } from "lucide-react";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -148,6 +148,14 @@ const TrackRepair = () => {
             <div className="col-span-2 bg-muted/50 rounded-xl p-3">
               <span className="text-xs text-muted-foreground block mb-1">Issue</span>
               <p className="font-semibold text-sm">{order.issueDescription || "Not specified"}</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-3">
+              <span className="text-xs text-muted-foreground block mb-1 flex items-center gap-1"><CalendarDays className="w-3 h-3" /> Received On</span>
+              <p className="font-semibold text-sm">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}, {new Date(order.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-3">
+              <span className="text-xs text-muted-foreground block mb-1 flex items-center gap-1"><Clock className="w-3 h-3" /> Last Updated</span>
+              <p className="font-semibold text-sm">{new Date(order.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}, {new Date(order.updatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
             </div>
           </div>
         </div>

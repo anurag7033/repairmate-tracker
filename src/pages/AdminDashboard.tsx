@@ -450,7 +450,7 @@ const AdminDashboard = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-muted-foreground">
                     <div>📱 {order.mobileBrand} {order.mobileModel}</div>
                     <div><Phone className="w-3 h-3 inline mr-1" />{order.customerPhone}</div>
                     <div>💰 ₹{order.quotation}</div>
@@ -470,6 +470,8 @@ const AdminDashboard = () => {
                         {order.paymentStatus === "paid" ? "Paid" : order.paymentStatus === "partial" ? `Bal: ₹${balanceDue}` : "Pending"}
                       </span>
                     </div>
+                    <div>📅 {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
+                    <div>🕐 Updated: {new Date(order.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} {new Date(order.updatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
                   </div>
                 </div>
               );
