@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
-import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays } from "lucide-react";
+import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2 } from "lucide-react";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const TrackRepair = () => {
   const { trackingId } = useParams();
@@ -17,6 +18,7 @@ const TrackRepair = () => {
   const [loading, setLoading] = useState(true);
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherLoading, setVoucherLoading] = useState(false);
+  const [payLoading, setPayLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -307,19 +309,45 @@ const TrackRepair = () => {
             </div>
           )}
 
-          {order.paymentStatus !== "paid" && order.paymentLink && order.status === "completed" && balanceDue > 0 && (
+          {order.paymentStatus !== "paid" && order.status === "completed" && balanceDue > 0 && (
             <Button
-              className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02]"
-              onClick={() => window.open(order.paymentLink, "_blank")}
+              className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] mt-4"
+              disabled={payLoading}
+              onClick={async () => {
+                setPayLoading(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke("create-payment-link", {
+                    body: { trackingId: order.trackingId },
+                  });
+                  if (error) throw error;
+                  if (data?.short_url) {
+                    window.location.href = data.short_url;
+                  } else {
+                    throw new Error("No payment link received");
+                  }
+                } catch (err: any) {
+                  toast({ title: "Payment Error", description: err.message || "Failed to create payment link", variant: "destructive" });
+                  setPayLoading(false);
+                }
+              }}
             >
-              <CreditCard className="w-5 h-5 mr-2" />
-              Pay ₹{balanceDue} Now
-              <ExternalLink className="w-5 h-5 ml-2" />
+              {payLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Generating Payment Link...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Pay ₹{balanceDue} Now
+                  <ExternalLink className="w-5 h-5 ml-2" />
+                </>
+              )}
             </Button>
           )}
 
           {order.paymentStatus !== "paid" && order.status !== "completed" && (
-            <div className="text-center p-4 bg-muted/50 rounded-xl">
+            <div className="text-center p-4 bg-muted/50 rounded-xl mt-4">
               <p className="text-muted-foreground text-sm">
                 💡 Payment link will be available once repair is completed
               </p>
