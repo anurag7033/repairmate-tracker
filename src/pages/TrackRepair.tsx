@@ -18,6 +18,7 @@ const TrackRepair = () => {
   const [loading, setLoading] = useState(true);
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherLoading, setVoucherLoading] = useState(false);
+  const [payLoading, setPayLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
