@@ -1,11 +1,26 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { hmac } from "https://deno.land/x/hmac@v2.0.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-razorpay-signature",
 };
+
+async function verifySignature(body: string, signature: string, secret: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
+  const hexSig = Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hexSig === signature;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,10 +32,9 @@ Deno.serve(async (req) => {
     const signature = req.headers.get("x-razorpay-signature");
     const secret = Deno.env.get("RAZORPAY_KEY_SECRET")!;
 
-    // Verify webhook signature
     if (signature) {
-      const expectedSignature = hmac("sha256", secret, body, "utf8", "hex") as string;
-      if (expectedSignature !== signature) {
+      const valid = await verifySignature(body, signature, secret);
+      if (!valid) {
         console.error("Invalid webhook signature");
         return new Response(JSON.stringify({ error: "Invalid signature" }), {
           status: 401,
@@ -42,7 +56,6 @@ Deno.serve(async (req) => {
           Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
         );
 
-        // Get current order to calculate
         const { data: order } = await supabase
           .from("repair_orders")
           .select("quotation, discount_amount")
@@ -50,8 +63,6 @@ Deno.serve(async (req) => {
           .single();
 
         if (order) {
-          const totalPaid = Number(paymentLink.amount_paid || 0) / 100;
-
           await supabase
             .from("repair_orders")
             .update({
