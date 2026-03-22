@@ -25,7 +25,7 @@ import {
 } from "@/lib/repairStore";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER, COMMON_ISSUES
+  RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER, COMMON_ISSUES, COMMON_REPAIRS
 } from "@/types/repair";
 
 const emptyOrder = (): Partial<RepairOrder> => ({
@@ -165,6 +165,13 @@ const AdminDashboard = () => {
     const current = editingOrder.issueDescription || "";
     const newDesc = current ? `${current}, ${issue}` : issue;
     setEditingOrder({ ...editingOrder, issueDescription: newDesc });
+  };
+
+  const addRepairToDetails = (repair: string) => {
+    if (!editingOrder) return;
+    const current = editingOrder.repairDetails || "";
+    const newDetails = current ? `${current}, ${repair}` : repair;
+    setEditingOrder({ ...editingOrder, repairDetails: newDetails });
   };
 
   const sendWhatsApp = (order: RepairOrder) => {
@@ -331,8 +338,30 @@ const AdminDashboard = () => {
                   </div>
                   
                   <div>
-                    <Label className="text-xs">Repair Details</Label>
-                    <Textarea value={editingOrder.repairDetails || ""} onChange={(e) => setEditingOrder({ ...editingOrder, repairDetails: e.target.value })} className="rounded-lg mt-1" rows={2} />
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-xs">Repair Details</Label>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-6 text-xs rounded-md">
+                            <Plus className="w-3 h-3 mr-1" />
+                            Quick Add
+                            <ChevronDown className="w-3 h-3 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
+                          {COMMON_REPAIRS.map((repair) => (
+                            <DropdownMenuItem
+                              key={repair}
+                              onClick={() => addRepairToDetails(repair)}
+                              className="cursor-pointer"
+                            >
+                              {repair}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <Textarea value={editingOrder.repairDetails || ""} onChange={(e) => setEditingOrder({ ...editingOrder, repairDetails: e.target.value })} className="rounded-lg" rows={2} placeholder="Select from quick add or type custom details..." />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>

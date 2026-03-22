@@ -47,6 +47,27 @@ export const COMMON_ISSUES = [
   "Other",
 ];
 
+export const COMMON_REPAIRS = [
+  "Screen Replaced",
+  "Battery Replaced",
+  "Charging Port Replaced",
+  "Speaker Replaced",
+  "Microphone Replaced",
+  "Front Camera Replaced",
+  "Rear Camera Replaced",
+  "Back Glass Replaced",
+  "Power Button Repaired",
+  "Volume Button Repaired",
+  "SIM Tray Repaired",
+  "Software Restored / Updated",
+  "Water Damage Cleaned",
+  "Motherboard Repaired",
+  "Display Connector Fixed",
+  "IC Replacement",
+  "Touch Glass Only Replaced",
+  "Other",
+];
+
 export const STATUS_LABELS: Record<RepairStatus, string> = {
   received: "Device Received",
   diagnosing: "Diagnosing Issue",
