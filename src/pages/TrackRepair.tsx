@@ -309,19 +309,45 @@ const TrackRepair = () => {
             </div>
           )}
 
-          {order.paymentStatus !== "paid" && order.paymentLink && order.status === "completed" && balanceDue > 0 && (
+          {order.paymentStatus !== "paid" && order.status === "completed" && balanceDue > 0 && (
             <Button
-              className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02]"
-              onClick={() => window.open(order.paymentLink, "_blank")}
+              className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] mt-4"
+              disabled={payLoading}
+              onClick={async () => {
+                setPayLoading(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke("create-payment-link", {
+                    body: { trackingId: order.trackingId },
+                  });
+                  if (error) throw error;
+                  if (data?.short_url) {
+                    window.location.href = data.short_url;
+                  } else {
+                    throw new Error("No payment link received");
+                  }
+                } catch (err: any) {
+                  toast({ title: "Payment Error", description: err.message || "Failed to create payment link", variant: "destructive" });
+                  setPayLoading(false);
+                }
+              }}
             >
-              <CreditCard className="w-5 h-5 mr-2" />
-              Pay ₹{balanceDue} Now
-              <ExternalLink className="w-5 h-5 ml-2" />
+              {payLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Generating Payment Link...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Pay ₹{balanceDue} Now
+                  <ExternalLink className="w-5 h-5 ml-2" />
+                </>
+              )}
             </Button>
           )}
 
           {order.paymentStatus !== "paid" && order.status !== "completed" && (
-            <div className="text-center p-4 bg-muted/50 rounded-xl">
+            <div className="text-center p-4 bg-muted/50 rounded-xl mt-4">
               <p className="text-muted-foreground text-sm">
                 💡 Payment link will be available once repair is completed
               </p>
