@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
@@ -19,7 +19,12 @@ const TrackRepair = () => {
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
+  const [progressHeight, setProgressHeight] = useState(0);
   const { toast } = useToast();
+
+  // Refs for dynamic height calculation
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>(Array(7).fill(null));
 
   useEffect(() => {
     const load = async () => {
@@ -35,6 +40,39 @@ const TrackRepair = () => {
     };
     load();
   }, [trackingId]);
+
+  // Dynamic progress height calculation
+  const calculateProgressHeight = () => {
+    if (!timelineRef.current || !order) return;
+
+    const currentIndex = STATUS_ORDER.indexOf(order.status);
+    if (currentIndex === -1) return; // Invalid status
+
+    const activeStep = stepRefs.current[currentIndex];
+    if (!activeStep) return;
+
+    // Get the position relative to the timeline container
+    const timelineRect = timelineRef.current.getBoundingClientRect();
+    const activeStepRect = activeStep.getBoundingClientRect();
+
+    // Calculate height from top of timeline to center of active step
+    const height = activeStepRect.top - timelineRect.top + (activeStepRect.height / 2);
+    setProgressHeight(Math.max(0, height));
+  };
+
+  useEffect(() => {
+    // Calculate initial height
+    const timer = setTimeout(calculateProgressHeight, 100); // Small delay to ensure DOM is rendered
+
+    // Recalculate on window resize
+    const handleResize = () => calculateProgressHeight();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [order]);
 
   if (loading) {
     return (
@@ -119,7 +157,7 @@ const TrackRepair = () => {
         <div className="container mx-auto pb-10 pt-4 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-foreground/10 backdrop-blur-sm text-sm font-semibold mb-4 border border-primary-foreground/20">
             <Sparkles className="w-4 h-4" />
-            Tracking ID: <span className="font-mono">{order.trackingId}</span>
+            Tracking ID: <span className="font-mono">{order?.trackingId || trackingId}</span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">Repair Status</h1>
           <p className="text-primary-foreground/70">Real-time updates on your device repair</p>
@@ -141,29 +179,29 @@ const TrackRepair = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-muted/50 rounded-xl p-3">
               <span className="text-xs text-muted-foreground block mb-1">Brand</span>
-              <p className="font-semibold text-sm">{order.mobileBrand}</p>
+              <p className="font-semibold text-sm">{order?.mobileBrand || "Loading..."}</p>
             </div>
             <div className="bg-muted/50 rounded-xl p-3">
               <span className="text-xs text-muted-foreground block mb-1">Model</span>
-              <p className="font-semibold text-sm">{order.mobileModel}</p>
+              <p className="font-semibold text-sm">{order?.mobileModel || "Loading..."}</p>
             </div>
             <div className="col-span-2 bg-muted/50 rounded-xl p-3">
               <span className="text-xs text-muted-foreground block mb-1">Issue</span>
-              <p className="font-semibold text-sm">{order.issueDescription || "Not specified"}</p>
+              <p className="font-semibold text-sm">{order?.issueDescription || "Loading..."}</p>
             </div>
             <div className="bg-muted/50 rounded-xl p-3">
               <span className="text-xs text-muted-foreground block mb-1 flex items-center gap-1"><CalendarDays className="w-3 h-3" /> Received On</span>
-              <p className="font-semibold text-sm">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}, {new Date(order.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
+              <p className="font-semibold text-sm">{order ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) + ", " + new Date(order.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Loading..."}</p>
             </div>
             <div className="bg-muted/50 rounded-xl p-3">
               <span className="text-xs text-muted-foreground block mb-1 flex items-center gap-1"><Clock className="w-3 h-3" /> Last Updated</span>
-              <p className="font-semibold text-sm">{new Date(order.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}, {new Date(order.updatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
+              <p className="font-semibold text-sm">{order ? new Date(order.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) + ", " + new Date(order.updatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Loading..."}</p>
             </div>
           </div>
         </div>
 
-        {/* Progress Card */}
-        <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border mb-6 animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.1s" }}>
+        {/* Repair Steps Timeline */}
+        <div className="w-full bg-blue-50 rounded-3xl p-8 mb-6 shadow-elevated border border-border animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.1s" }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center">
               <Wrench className="w-6 h-6 text-success" />
@@ -174,54 +212,95 @@ const TrackRepair = () => {
             </div>
           </div>
           
-          <div className="relative">
-            {STATUS_ORDER.map((status, i) => {
-              const isCompleted = i <= currentIndex;
-              const isCurrent = i === currentIndex;
-              const isLast = i === STATUS_ORDER.length - 1;
+          <div className="max-w-3xl mx-auto">
+            <div className="relative" ref={timelineRef}>
+              {/* Timeline line container - positioned to the right */}
+              <div className="absolute right-0 top-0 bottom-0 w-10 flex justify-center">
+                <div className="relative w-1 h-full">
+                  {/* Grey background line - full height */}
+                  <div className="absolute top-0 bottom-0 left-1/2 transform -translate-x-1/2 w-1 bg-gray-300 rounded-full"></div>
+                  
+                  {/* Orange progress line - from top to center of active step */}
+                  <div 
+                    className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-orange-400 rounded-full transition-all duration-500 ease-in-out z-10"
+                    style={{
+                      height: `${progressHeight}px`,
+                      width: '4px'
+                    }}
+                  ></div>
+                </div>
+              </div>
               
-              return (
-                <div key={status} className="flex items-start gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isCompleted 
-                        ? isCurrent 
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-4 ring-primary/20" 
-                          : "bg-success text-success-foreground"
-                        : "bg-muted text-muted-foreground"
+              {[
+                { title: "Device Received", desc: "Your device has been received and logged into our system.", icon: "📱", status: "received" },
+                { title: "Diagnosing Issue", desc: "Our technician inspects your device and creates repair plan.", icon: "🔍", status: "diagnosing" },
+                { title: "Waiting for Parts", desc: "We secure genuine parts or high-quality alternatives when needed.", icon: "⏳", status: "waiting_for_parts" },
+                { title: "Repairing", desc: "Certified technicians perform the repair with precision and safety.", icon: "🔧", status: "repairing" },
+                { title: "Testing", desc: "Device testing after repair completion.", icon: "✔", status: "testing" },
+                { title: "Repair Completed", desc: "Your device is ready and verified by final quality review.", icon: "✅", status: "completed" },
+                { title: "Delivered", desc: "You receive your device back in perfect working condition.", icon: "🚚", status: "delivered" },
+              ].map((step, idx) => {
+                const isCompleted = idx < currentIndex;
+                const isCurrent = idx === currentIndex;
+                const isPending = idx > currentIndex;
+
+                const isStepCompleted = isCompleted || (isCurrent && (order.status === "completed" || order.status === "delivered"));
+                const isStepCurrent = isCurrent && !(order.status === "completed" || order.status === "delivered");
+                const isStepPending = !isStepCompleted && !isStepCurrent;
+
+                return (
+                  <div key={idx} className="mb-8 flex items-start gap-6">
+                    {/* Step Content Card - Left side */}
+                    <div className={`flex-1 rounded-xl p-4 shadow-md border transition-all duration-500 ${
+                      isStepCompleted ? "bg-white border-green-200 hover:shadow-xl" : 
+                      isStepCurrent ? "bg-orange-50 border-orange-200 shadow-orange-100" : 
+                      "bg-gray-50 border-gray-200"
                     }`}>
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-5 h-5" />
+                      <p className={`text-sm font-semibold transition-all duration-300 ${
+                        isStepCompleted ? "text-green-500" : 
+                        isStepCurrent ? "text-orange-500" : 
+                        "text-gray-400"
+                      }`}>
+                        {isStepCompleted ? "COMPLETED" : isStepCurrent ? "IN PROGRESS" : "PENDING"}
+                      </p>
+                      <h3 className={`text-base font-bold mt-1 transition-all duration-300 ${
+                        isStepPending ? "text-gray-600" : "text-black"
+                      }`}>
+                        {step.title}
+                      </h3>
+                      <p className={`text-sm mt-1 transition-all duration-300 ${
+                        isStepPending ? "text-gray-400" : "text-gray-600"
+                      }`}>
+                        {step.desc}
+                      </p>
+                    </div>
+                    
+                    {/* Timeline Icon Container - Right side */}
+                    <div 
+                      className="relative flex-shrink-0 w-10 h-10 flex items-center justify-center"
+                      ref={(el) => stepRefs.current[idx] = el}
+                    >
+                      {isStepCurrent ? (
+                        <div className="relative z-20">
+                          {/* Pulse animation background */}
+                          <div className="absolute inset-0 w-10 h-10 bg-orange-400 rounded-full opacity-30 animate-ping"></div>
+                          {/* Main icon */}
+                          <div className="relative w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg font-bold text-lg transition-all duration-300">
+                            {step.icon}
+                          </div>
+                        </div>
                       ) : (
-                        <Circle className="w-5 h-5" />
+                        <div className={`relative z-20 w-10 h-10 rounded-full text-white shadow-lg font-bold text-lg flex items-center justify-center transition-all duration-300 ${
+                          isStepCompleted ? "bg-green-500" : "bg-gray-300"
+                        }`}>
+                          {step.icon}
+                        </div>
                       )}
                     </div>
-                    {!isLast && (
-                      <div className={`w-0.5 h-12 transition-all duration-300 ${
-                        i < currentIndex ? "bg-success" : "bg-muted"
-                      }`} />
-                    )}
                   </div>
-                  <div className={`pb-6 pt-1 transition-all duration-300 ${
-                    isCurrent 
-                      ? "text-foreground" 
-                      : isCompleted 
-                        ? "text-muted-foreground" 
-                        : "text-muted-foreground/50"
-                  }`}>
-                    <p className={`font-medium transition-all ${isCurrent ? "text-lg font-bold" : "text-sm"}`}>
-                      {STATUS_LABELS[status]}
-                    </p>
-                    {isCurrent && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground mt-2 animate-pulse">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground mr-2" />
-                        Current Status
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 

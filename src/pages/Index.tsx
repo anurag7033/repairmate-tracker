@@ -3,66 +3,26 @@ import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Tr
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { findByTrackingId } from "@/lib/repairStore";
-import { RepairStatus, STATUS_ORDER } from "@/types/repair";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 
 const Index = () => {
   const [trackingId, setTrackingId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<RepairStatus | null>(null);
-  const [statusLoading, setStatusLoading] = useState(false);
-  const [visibleSteps, setVisibleSteps] = useState<boolean[]>(new Array(6).fill(false));
+
   const navigate = useNavigate();
 
   const handleTrack = async () => {
     if (!trackingId.trim()) return;
 
-    setStatusLoading(true);
-    const found = await findByTrackingId(trackingId.trim());
-    setOrderStatus(found?.status ?? null);
-    setStatusLoading(false);
-
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      navigate(`/track/${trackingId.trim()}`, { state: { status: found?.status } });
+      navigate(`/track/${trackingId.trim()}`);
     }, 900);
   };
 
-  useEffect(() => {
-    const steps = document.querySelectorAll<HTMLDivElement>(".repair-step-card");
-    if (!steps.length) return;
 
-    if (!("IntersectionObserver" in window)) {
-      setVisibleSteps(new Array(6).fill(true));
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const stepIndex = Number(entry.target.getAttribute("data-step-idx"));
-            if (!Number.isNaN(stepIndex)) {
-              setVisibleSteps((prev) => {
-                if (prev[stepIndex]) return prev;
-                const next = [...prev];
-                next[stepIndex] = true;
-                return next;
-              });
-            }
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-
-    steps.forEach((step) => observer.observe(step));
-
-    return () => observer.disconnect();
-  }, []);
 
 
   if (loading) {
@@ -173,82 +133,30 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Repair Steps + Voucher info */}
-      <section className="container mx-auto py-10">
-        <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border animate-fade-in">
-          <h2 className="font-display text-2xl font-bold mb-6">Repair Process in 6 Steps</h2>
-          <div className="relative mx-auto w-full max-w-2xl">
-            <div className="absolute left-1/2 top-6 bottom-6 w-px bg-primary/20" />
-            <div className="space-y-10">
-              {[
-                { title: "Diagnosing Issue", desc: "Our technician inspects your device and creates a prioritized fix plan.", icon: <Search className="w-4 h-4" /> },
-                { title: "Waiting for Parts", desc: "We secure genuine parts or high-quality alternatives when needed.", icon: <Clock className="w-4 h-4" /> },
-                { title: "Repairing", desc: "Certified technicians perform the repair with precision and safety.", icon: <Wrench className="w-4 h-4" /> },
-                { title: "Testing", desc: "Multiple checks guarantee everything works before we close the order.", icon: <CheckCircle2 className="w-4 h-4" /> },
-                { title: "Repair Completed", desc: "Your device is ready and verified by final quality review.", icon: <Shield className="w-4 h-4" /> },
-                { title: "Delivered", desc: "You receive your device back in perfect working condition.", icon: <Truck className="w-4 h-4" /> },
-              ].map((step, idx) => {
-                const activeIndex = orderStatus ? STATUS_ORDER.indexOf(orderStatus) : -1;
-                const isDone = idx <= activeIndex;
-                const isCurrent = idx === activeIndex;
-                return (
-                  <div
-                    key={idx}
-                    data-step-idx={idx}
-                    className={`repair-step-card opacity-0 ${
-                      visibleSteps[idx] ? "fade-up-visible" : "fade-up-start"
-                    }`}
-                    style={{ animationDelay: `${idx * 0.1}s` }}
-                  >
-                    <div className="relative flex flex-col items-center">
-                      <div className={`z-10 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
-                        isDone ? "bg-success text-orange-500" : isCurrent ? "bg-primary text-orange-500" : "bg-muted text-orange-500"
-                      }`}>
-                        {step.icon}
-                      </div>
-                      <div className={`mt-4 w-full sm:w-3/4 p-4 rounded-xl border ${
-                        isDone ? "border-success" : isCurrent ? "border-primary" : "border-primary/20"
-                      } bg-white/95 shadow-sm hover:shadow-md transition-shadow`}>
-                        <div className={`text-xs font-semibold uppercase mb-1 ${
-                          isDone ? "text-success" : isCurrent ? "text-primary" : "text-muted-foreground"
-                        }`}>
-                          Step {idx + 1}
-                        </div>
-                        <div className={`font-semibold ${isDone || isCurrent ? "text-black" : "text-black"}`}>
-                          {step.title}
-                        </div>
-                        <p className="text-sm text-black mt-1">{step.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+      {/* Voucher Info */}
+      <section className="container mx-auto py-16">
+        <div className="max-w-2xl mx-auto bg-card rounded-3xl p-6 shadow-elevated border border-border">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+              <Tag className="w-4 h-4 text-white" />
             </div>
+            <p className="font-semibold text-black text-lg">Add vouchers to get exciting discounts</p>
           </div>
-
-          <div className="p-6 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5 mt-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
-                <Tag className="w-4 h-4 text-white" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-orange-500" />
+                <CreditCard className="w-4 h-4 text-orange-500" />
+                <Wallet className="w-4 h-4 text-orange-500" />
               </div>
-              <p className="font-semibold text-black text-lg">Add vouchers to get exciting discounts</p>
+              <p className="text-sm text-black font-medium">
+                You can pay using online methods (UPI, card, credit cards, wallet, etc.)
+              </p>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-orange-500" />
-                  <CreditCard className="w-4 h-4 text-orange-500" />
-                  <Wallet className="w-4 h-4 text-orange-500" />
-                </div>
-                <p className="text-sm text-black font-medium">
-                  You can pay using online methods (UPI, card, credit cards, wallet, etc.)
-                </p>
-              </div>
-              <div className="flex items-center gap-2 pt-1 border-t border-primary/10">
-                <span className="text-xs text-orange-600 font-semibold bg-orange-50 px-2 py-1 rounded-full">
-                  *Charges applied on card transaction
-                </span>
-              </div>
+            <div className="flex items-center gap-2 pt-1 border-t border-primary/10">
+              <span className="text-xs text-orange-600 font-semibold bg-orange-50 px-2 py-1 rounded-full">
+                *Charges applied on card transaction
+              </span>
             </div>
           </div>
         </div>
