@@ -57,6 +57,12 @@ const Footer = () => {
                 <Mail className="w-4 h-4 text-primary" />
                 <span className="text-sm">anurag.sharma7033@gmail.com</span>
               </li>
+              <li className="flex items-center gap-3">
+                <MapPin className="w-4 h-4 text-primary" />
+                <a href="https://share.google/plBuR31t4H9GN4agC" target="_blank" rel="noopener noreferrer" className="text-sm text-primary-foreground/60 hover:text-primary transition-colors">
+                  Get Directions
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -69,7 +75,10 @@ const Footer = () => {
             © 2026 Anurag Mobile Repairing Centre. All rights reserved.
           </p>
           <p className="text-xs text-primary-foreground/40 flex items-center gap-1">
-            <MapPin className="w-3 h-3" /> Your Local Mobile Repair Expert
+            <MapPin className="w-3 h-3" /> 
+            <a href="https://share.google/plBuR31t4H9GN4agC" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              Your Local Mobile Repair Expert
+            </a>
           </p>
         </div>
       </div>
