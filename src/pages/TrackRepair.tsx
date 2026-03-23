@@ -236,7 +236,6 @@ const TrackRepair = () => {
               <p className="text-xs text-muted-foreground">Your payment summary</p>
             </div>
           </div>
-
           <div className="space-y-3 mb-4">
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
               <span className="text-sm text-muted-foreground">Total Amount</span>
