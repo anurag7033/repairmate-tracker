@@ -22,4 +22,8 @@ if (l.search[1] === '/' ) {
   window.history.replaceState(null, '', l.pathname.slice(0, -1) + decoded + l.hash);
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
