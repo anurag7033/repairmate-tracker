@@ -3,6 +3,7 @@ import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Tr
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 
@@ -38,6 +39,26 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Anurag Mobile Repairing Centre – Track Your Mobile Repair Status Online</title>
+        <meta name="description" content="Anurag Mobile Repairing Centre provides expert mobile phone repair services with real-time repair tracking, genuine spare parts, and secure online payments. Track your device repair status instantly." />
+        <meta name="keywords" content="Anurag Mobile Repairing Centre, mobile repair, phone repair tracking, screen replacement, battery replacement, smartphone repair, mobile repair near me, repair status, online payment" />
+        <link rel="canonical" href="https://tracking.anuragmobile.in/" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Anurag Mobile Repairing Centre",
+          "description": "Expert mobile phone repair services with real-time tracking, genuine spare parts, and secure online payments.",
+          "url": "https://tracking.anuragmobile.in",
+          "telephone": "+917033067221",
+          "email": "anurag.sharma7033@gmail.com",
+          "image": "https://tracking.anuragmobile.in/logo.png",
+          "priceRange": "₹",
+          "serviceType": ["Mobile Phone Repair", "Screen Replacement", "Battery Replacement", "Charging Port Repair", "Software Update", "IC Replacement"],
+          "areaServed": "India",
+          "sameAs": ["https://anuragmobile.in"]
+        })}</script>
+      </Helmet>
       {/* Hero */}
       <header className="gradient-hero text-primary-foreground relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
