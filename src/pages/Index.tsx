@@ -3,6 +3,7 @@ import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Tr
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 
