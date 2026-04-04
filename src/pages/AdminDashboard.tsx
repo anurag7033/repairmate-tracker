@@ -259,6 +259,30 @@ const AdminDashboard = () => {
       </header>
 
       <div className="container mx-auto py-6">
+        {/* Tab Switcher */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            variant={activeTab === "repairs" ? "default" : "outline"}
+            onClick={() => setActiveTab("repairs")}
+            className="rounded-xl font-semibold"
+          >
+            <Smartphone className="w-4 h-4 mr-2" />
+            Repairs
+          </Button>
+          <Button
+            variant={activeTab === "vouchers" ? "default" : "outline"}
+            onClick={() => setActiveTab("vouchers")}
+            className="rounded-xl font-semibold"
+          >
+            <Ticket className="w-4 h-4 mr-2" />
+            Vouchers
+          </Button>
+        </div>
+
+        {activeTab === "vouchers" ? (
+          <AdminVoucherSection />
+        ) : (
+        <>
         {/* Actions bar */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
