@@ -4,6 +4,7 @@ import {
   Plus, LogOut, Search, MessageCircle, Trash2,
   Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send,
 } from "lucide-react";
+import AdminVoucherSection from "@/components/AdminVoucherSection";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
