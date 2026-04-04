@@ -533,6 +533,8 @@ const AdminDashboard = () => {
             })}
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Voucher Dialog */}
