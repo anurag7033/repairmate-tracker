@@ -4,6 +4,7 @@ import {
   Plus, LogOut, Search, MessageCircle, Trash2,
   Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send,
 } from "lucide-react";
+import AdminVoucherSection from "@/components/AdminVoucherSection";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers">("repairs");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -257,6 +259,30 @@ const AdminDashboard = () => {
       </header>
 
       <div className="container mx-auto py-6">
+        {/* Tab Switcher */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            variant={activeTab === "repairs" ? "default" : "outline"}
+            onClick={() => setActiveTab("repairs")}
+            className="rounded-xl font-semibold"
+          >
+            <Smartphone className="w-4 h-4 mr-2" />
+            Repairs
+          </Button>
+          <Button
+            variant={activeTab === "vouchers" ? "default" : "outline"}
+            onClick={() => setActiveTab("vouchers")}
+            className="rounded-xl font-semibold"
+          >
+            <Ticket className="w-4 h-4 mr-2" />
+            Vouchers
+          </Button>
+        </div>
+
+        {activeTab === "vouchers" ? (
+          <AdminVoucherSection />
+        ) : (
+        <>
         {/* Actions bar */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
@@ -506,6 +532,8 @@ const AdminDashboard = () => {
               );
             })}
           </div>
+        )}
+        </>
         )}
       </div>
 

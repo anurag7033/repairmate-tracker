@@ -78,26 +78,41 @@ export type Database = {
         Row: {
           created_at: string
           discount_amount: number
+          discount_percentage: number
+          discount_type: string
           id: string
           is_used: boolean
-          tracking_id: string
+          max_order_amount: number
+          min_order_amount: number
+          tracking_id: string | null
           voucher_code: string
+          voucher_name: string
         }
         Insert: {
           created_at?: string
           discount_amount?: number
+          discount_percentage?: number
+          discount_type?: string
           id?: string
           is_used?: boolean
-          tracking_id: string
+          max_order_amount?: number
+          min_order_amount?: number
+          tracking_id?: string | null
           voucher_code: string
+          voucher_name?: string
         }
         Update: {
           created_at?: string
           discount_amount?: number
+          discount_percentage?: number
+          discount_type?: string
           id?: string
           is_used?: boolean
-          tracking_id?: string
+          max_order_amount?: number
+          min_order_amount?: number
+          tracking_id?: string | null
           voucher_code?: string
+          voucher_name?: string
         }
         Relationships: []
       }
