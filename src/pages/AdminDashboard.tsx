@@ -135,8 +135,7 @@ const AdminDashboard = () => {
 
     // Serialize service items and calculate total
     const repairDetails = JSON.stringify(serviceItems);
-    const quotation = serviceTotal;
-    const estimatedAmount = editingOrder.quotation || 0;
+    const quotation = serviceTotal > 0 ? serviceTotal : (editingOrder.quotation || 0);
 
     // Auto-update payment status based on advance paid
     let paymentStatus = editingOrder.paymentStatus || "pending";
