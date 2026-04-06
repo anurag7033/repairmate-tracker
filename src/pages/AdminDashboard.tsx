@@ -401,9 +401,10 @@ const AdminDashboard = () => {
                     <Textarea value={editingOrder.issueDescription || ""} onChange={(e) => setEditingOrder({ ...editingOrder, issueDescription: e.target.value })} className="rounded-lg" rows={2} placeholder="Select from quick add or type custom issue..." />
                   </div>
                   
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-xs">Repair Details</Label>
+                  {/* Service Items (Technician Notes) */}
+                  <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground">🔧 Services / Technician Notes</Label>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="sm" className="h-6 text-xs rounded-md">
@@ -416,7 +417,7 @@ const AdminDashboard = () => {
                           {COMMON_REPAIRS.map((repair) => (
                             <DropdownMenuItem
                               key={repair}
-                              onClick={() => addRepairToDetails(repair)}
+                              onClick={() => addServiceItem(repair, 0)}
                               className="cursor-pointer"
                             >
                               {repair}
@@ -425,8 +426,69 @@ const AdminDashboard = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <Textarea value={editingOrder.repairDetails || ""} onChange={(e) => setEditingOrder({ ...editingOrder, repairDetails: e.target.value })} className="rounded-lg" rows={2} placeholder="Select from quick add or type custom details..." />
+
+                    {serviceItems.length > 0 && (
+                      <div className="space-y-2">
+                        {serviceItems.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2 bg-card rounded-lg p-2 border border-border">
+                            <span className="flex-1 text-sm truncate">{item.service}</span>
+                            <Input
+                              type="number"
+                              value={item.price || ""}
+                              onChange={(e) => {
+                                const updated = [...serviceItems];
+                                updated[idx] = { ...updated[idx], price: Number(e.target.value) };
+                                setServiceItems(updated);
+                              }}
+                              className="w-24 h-8 text-sm rounded-md text-right"
+                              placeholder="₹ Price"
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                              onClick={() => removeServiceItem(idx)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Input
+                        value={newServiceName}
+                        onChange={(e) => setNewServiceName(e.target.value)}
+                        placeholder="Service name..."
+                        className="flex-1 h-9 rounded-lg text-sm"
+                      />
+                      <Input
+                        type="number"
+                        value={newServicePrice || ""}
+                        onChange={(e) => setNewServicePrice(Number(e.target.value))}
+                        placeholder="₹ Price"
+                        className="w-24 h-9 rounded-lg text-sm text-right"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 rounded-lg"
+                        onClick={() => addServiceItem(newServiceName, newServicePrice)}
+                        disabled={!newServiceName.trim()}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    {serviceItems.length > 0 && (
+                      <div className="flex items-center justify-between pt-2 border-t border-border">
+                        <span className="text-sm font-semibold">Total Amount</span>
+                        <span className="font-display text-lg font-bold text-primary">₹{serviceTotal}</span>
+                      </div>
+                    )}
                   </div>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">Status</Label>
@@ -451,13 +513,13 @@ const AdminDashboard = () => {
                       </Select>
                     </div>
                   </div>
-                  
+
                   {/* Payment Section */}
                   <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
                     <Label className="text-xs font-semibold text-foreground">💰 Payment Details</Label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label className="text-xs text-muted-foreground">Total Quotation (₹)</Label>
+                        <Label className="text-xs text-muted-foreground">Estimated Amount (₹)</Label>
                         <Input 
                           type="number" 
                           value={editingOrder.quotation || 0} 
@@ -475,14 +537,16 @@ const AdminDashboard = () => {
                         />
                       </div>
                     </div>
-                    {(editingOrder.quotation || 0) > 0 && (
-                      <div className="flex items-center justify-between pt-2 border-t border-border">
-                        <span className="text-xs text-muted-foreground">Balance Due</span>
-                        <span className="font-bold text-primary">
-                          ₹{(editingOrder.quotation || 0) - (editingOrder.advancePaid || 0)}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <span className="text-xs text-muted-foreground">Final Total (from services)</span>
+                      <span className="font-bold text-primary">₹{serviceTotal > 0 ? serviceTotal : editingOrder.quotation || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Balance Due</span>
+                      <span className="font-bold text-primary">
+                        ₹{(serviceTotal > 0 ? serviceTotal : (editingOrder.quotation || 0)) - (editingOrder.advancePaid || 0)}
+                      </span>
+                    </div>
                   </div>
                   
                   <div>
