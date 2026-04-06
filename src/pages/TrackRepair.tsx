@@ -162,20 +162,53 @@ const TrackRepair = () => {
           </div>
         </div>
 
-        {/* Technician Notes */}
-        {order.repairDetails && (
-          <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border mb-6 animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.05s" }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
-                <Wrench className="w-5 h-5 text-secondary" />
+        {/* Technician Notes / Service Breakdown */}
+        {order.repairDetails && order.repairDetails !== "[]" && (() => {
+          let serviceItems: { service: string; price: number }[] = [];
+          let isItemized = false;
+          try {
+            const parsed = JSON.parse(order.repairDetails);
+            if (Array.isArray(parsed)) {
+              serviceItems = parsed;
+              isItemized = true;
+            }
+          } catch {}
+
+          return (
+            <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border mb-6 animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.05s" }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-secondary" />
+                </div>
+                <h2 className="font-display text-lg font-bold">Service Details</h2>
               </div>
-              <h2 className="font-display text-lg font-bold">Technician Notes</h2>
+              {isItemized && serviceItems.length > 0 ? (
+                <div className="space-y-2">
+                  {serviceItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                      <span className="text-sm font-medium">{item.service}</span>
+                      {item.price > 0 && (
+                        <span className="text-sm font-bold text-primary">₹{item.price}</span>
+                      )}
+                    </div>
+                  ))}
+                  {serviceItems.some(i => i.price > 0) && (
+                    <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl border border-primary/20 mt-2">
+                      <span className="text-sm font-semibold">Total</span>
+                      <span className="font-display text-lg font-bold text-primary">
+                        ₹{serviceItems.reduce((sum, i) => sum + i.price, 0)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground leading-relaxed bg-muted/50 rounded-xl p-4">
+                  {order.repairDetails}
+                </p>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed bg-muted/50 rounded-xl p-4">
-              {order.repairDetails}
-            </p>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Repair Steps Timeline */}
         <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border mb-6 animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.1s" }}>
