@@ -19,12 +19,7 @@ const TrackRepair = () => {
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
-  const [progressHeight, setProgressHeight] = useState(0);
   const { toast } = useToast();
-
-  // Refs for dynamic height calculation
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const stepRefs = useRef<(HTMLDivElement | null)[]>(Array(7).fill(null));
 
   useEffect(() => {
     const load = async () => {
@@ -40,39 +35,6 @@ const TrackRepair = () => {
     };
     load();
   }, [trackingId]);
-
-  // Dynamic progress height calculation
-  const calculateProgressHeight = () => {
-    if (!timelineRef.current || !order) return;
-
-    const currentIndex = STATUS_ORDER.indexOf(order.status);
-    if (currentIndex === -1) return; // Invalid status
-
-    const activeStep = stepRefs.current[currentIndex];
-    if (!activeStep) return;
-
-    // Get the position relative to the timeline container
-    const timelineRect = timelineRef.current.getBoundingClientRect();
-    const activeStepRect = activeStep.getBoundingClientRect();
-
-    // Calculate height from top of timeline to center of active step
-    const height = activeStepRect.top - timelineRect.top + (activeStepRect.height / 2);
-    setProgressHeight(Math.max(0, height));
-  };
-
-  useEffect(() => {
-    // Calculate initial height
-    const timer = setTimeout(calculateProgressHeight, 100); // Small delay to ensure DOM is rendered
-
-    // Recalculate on window resize
-    const handleResize = () => calculateProgressHeight();
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [order]);
 
   if (loading) {
     return (
