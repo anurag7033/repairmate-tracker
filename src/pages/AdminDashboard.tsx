@@ -213,12 +213,6 @@ const AdminDashboard = () => {
     setEditingOrder({ ...editingOrder, issueDescription: newDesc });
   };
 
-  const addRepairToDetails = (repair: string) => {
-    if (!editingOrder) return;
-    const current = editingOrder.repairDetails || "";
-    const newDetails = current ? `${current}, ${repair}` : repair;
-    setEditingOrder({ ...editingOrder, repairDetails: newDetails });
-  };
 
   const sendWhatsApp = (order: RepairOrder) => {
     const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
