@@ -201,7 +201,7 @@ const TrackRepair = () => {
         </div>
 
         {/* Repair Steps Timeline */}
-        <div className="w-full bg-blue-50 rounded-3xl p-8 mb-6 shadow-elevated border border-border animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.1s" }}>
+        <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border mb-6 animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.1s" }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center">
               <Wrench className="w-6 h-6 text-success" />
@@ -211,96 +211,50 @@ const TrackRepair = () => {
               <p className="text-xs text-muted-foreground">Track every step of the repair</p>
             </div>
           </div>
-          
-          <div className="max-w-3xl mx-auto">
-            <div className="relative" ref={timelineRef}>
-              {/* Timeline line container - positioned to the right */}
-              <div className="absolute right-0 top-0 bottom-0 w-10 flex justify-center">
-                <div className="relative w-1 h-full">
-                  {/* Grey background line - full height */}
-                  <div className="absolute top-0 bottom-0 left-1/2 transform -translate-x-1/2 w-1 bg-gray-300 rounded-full"></div>
-                  
-                  {/* Orange progress line - from top to center of active step */}
-                  <div 
-                    className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-orange-400 rounded-full transition-all duration-500 ease-in-out z-10"
-                    style={{
-                      height: `${progressHeight}px`,
-                      width: '4px'
-                    }}
-                  ></div>
-                </div>
-              </div>
-              
-              {[
-                { title: "Device Received", desc: "Your device has been received and logged into our system.", icon: "📱", status: "received" },
-                { title: "Diagnosing Issue", desc: "Our technician inspects your device and creates repair plan.", icon: "🔍", status: "diagnosing" },
-                { title: "Waiting for Parts", desc: "We secure genuine parts or high-quality alternatives when needed.", icon: "⏳", status: "waiting_for_parts" },
-                { title: "Repairing", desc: "Certified technicians perform the repair with precision and safety.", icon: "🔧", status: "repairing" },
-                { title: "Testing", desc: "Device testing after repair completion.", icon: "✔", status: "testing" },
-                { title: "Repair Completed", desc: "Your device is ready and verified by final quality review.", icon: "✅", status: "completed" },
-                { title: "Delivered", desc: "You receive your device back in perfect working condition.", icon: "🚚", status: "delivered" },
-              ].map((step, idx) => {
-                const isCompleted = idx < currentIndex;
-                const isCurrent = idx === currentIndex;
-                const isPending = idx > currentIndex;
 
-                const isStepCompleted = isCompleted || (isCurrent && (order.status === "completed" || order.status === "delivered"));
-                const isStepCurrent = isCurrent && !(order.status === "completed" || order.status === "delivered");
-                const isStepPending = !isStepCompleted && !isStepCurrent;
+          <div className="relative pl-8">
+            {/* Vertical line */}
+            <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-border" />
 
-                return (
-                  <div key={idx} className="mb-8 flex items-start gap-6">
-                    {/* Step Content Card - Left side */}
-                    <div className={`flex-1 rounded-xl p-4 shadow-md border transition-all duration-500 ${
-                      isStepCompleted ? "bg-white border-green-200 hover:shadow-xl" : 
-                      isStepCurrent ? "bg-orange-50 border-orange-200 shadow-orange-100" : 
-                      "bg-gray-50 border-gray-200"
-                    }`}>
-                      <p className={`text-sm font-semibold transition-all duration-300 ${
-                        isStepCompleted ? "text-green-500" : 
-                        isStepCurrent ? "text-orange-500" : 
-                        "text-gray-400"
-                      }`}>
-                        {isStepCompleted ? "COMPLETED" : isStepCurrent ? "IN PROGRESS" : "PENDING"}
-                      </p>
-                      <h3 className={`text-base font-bold mt-1 transition-all duration-300 ${
-                        isStepPending ? "text-gray-600" : "text-black"
-                      }`}>
-                        {step.title}
-                      </h3>
-                      <p className={`text-sm mt-1 transition-all duration-300 ${
-                        isStepPending ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        {step.desc}
-                      </p>
-                    </div>
-                    
-                    {/* Timeline Icon Container - Right side */}
-                    <div 
-                      className="relative flex-shrink-0 w-10 h-10 flex items-center justify-center"
-                      ref={(el) => stepRefs.current[idx] = el}
-                    >
-                      {isStepCurrent ? (
-                        <div className="relative z-20">
-                          {/* Pulse animation background */}
-                          <div className="absolute inset-0 w-10 h-10 bg-orange-400 rounded-full opacity-30 animate-ping"></div>
-                          {/* Main icon */}
-                          <div className="relative w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg font-bold text-lg transition-all duration-300">
-                            {step.icon}
-                          </div>
+            {STATUS_ORDER.map((statusKey, idx) => {
+              const isCompleted = idx < currentIndex;
+              const isCurrent = idx === currentIndex;
+
+              return (
+                <div key={statusKey} className="relative flex items-start gap-4 pb-8 last:pb-0">
+                  {/* Dot on line */}
+                  <div className="absolute -left-8 top-0.5 flex items-center justify-center">
+                    {isCompleted ? (
+                      <div className="w-8 h-8 rounded-full bg-success flex items-center justify-center shadow-md">
+                        <CheckCircle2 className="w-5 h-5 text-success-foreground" />
+                      </div>
+                    ) : isCurrent ? (
+                      <div className="relative">
+                        <div className="absolute -inset-1 rounded-full bg-primary/30 animate-ping" />
+                        <div className="relative w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-md">
+                          <Clock className="w-4 h-4 text-primary-foreground" />
                         </div>
-                      ) : (
-                        <div className={`relative z-20 w-10 h-10 rounded-full text-white shadow-lg font-bold text-lg flex items-center justify-center transition-all duration-300 ${
-                          isStepCompleted ? "bg-green-500" : "bg-gray-300"
-                        }`}>
-                          {step.icon}
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                        <Circle className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-semibold text-sm ${
+                      isCompleted ? "text-success" : isCurrent ? "text-primary" : "text-muted-foreground"
+                    }`}>
+                      {STATUS_LABELS[statusKey]}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isCompleted ? "Completed" : isCurrent ? "In Progress" : "Pending"}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
