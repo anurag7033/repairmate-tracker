@@ -73,6 +73,13 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   
+  // Service items state
+  const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
+  const [newServiceName, setNewServiceName] = useState("");
+  const [newServicePrice, setNewServicePrice] = useState<number>(0);
+
+  const serviceTotal = useMemo(() => serviceItems.reduce((sum, item) => sum + item.price, 0), [serviceItems]);
+  
   // Voucher state
   const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
   const [voucherOrder, setVoucherOrder] = useState<RepairOrder | null>(null);
