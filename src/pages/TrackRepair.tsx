@@ -77,7 +77,7 @@ const TrackRepair = () => {
   if (!order) return null;
 
   const currentIndex = STATUS_ORDER.indexOf(order.status);
-  const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
+  const balanceDue = order.paymentStatus === "paid" ? 0 : order.quotation - order.advancePaid - order.discountAmount;
 
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;
