@@ -29,6 +29,23 @@ import {
   RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER, COMMON_ISSUES, COMMON_REPAIRS
 } from "@/types/repair";
 
+interface ServiceItem {
+  service: string;
+  price: number;
+}
+
+function parseServiceItems(repairDetails: string): ServiceItem[] {
+  try {
+    const parsed = JSON.parse(repairDetails);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+  // Legacy: plain text -> single item with no price
+  if (repairDetails && repairDetails.trim()) {
+    return [{ service: repairDetails, price: 0 }];
+  }
+  return [];
+}
+
 const emptyOrder = (): Partial<RepairOrder> => ({
   customerName: "",
   customerPhone: "",
@@ -36,7 +53,7 @@ const emptyOrder = (): Partial<RepairOrder> => ({
   mobileModel: "",
   imeiNumber: "",
   issueDescription: "",
-  repairDetails: "",
+  repairDetails: "[]",
   status: "received",
   quotation: 0,
   advancePaid: 0,
