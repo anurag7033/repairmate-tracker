@@ -133,9 +133,13 @@ const AdminDashboard = () => {
       return;
     }
 
+    // Serialize service items and calculate total
+    const repairDetails = JSON.stringify(serviceItems);
+    const quotation = serviceTotal;
+    const estimatedAmount = editingOrder.quotation || 0;
+
     // Auto-update payment status based on advance paid
     let paymentStatus = editingOrder.paymentStatus || "pending";
-    const quotation = editingOrder.quotation || 0;
     const advancePaid = editingOrder.advancePaid || 0;
     
     if (advancePaid >= quotation && quotation > 0) {
@@ -146,11 +150,13 @@ const AdminDashboard = () => {
 
     try {
       if (isEditing && editingOrder.id) {
-        await updateOrder({ ...editingOrder, paymentStatus } as RepairOrder);
+        await updateOrder({ ...editingOrder, repairDetails, quotation, paymentStatus } as RepairOrder);
         toast({ title: "Updated", description: "Repair order updated successfully." });
       } else {
         const newOrder = await addOrder({
           ...editingOrder as any,
+          repairDetails,
+          quotation,
           paymentStatus,
           trackingId: generateTrackingId(),
         });
@@ -158,6 +164,7 @@ const AdminDashboard = () => {
       }
       setDialogOpen(false);
       setEditingOrder(null);
+      setServiceItems([]);
       await refreshOrders();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -176,14 +183,27 @@ const AdminDashboard = () => {
 
   const openEdit = (order: RepairOrder) => {
     setEditingOrder({ ...order });
+    setServiceItems(parseServiceItems(order.repairDetails));
     setIsEditing(true);
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditingOrder(emptyOrder());
+    setServiceItems([]);
     setIsEditing(false);
     setDialogOpen(true);
+  };
+
+  const addServiceItem = (name: string, price: number) => {
+    if (!name.trim()) return;
+    setServiceItems(prev => [...prev, { service: name.trim(), price }]);
+    setNewServiceName("");
+    setNewServicePrice(0);
+  };
+
+  const removeServiceItem = (index: number) => {
+    setServiceItems(prev => prev.filter((_, i) => i !== index));
   };
 
   const addIssueToDescription = (issue: string) => {
