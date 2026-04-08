@@ -351,9 +351,10 @@ const TrackRepair = () => {
             </div>
           )}
 
-          {order.paymentStatus !== "paid" && order.status === "completed" && balanceDue > 0 && (
+          {balanceDue > 0 && order.paymentStatus !== "paid" && (
             <Button
-              className="w-full h-14 gradient-primary hover:opacity-90 rounded-xl font-semibold text-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] mt-4"
+              className="w-full h-14 rounded-xl font-semibold text-lg shadow-lg transition-all hover:scale-[1.02] hover:opacity-90 mt-4"
+              style={{ backgroundColor: "#f97316", color: "white" }}
               disabled={payLoading}
               onClick={async () => {
                 setPayLoading(true);
@@ -386,14 +387,6 @@ const TrackRepair = () => {
                 </>
               )}
             </Button>
-          )}
-
-          {order.paymentStatus !== "paid" && order.status !== "completed" && (
-            <div className="text-center p-4 bg-muted/50 rounded-xl mt-4">
-              <p className="text-muted-foreground text-sm">
-                💡 Payment link will be available once repair is completed
-              </p>
-            </div>
           )}
         </div>
 
