@@ -39,12 +39,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (order.status !== "completed") {
-      return new Response(JSON.stringify({ error: "Repair is not completed yet" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Payment allowed for any status as long as balance is due
 
     const balanceDue = Number(order.quotation) - Number(order.advance_paid || 0) - Number(order.discount_amount || 0);
 
