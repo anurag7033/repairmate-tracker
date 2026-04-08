@@ -74,45 +74,104 @@ export type Database = {
         }
         Relationships: []
       }
+      voucher_redemptions: {
+        Row: {
+          amount_before: number
+          customer_name: string
+          customer_phone: string
+          discount_applied: number
+          final_amount: number
+          id: string
+          order_tracking_id: string
+          redeemed_at: string
+          voucher_id: string
+        }
+        Insert: {
+          amount_before?: number
+          customer_name?: string
+          customer_phone?: string
+          discount_applied?: number
+          final_amount?: number
+          id?: string
+          order_tracking_id: string
+          redeemed_at?: string
+          voucher_id: string
+        }
+        Update: {
+          amount_before?: number
+          customer_name?: string
+          customer_phone?: string
+          discount_applied?: number
+          final_amount?: number
+          id?: string
+          order_tracking_id?: string
+          redeemed_at?: string
+          voucher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_redemptions_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vouchers: {
         Row: {
           created_at: string
           discount_amount: number
           discount_percentage: number
           discount_type: string
+          expiry_date: string | null
           id: string
           is_used: boolean
           max_order_amount: number
           min_order_amount: number
+          status: string
           tracking_id: string | null
+          usage_limit: number
+          used_count: number
           voucher_code: string
           voucher_name: string
+          voucher_type: string
         }
         Insert: {
           created_at?: string
           discount_amount?: number
           discount_percentage?: number
           discount_type?: string
+          expiry_date?: string | null
           id?: string
           is_used?: boolean
           max_order_amount?: number
           min_order_amount?: number
+          status?: string
           tracking_id?: string | null
+          usage_limit?: number
+          used_count?: number
           voucher_code: string
           voucher_name?: string
+          voucher_type?: string
         }
         Update: {
           created_at?: string
           discount_amount?: number
           discount_percentage?: number
           discount_type?: string
+          expiry_date?: string | null
           id?: string
           is_used?: boolean
           max_order_amount?: number
           min_order_amount?: number
+          status?: string
           tracking_id?: string | null
+          usage_limit?: number
+          used_count?: number
           voucher_code?: string
           voucher_name?: string
+          voucher_type?: string
         }
         Relationships: []
       }
