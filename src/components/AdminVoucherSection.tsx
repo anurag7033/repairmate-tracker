@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Plus, Ticket, Send, Trash2, Search, Percent, IndianRupee,
+  Eye, Filter, ChevronDown, Users, Lock, Clock, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,15 +28,37 @@ interface Voucher {
   is_used: boolean;
   tracking_id: string | null;
   created_at: string;
+  voucher_type: string;
+  status: string;
+  expiry_date: string | null;
+  usage_limit: number;
+  used_count: number;
+}
+
+interface Redemption {
+  id: string;
+  voucher_id: string;
+  order_tracking_id: string;
+  customer_name: string;
+  customer_phone: string;
+  amount_before: number;
+  discount_applied: number;
+  final_amount: number;
+  redeemed_at: string;
 }
 
 const AdminVoucherSection = () => {
   const { toast } = useToast();
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [redemptionsOpen, setRedemptionsOpen] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
+  const [redemptionsLoading, setRedemptionsLoading] = useState(false);
 
   // Form state
   const [name, setName] = useState("");
@@ -44,6 +67,9 @@ const AdminVoucherSection = () => {
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [minAmount, setMinAmount] = useState(0);
   const [maxAmount, setMaxAmount] = useState(0);
+  const [voucherType, setVoucherType] = useState<"public" | "private">("public");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [usageLimit, setUsageLimit] = useState(1);
 
   const fetchVouchers = async () => {
     const { data, error } = await supabase
@@ -68,6 +94,9 @@ const AdminVoucherSection = () => {
     setDiscountPercentage(0);
     setMinAmount(0);
     setMaxAmount(0);
+    setVoucherType("public");
+    setExpiryDate("");
+    setUsageLimit(1);
   };
 
   const handleCreate = async () => {
@@ -98,7 +127,12 @@ const AdminVoucherSection = () => {
           min_order_amount: minAmount,
           max_order_amount: maxAmount,
           tracking_id: null,
-        });
+          voucher_type: voucherType,
+          status: "active",
+          expiry_date: expiryDate || null,
+          usage_limit: voucherType === "private" ? 1 : usageLimit,
+          used_count: 0,
+        } as any);
       if (error) throw error;
       toast({ title: "Voucher Created", description: `Code: ${code}` });
       resetForm();
@@ -121,20 +155,33 @@ const AdminVoucherSection = () => {
     await fetchVouchers();
   };
 
+  const viewRedemptions = async (voucher: Voucher) => {
+    setSelectedVoucher(voucher);
+    setRedemptionsOpen(true);
+    setRedemptionsLoading(true);
+    const { data, error } = await supabase
+      .from("voucher_redemptions")
+      .select("*")
+      .eq("voucher_id", voucher.id)
+      .order("redeemed_at", { ascending: false });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+    setRedemptions((data as Redemption[]) || []);
+    setRedemptionsLoading(false);
+  };
+
   const sendVoucherWhatsApp = (voucher: Voucher) => {
     const discountText = voucher.discount_type === "percentage"
       ? `${voucher.discount_percentage}% Off`
       : `₹${voucher.discount_amount} Off`;
 
     let conditionsText = "";
-    if (voucher.min_order_amount > 0) {
-      conditionsText += `\n📋 Minimum order: ₹${voucher.min_order_amount}`;
-    }
-    if (voucher.max_order_amount > 0) {
-      conditionsText += `\n📋 Maximum order: ₹${voucher.max_order_amount}`;
-    }
+    if (voucher.min_order_amount > 0) conditionsText += `\n📋 Minimum order: ₹${voucher.min_order_amount}`;
+    if (voucher.max_order_amount > 0) conditionsText += `\n📋 Maximum order: ₹${voucher.max_order_amount}`;
+    if (voucher.expiry_date) conditionsText += `\n⏰ Valid till: ${new Date(voucher.expiry_date).toLocaleDateString("en-IN")}`;
 
-    const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\n🎫 Voucher Code: *${voucher.voucher_code}*\n💰 Discount: *${discountText}*${conditionsText}\n\n⚠️ *Note:* This voucher is valid for your *next repair* only.\n\nApply this code on your tracking page:\n${window.location.origin}/track\n\nThank you for choosing Anurag Mobile! 🙏`;
+    const msg = `🎟️ *Discount Voucher from Anurag Mobile!*\n\n🎫 Voucher Code: *${voucher.voucher_code}*\n💰 Discount: *${discountText}*${conditionsText}\n\nApply this code on your tracking page:\n${window.location.origin}/track\n\nThank you for choosing Anurag Mobile! 🙏`;
 
     const phoneInput = prompt("Enter customer phone number (with country code, e.g. 919876543210):");
     if (phoneInput) {
@@ -142,11 +189,28 @@ const AdminVoucherSection = () => {
     }
   };
 
-  const filtered = vouchers.filter(
-    (v) =>
-      v.voucher_code.toLowerCase().includes(search.toLowerCase()) ||
-      v.voucher_name.toLowerCase().includes(search.toLowerCase())
-  );
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-success/10 text-success";
+      case "exhausted": return "bg-muted text-muted-foreground";
+      case "expired": return "bg-destructive/10 text-destructive";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const computeStatus = (v: Voucher): string => {
+    if (v.expiry_date && new Date(v.expiry_date) < new Date()) return "expired";
+    if (v.usage_limit > 0 && v.used_count >= v.usage_limit) return "exhausted";
+    return v.status === "active" ? "active" : v.status;
+  };
+
+  const filtered = vouchers.filter((v) => {
+    const matchesSearch = v.voucher_code.toLowerCase().includes(search.toLowerCase()) ||
+      v.voucher_name.toLowerCase().includes(search.toLowerCase());
+    const computed = computeStatus(v);
+    const matchesStatus = statusFilter === "all" || computed === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getDiscountLabel = (v: Voucher) =>
     v.discount_type === "percentage" ? `${v.discount_percentage}%` : `₹${v.discount_amount}`;
@@ -170,6 +234,18 @@ const AdminVoucherSection = () => {
             className="pl-10 h-11 rounded-xl"
           />
         </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px] h-11 rounded-xl">
+            <Filter className="w-4 h-4 mr-1" />
+            <SelectValue placeholder="Filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="exhausted">Exhausted</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+          </SelectContent>
+        </Select>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button className="h-11 gradient-primary hover:opacity-90 rounded-xl font-semibold">
@@ -177,7 +253,7 @@ const AdminVoucherSection = () => {
               Create Voucher
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md rounded-2xl">
+          <DialogContent className="max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
                 <Ticket className="w-5 h-5" />
@@ -187,27 +263,34 @@ const AdminVoucherSection = () => {
             <div className="space-y-4 py-2">
               <div>
                 <Label className="text-xs">Voucher Name (optional)</Label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Summer Sale, Loyalty Discount"
-                  className="rounded-lg mt-1"
-                />
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Summer Sale" className="rounded-lg mt-1" />
+              </div>
+
+              {/* Voucher Type */}
+              <div>
+                <Label className="text-xs">Voucher Type</Label>
+                <Select value={voucherType} onValueChange={(v) => setVoucherType(v as "public" | "private")}>
+                  <SelectTrigger className="rounded-lg mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">
+                      <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Public (Anyone can use)</span>
+                    </SelectItem>
+                    <SelectItem value="private">
+                      <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Private (Single use)</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
                 <Label className="text-xs">Discount Type</Label>
                 <Select value={discountType} onValueChange={(v) => setDiscountType(v as "amount" | "percentage")}>
-                  <SelectTrigger className="rounded-lg mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="rounded-lg mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="amount">
-                      <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> Fixed Amount (₹)</span>
-                    </SelectItem>
-                    <SelectItem value="percentage">
-                      <span className="flex items-center gap-1"><Percent className="w-3 h-3" /> Percentage (%)</span>
-                    </SelectItem>
+                    <SelectItem value="amount"><span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" /> Fixed Amount (₹)</span></SelectItem>
+                    <SelectItem value="percentage"><span className="flex items-center gap-1"><Percent className="w-3 h-3" /> Percentage (%)</span></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -215,26 +298,26 @@ const AdminVoucherSection = () => {
               {discountType === "amount" ? (
                 <div>
                   <Label className="text-xs">Discount Amount (₹)</Label>
-                  <Input
-                    type="number"
-                    value={discountAmount || ""}
-                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                    placeholder="e.g. 100"
-                    className="rounded-lg mt-1"
-                  />
+                  <Input type="number" value={discountAmount || ""} onChange={(e) => setDiscountAmount(Number(e.target.value))} placeholder="e.g. 100" className="rounded-lg mt-1" />
                 </div>
               ) : (
                 <div>
                   <Label className="text-xs">Discount Percentage (%)</Label>
-                  <Input
-                    type="number"
-                    value={discountPercentage || ""}
-                    onChange={(e) => setDiscountPercentage(Number(e.target.value))}
-                    placeholder="e.g. 10"
-                    min={1}
-                    max={100}
-                    className="rounded-lg mt-1"
-                  />
+                  <Input type="number" value={discountPercentage || ""} onChange={(e) => setDiscountPercentage(Number(e.target.value))} placeholder="e.g. 10" min={1} max={100} className="rounded-lg mt-1" />
+                </div>
+              )}
+
+              {/* Expiry Date */}
+              <div>
+                <Label className="text-xs">Expiry Date (optional)</Label>
+                <Input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} className="rounded-lg mt-1" />
+              </div>
+
+              {/* Usage Limit - only for public */}
+              {voucherType === "public" && (
+                <div>
+                  <Label className="text-xs">Usage Limit (0 = unlimited)</Label>
+                  <Input type="number" value={usageLimit} onChange={(e) => setUsageLimit(Number(e.target.value))} placeholder="e.g. 50" className="rounded-lg mt-1" />
                 </div>
               )}
 
@@ -244,33 +327,16 @@ const AdminVoucherSection = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs text-muted-foreground">Min Order (₹)</Label>
-                    <Input
-                      type="number"
-                      value={minAmount || ""}
-                      onChange={(e) => setMinAmount(Number(e.target.value))}
-                      placeholder="0"
-                      className="rounded-lg mt-1"
-                    />
+                    <Input type="number" value={minAmount || ""} onChange={(e) => setMinAmount(Number(e.target.value))} placeholder="0" className="rounded-lg mt-1" />
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Max Order (₹)</Label>
-                    <Input
-                      type="number"
-                      value={maxAmount || ""}
-                      onChange={(e) => setMaxAmount(Number(e.target.value))}
-                      placeholder="0 = no limit"
-                      className="rounded-lg mt-1"
-                    />
+                    <Input type="number" value={maxAmount || ""} onChange={(e) => setMaxAmount(Number(e.target.value))} placeholder="0 = no limit" className="rounded-lg mt-1" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">Leave at 0 for no restriction.</p>
               </div>
 
-              <Button
-                onClick={handleCreate}
-                disabled={creating}
-                className="w-full h-11 gradient-primary hover:opacity-90 rounded-xl font-semibold"
-              >
+              <Button onClick={handleCreate} disabled={creating} className="w-full h-11 gradient-primary hover:opacity-90 rounded-xl font-semibold">
                 {creating ? "Creating..." : "Create Voucher"}
               </Button>
             </div>
@@ -278,61 +344,107 @@ const AdminVoucherSection = () => {
         </Dialog>
       </div>
 
+      {/* Redemptions Modal */}
+      <Dialog open={redemptionsOpen} onOpenChange={setRedemptionsOpen}>
+        <DialogContent className="max-w-lg rounded-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Redemption History — {selectedVoucher?.voucher_code}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedVoucher && (
+            <div className="mb-3 p-3 rounded-xl bg-muted/50 text-sm">
+              <span className="font-semibold">Used: {selectedVoucher.used_count}</span>
+              {selectedVoucher.usage_limit > 0 && <span> / {selectedVoucher.usage_limit}</span>}
+            </div>
+          )}
+          {redemptionsLoading ? (
+            <p className="text-center py-6 text-muted-foreground animate-pulse">Loading...</p>
+          ) : redemptions.length === 0 ? (
+            <p className="text-center py-6 text-muted-foreground">No redemptions yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {redemptions.map((r) => (
+                <div key={r.id} className="p-3 bg-card rounded-xl border border-border text-sm">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-semibold">{r.customer_name}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(r.redeemed_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>📞 {r.customer_phone}</span>
+                    <span>🔖 {r.order_tracking_id}</span>
+                  </div>
+                  <div className="flex gap-4 mt-2 text-xs">
+                    <span>Before: ₹{r.amount_before}</span>
+                    <span className="text-success font-semibold">-₹{r.discount_applied}</span>
+                    <span className="font-bold">Final: ₹{r.final_amount}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Voucher List */}
       {loading ? (
         <div className="text-center py-10 text-muted-foreground animate-pulse">Loading vouchers...</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">
           <Ticket className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <p>No vouchers found. Create your first one!</p>
+          <p>No vouchers found.</p>
         </div>
       ) : (
         <div className="grid gap-3">
-          {filtered.map((v) => (
-            <div key={v.id} className="bg-card rounded-2xl p-4 shadow-card border border-border animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono font-bold text-primary">{v.voucher_code}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      v.is_used ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-                    }`}>
-                      {v.is_used ? "Used" : "Active"}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                      {getDiscountLabel(v)}
-                    </span>
+          {filtered.map((v) => {
+            const computed = computeStatus(v);
+            return (
+              <div key={v.id} className="bg-card rounded-2xl p-4 shadow-card border border-border animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-mono font-bold text-primary">{v.voucher_code}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(computed)}`}>
+                        {computed.charAt(0).toUpperCase() + computed.slice(1)}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                        {getDiscountLabel(v)}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.voucher_type === "public" ? "bg-blue-500/10 text-blue-600" : "bg-amber-500/10 text-amber-600"}`}>
+                        {v.voucher_type === "public" ? <><Users className="w-3 h-3 inline mr-1" />Public</> : <><Lock className="w-3 h-3 inline mr-1" />Private</>}
+                      </span>
+                    </div>
+                    {v.voucher_name && <p className="text-sm font-medium">{v.voucher_name}</p>}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                      <span>📋 {getConditionsLabel(v)}</span>
+                      <span>📊 Used: {v.used_count}{v.usage_limit > 0 ? ` / ${v.usage_limit}` : " / ∞"}</span>
+                      {v.expiry_date && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Expires: {new Date(v.expiry_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                        </span>
+                      )}
+                      <span>📅 {new Date(v.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                    </div>
                   </div>
-                  {v.voucher_name && <p className="text-sm font-medium">{v.voucher_name}</p>}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                    <span>📋 {getConditionsLabel(v)}</span>
-                    {v.tracking_id && <span>🔖 {v.tracking_id}</span>}
-                    <span>📅 {new Date(v.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {!v.is_used && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10"
-                      onClick={() => sendVoucherWhatsApp(v)}
-                    >
-                      <Send className="w-3 h-3 mr-1" />Send
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => viewRedemptions(v)}>
+                      <Eye className="w-3 h-3 mr-1" />Redemptions
                     </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-lg text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
-                    onClick={() => handleDelete(v.id)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+                    {computed === "active" && (
+                      <Button size="sm" variant="outline" className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10" onClick={() => sendVoucherWhatsApp(v)}>
+                        <Send className="w-3 h-3 mr-1" />Send
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="rounded-lg text-xs text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleDelete(v.id)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

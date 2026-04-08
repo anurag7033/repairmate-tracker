@@ -4,6 +4,7 @@ import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
 import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2 } from "lucide-react";
 import Footer from "@/components/Footer";
+import OffersModal from "@/components/OffersModal";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -329,10 +330,13 @@ const TrackRepair = () => {
           {/* Voucher Apply Section */}
           {order.paymentStatus !== "paid" && balanceDue > 0 && (
             <div className="p-4 bg-muted/50 rounded-xl space-y-3">
-              <p className="text-sm font-medium flex items-center gap-2">
-                <Ticket className="w-4 h-4" />
-                Have a voucher code?
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Ticket className="w-4 h-4" />
+                  Have a voucher code?
+                </p>
+                <OffersModal onApply={(code) => setVoucherCode(code)} />
+              </div>
               <div className="flex gap-2">
                 <Input
                   value={voucherCode}

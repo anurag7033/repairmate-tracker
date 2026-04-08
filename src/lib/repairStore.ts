@@ -141,6 +141,23 @@ export async function getVouchersForOrder(trackingId: string) {
   return data || [];
 }
 
+export async function getActivePublicVouchers() {
+  const today = new Date().toISOString().split("T")[0];
+  const { data, error } = await supabase
+    .from("vouchers")
+    .select("*")
+    .eq("voucher_type", "public" as any)
+    .eq("status", "active" as any)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  // Filter client-side for expiry and usage
+  return (data || []).filter((v: any) => {
+    if (v.expiry_date && v.expiry_date < today) return false;
+    if (v.usage_limit > 0 && v.used_count >= v.usage_limit) return false;
+    return true;
+  });
+}
+
 export async function applyVoucher(
   voucherCode: string,
   currentTrackingId: string,
@@ -150,57 +167,113 @@ export async function applyVoucher(
     .from("vouchers")
     .select("*")
     .eq("voucher_code", voucherCode)
-    .eq("is_used", false)
     .maybeSingle();
   if (fetchErr) throw fetchErr;
-  if (!voucher) throw new Error("Invalid or already used voucher code");
+  if (!voucher) throw new Error("Invalid voucher code");
 
-  // Voucher cannot be used on the same repair it was generated for
-  if (voucher.tracking_id === currentTrackingId) {
-    throw new Error("This voucher can only be used on your next repair, not the current one.");
+  const v = voucher as any;
+
+  // Check status
+  if (v.status !== "active") throw new Error("This voucher is no longer active.");
+
+  // Check expiry
+  if (v.expiry_date && new Date(v.expiry_date) < new Date()) {
+    throw new Error("This voucher has expired.");
   }
 
-  // Verify the voucher belongs to the same customer (by phone number)
-  const { data: voucherOrder, error: voucherOrderErr } = await supabase
-    .from("repair_orders")
-    .select("customer_phone")
-    .eq("tracking_id", voucher.tracking_id)
-    .single();
-  if (voucherOrderErr) throw voucherOrderErr;
-
-  const cleanCurrent = currentCustomerPhone.replace(/\D/g, "");
-  const cleanVoucher = (voucherOrder.customer_phone || "").replace(/\D/g, "");
-  if (cleanCurrent !== cleanVoucher) {
-    throw new Error("Invalid voucher code");
+  // Check usage limit
+  if (v.usage_limit > 0 && v.used_count >= v.usage_limit) {
+    throw new Error("This voucher has reached its usage limit.");
   }
 
-  // Check minimum order amount (must be >= 10x discount)
+  // For private vouchers: check same customer phone
+  if (v.voucher_type === "private") {
+    if (v.tracking_id === currentTrackingId) {
+      throw new Error("This voucher can only be used on your next repair, not the current one.");
+    }
+    if (v.tracking_id) {
+      const { data: voucherOrder, error: voucherOrderErr } = await supabase
+        .from("repair_orders")
+        .select("customer_phone")
+        .eq("tracking_id", v.tracking_id)
+        .single();
+      if (voucherOrderErr) throw voucherOrderErr;
+      const cleanCurrent = currentCustomerPhone.replace(/\D/g, "");
+      const cleanVoucher = (voucherOrder.customer_phone || "").replace(/\D/g, "");
+      if (cleanCurrent !== cleanVoucher) {
+        throw new Error("This voucher is not valid for your account.");
+      }
+    }
+  }
+
+  // Check duplicate redemption on same order
+  const { data: existingRedemption } = await supabase
+    .from("voucher_redemptions")
+    .select("id")
+    .eq("voucher_id", v.id)
+    .eq("order_tracking_id", currentTrackingId)
+    .maybeSingle();
+  if (existingRedemption) {
+    throw new Error("This voucher has already been applied to this order.");
+  }
+
+  // Get current order for amount checks
   const { data: currentOrder, error: currentOrderErr } = await supabase
     .from("repair_orders")
-    .select("quotation, discount_amount")
+    .select("quotation, discount_amount, customer_name, customer_phone")
     .eq("tracking_id", currentTrackingId)
     .single();
   if (currentOrderErr) throw currentOrderErr;
 
-  const minRequired = Number(voucher.discount_amount) * 10;
-  if (Number(currentOrder.quotation) < minRequired) {
-    throw new Error(`This voucher is valid only if your repair amount is ₹${minRequired} or more.`);
+  const orderAmount = Number(currentOrder.quotation);
+
+  // Check min/max conditions
+  if (v.min_order_amount > 0 && orderAmount < v.min_order_amount) {
+    throw new Error(`Minimum order amount is ₹${v.min_order_amount}.`);
+  }
+  if (v.max_order_amount > 0 && orderAmount > v.max_order_amount) {
+    throw new Error(`This voucher is valid for orders up to ₹${v.max_order_amount}.`);
   }
 
-  // Mark voucher as used
-  const { error: updateVoucherErr } = await supabase
+  // Calculate discount
+  let discountValue = 0;
+  if (v.discount_type === "percentage") {
+    discountValue = Math.round((orderAmount * v.discount_percentage) / 100);
+  } else {
+    discountValue = Number(v.discount_amount);
+  }
+
+  const newDiscount = Number(currentOrder.discount_amount || 0) + discountValue;
+  const finalAmount = orderAmount - newDiscount;
+
+  // Log redemption
+  await supabase.from("voucher_redemptions").insert({
+    voucher_id: v.id,
+    order_tracking_id: currentTrackingId,
+    customer_name: currentOrder.customer_name,
+    customer_phone: currentOrder.customer_phone,
+    amount_before: orderAmount,
+    discount_applied: discountValue,
+    final_amount: Math.max(0, finalAmount),
+  } as any);
+
+  // Update voucher used_count
+  const newUsedCount = (v.used_count || 0) + 1;
+  const newStatus = v.usage_limit > 0 && newUsedCount >= v.usage_limit ? "exhausted" : "active";
+  await supabase
     .from("vouchers")
-    .update({ is_used: true })
-    .eq("id", voucher.id);
-  if (updateVoucherErr) throw updateVoucherErr;
+    .update({
+      used_count: newUsedCount,
+      status: newStatus,
+      is_used: v.voucher_type === "private" ? true : v.is_used,
+    } as any)
+    .eq("id", v.id);
 
   // Update discount on current repair order
-  const newDiscount = Number(currentOrder.discount_amount || 0) + Number(voucher.discount_amount);
-  const { error: updateErr } = await supabase
+  await supabase
     .from("repair_orders")
     .update({ discount_amount: newDiscount })
     .eq("tracking_id", currentTrackingId);
-  if (updateErr) throw updateErr;
 
-  return { trackingId: currentTrackingId, discountAmount: voucher.discount_amount };
+  return { trackingId: currentTrackingId, discountAmount: discountValue };
 }
