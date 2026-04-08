@@ -330,10 +330,13 @@ const TrackRepair = () => {
           {/* Voucher Apply Section */}
           {order.paymentStatus !== "paid" && balanceDue > 0 && (
             <div className="p-4 bg-muted/50 rounded-xl space-y-3">
-              <p className="text-sm font-medium flex items-center gap-2">
-                <Ticket className="w-4 h-4" />
-                Have a voucher code?
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Ticket className="w-4 h-4" />
+                  Have a voucher code?
+                </p>
+                <OffersModal onApply={(code) => setVoucherCode(code)} />
+              </div>
               <div className="flex gap-2">
                 <Input
                   value={voucherCode}
