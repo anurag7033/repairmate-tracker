@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrackRepair from "./pages/TrackRepair";
+import Invoice from "./pages/Invoice";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/track/:trackingId" element={<TrackRepair />} />
+            <Route path="/invoice/:trackingId" element={<Invoice />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

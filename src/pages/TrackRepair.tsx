@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
-import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2 } from "lucide-react";
+import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2, Printer } from "lucide-react";
 import Footer from "@/components/Footer";
 import OffersModal from "@/components/OffersModal";
 import logo from "@/assets/logo.png";
@@ -354,6 +354,15 @@ const TrackRepair = () => {
               </div>
             </div>
           )}
+
+          <Button
+            variant="outline"
+            className="w-full h-12 rounded-xl font-semibold mt-4"
+            onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}
+          >
+            <Printer className="w-5 h-5 mr-2" />
+            Print Bill / Invoice
+          </Button>
 
           {balanceDue > 0 && order.paymentStatus !== "paid" && (
             <Button
