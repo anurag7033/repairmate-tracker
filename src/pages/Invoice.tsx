@@ -26,7 +26,7 @@ interface PaymentRecord {
 }
 
 const SHOP = {
-  name: "Anurag Mobile Accessories And Repairing Centre",
+  name: "Anurag Mobile Repairing Centre",
   address: "anurag mobile, vikram nagar near tooti diwal",
   phone: "7033067221",
   state: "09-Uttar Pradesh",
