@@ -154,6 +154,78 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Book Your Repair Assistance */}
+      <section className="container mx-auto py-16">
+        <div className="max-w-5xl mx-auto bg-card rounded-3xl p-8 md:p-12 shadow-elevated border border-border relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-orange-500/10 blur-3xl" />
+          <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl" />
+
+          <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 text-orange-600 text-xs font-semibold mb-4">
+                <Wrench className="w-3.5 h-3.5" />
+                Need Help With Your Device?
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Book Your Repair Assistance
+              </h2>
+              <p className="text-muted-foreground text-base mb-6 leading-relaxed">
+                Get instant help from our expert technicians. Whether your screen is cracked, battery is draining fast, or your phone won't charge — we've got you covered with genuine parts and reliable service.
+              </p>
+
+              <ul className="space-y-2.5 mb-6">
+                {[
+                  "Free diagnosis & repair estimate",
+                  "Genuine spare parts with warranty",
+                  "Same-day service for most repairs",
+                  "Pickup & drop available on request",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() => window.open("https://wa.me/917033067221?text=Hi%2C%20I%20want%20to%20book%20a%20repair%20assistance%20for%20my%20device.", "_blank")}
+                  className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book Your Repair Assistance
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.open("tel:+917033067221")}
+                  className="h-12 px-6 rounded-xl font-semibold border-2"
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call Now
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { icon: <Smartphone className="w-5 h-5" />, title: "Screen Repair", desc: "Cracked or broken display" },
+                { icon: <Wrench className="w-5 h-5" />, title: "Battery Issues", desc: "Quick draining or swelling" },
+                { icon: <CreditCard className="w-5 h-5" />, title: "Charging Port", desc: "Not charging properly" },
+                { icon: <Shield className="w-5 h-5" />, title: "Software Fix", desc: "Hang, virus, updates" },
+              ].map((s) => (
+                <div key={s.title} className="bg-background rounded-2xl p-4 border border-border hover:border-orange-500/40 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center mb-3">
+                    {s.icon}
+                  </div>
+                  <h4 className="font-semibold text-sm text-foreground mb-1">{s.title}</h4>
+                  <p className="text-xs text-muted-foreground">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Voucher Info */}
       <section className="container mx-auto py-16">
         <div className="max-w-2xl mx-auto bg-card rounded-3xl p-6 shadow-elevated border border-border">
