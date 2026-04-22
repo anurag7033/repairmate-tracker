@@ -325,6 +325,21 @@ const Invoice = () => {
             <p className="text-sm">Thank you for doing business with us.</p>
           </div>
 
+          {/* Book Your Repair Assistance */}
+          <div className="border-t border-gray-400 p-3">
+            <p className="text-sm font-bold bg-gray-100 -mx-3 -mt-3 px-3 py-1.5 mb-2">Book Your Repair Assistance:</p>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-700">Phone: <strong>{SHOP.phone}</strong></p>
+                <p className="text-gray-700 mt-1">WhatsApp: <strong>{SHOP.phone}</strong></p>
+              </div>
+              <div>
+                <p className="text-gray-700">Email: <strong>{SHOP.email}</strong></p>
+                <p className="text-gray-700 mt-1">Visit: <strong>{SHOP.address}</strong></p>
+              </div>
+            </div>
+          </div>
+
           {/* Bank Details + Signatory */}
           <div className="grid grid-cols-2 border-t border-gray-400">
             <div className="p-3 border-r border-gray-400">
