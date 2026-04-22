@@ -44,6 +44,7 @@ export type Database = {
           service_type: Database["public"]["Enums"]["service_type"]
           status: Database["public"]["Enums"]["booking_status"]
           terms_accepted: boolean
+          tracking_id: string | null
           updated_at: string
         }
         Insert: {
@@ -75,6 +76,7 @@ export type Database = {
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["booking_status"]
           terms_accepted?: boolean
+          tracking_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -106,6 +108,7 @@ export type Database = {
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["booking_status"]
           terms_accepted?: boolean
+          tracking_id?: string | null
           updated_at?: string
         }
         Relationships: []
