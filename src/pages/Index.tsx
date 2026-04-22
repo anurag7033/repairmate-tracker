@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Truck, Tag, Smartphone, Wallet } from "lucide-react";
+import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Truck, Tag, Smartphone, Wallet, Phone, MessageCircle, MapPin, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
