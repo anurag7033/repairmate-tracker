@@ -139,6 +139,35 @@ const AdminBookingSection = () => {
   const saveChanges = async () => {
     if (!selected) return;
     setSaving(true);
+
+    let trackingIdToLink: string | null = (selected as any).tracking_id || null;
+
+    // When admin marks as "assigned" and there's no linked repair order yet, create one
+    if (editStatus === "assigned" && !trackingIdToLink) {
+      const newTrackingId = `AMR${Date.now().toString().slice(-8)}`;
+      const { error: roError } = await supabase.from("repair_orders").insert({
+        tracking_id: newTrackingId,
+        customer_name: selected.customer_name,
+        customer_phone: selected.customer_phone,
+        mobile_brand: selected.device_brand,
+        mobile_model: selected.device_model,
+        imei_number: selected.imei_serial || "",
+        issue_description: `${selected.issue_type}: ${selected.issue_description}`,
+        repair_details: "",
+        status: "received",
+        quotation: 0,
+        advance_paid: selected.amount_paid || 0,
+        payment_status: selected.payment_status === "paid" ? "paid" : "pending",
+      });
+      if (roError) {
+        setSaving(false);
+        toast({ title: "Failed to create repair order", description: roError.message, variant: "destructive" });
+        return;
+      }
+      trackingIdToLink = newTrackingId;
+      toast({ title: "Repair order created", description: `Tracking ID: ${newTrackingId}` });
+    }
+
     const { error } = await supabase
       .from("bookings")
       .update({
@@ -146,7 +175,8 @@ const AdminBookingSection = () => {
         assigned_technician: editTechnician,
         internal_notes: editNotes,
         payment_status: editPaymentStatus as any,
-      })
+        tracking_id: trackingIdToLink,
+      } as any)
       .eq("id", selected.id);
     setSaving(false);
     if (error) {
