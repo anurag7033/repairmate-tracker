@@ -335,6 +335,7 @@ const AdminBookingSection = () => {
                   <Row label="Type" value={selected.device_type} />
                   <Row label="Brand / Model" value={`${selected.device_brand} ${selected.device_model}`} />
                   {selected.imei_serial && <Row label="IMEI / Serial" value={selected.imei_serial} />}
+                  {(selected as any).tracking_id && <Row label="Tracking ID" value={(selected as any).tracking_id} />}
                 </Card>
 
                 {/* Issue */}
