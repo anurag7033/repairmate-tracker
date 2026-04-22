@@ -189,7 +189,7 @@ const Index = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() => window.open("https://wa.me/917033067221?text=Hi%2C%20I%20want%20to%20book%20a%20repair%20assistance%20for%20my%20device.", "_blank")}
+                  onClick={() => navigate("/book-repair")}
                   className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
