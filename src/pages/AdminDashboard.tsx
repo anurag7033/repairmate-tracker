@@ -5,6 +5,7 @@ import {
   Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
+import AdminBookingSection from "@/components/AdminBookingSection";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers">("repairs");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings">("repairs");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -314,10 +315,20 @@ const AdminDashboard = () => {
             <Ticket className="w-4 h-4 mr-2" />
             Vouchers
           </Button>
+          <Button
+            variant={activeTab === "bookings" ? "default" : "outline"}
+            onClick={() => setActiveTab("bookings")}
+            className="rounded-xl font-semibold"
+          >
+            <Phone className="w-4 h-4 mr-2" />
+            Bookings
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
           <AdminVoucherSection />
+        ) : activeTab === "bookings" ? (
+          <AdminBookingSection />
         ) : (
         <>
         {/* Actions bar */}

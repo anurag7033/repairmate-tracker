@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          alternate_phone: string | null
+          amount_paid: number
+          assigned_technician: string | null
+          booking_id: string
+          city: string
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          device_brand: string
+          device_model: string
+          device_type: Database["public"]["Enums"]["device_type"]
+          full_address: string
+          id: string
+          image_urls: string[]
+          imei_serial: string | null
+          internal_notes: string | null
+          issue_description: string
+          issue_type: string
+          payment_method: Database["public"]["Enums"]["booking_payment_method"]
+          payment_status: Database["public"]["Enums"]["booking_payment_status"]
+          pincode: string
+          preferred_date: string | null
+          preferred_time_slot: string | null
+          razorpay_payment_id: string | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          status: Database["public"]["Enums"]["booking_status"]
+          terms_accepted: boolean
+          updated_at: string
+        }
+        Insert: {
+          alternate_phone?: string | null
+          amount_paid?: number
+          assigned_technician?: string | null
+          booking_id: string
+          city: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          device_brand: string
+          device_model: string
+          device_type?: Database["public"]["Enums"]["device_type"]
+          full_address: string
+          id?: string
+          image_urls?: string[]
+          imei_serial?: string | null
+          internal_notes?: string | null
+          issue_description: string
+          issue_type: string
+          payment_method?: Database["public"]["Enums"]["booking_payment_method"]
+          payment_status?: Database["public"]["Enums"]["booking_payment_status"]
+          pincode: string
+          preferred_date?: string | null
+          preferred_time_slot?: string | null
+          razorpay_payment_id?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"]
+          status?: Database["public"]["Enums"]["booking_status"]
+          terms_accepted?: boolean
+          updated_at?: string
+        }
+        Update: {
+          alternate_phone?: string | null
+          amount_paid?: number
+          assigned_technician?: string | null
+          booking_id?: string
+          city?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          device_brand?: string
+          device_model?: string
+          device_type?: Database["public"]["Enums"]["device_type"]
+          full_address?: string
+          id?: string
+          image_urls?: string[]
+          imei_serial?: string | null
+          internal_notes?: string | null
+          issue_description?: string
+          issue_type?: string
+          payment_method?: Database["public"]["Enums"]["booking_payment_method"]
+          payment_status?: Database["public"]["Enums"]["booking_payment_status"]
+          pincode?: string
+          preferred_date?: string | null
+          preferred_time_slot?: string | null
+          razorpay_payment_id?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"]
+          status?: Database["public"]["Enums"]["booking_status"]
+          terms_accepted?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       repair_orders: {
         Row: {
           advance_paid: number
@@ -183,6 +279,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      booking_payment_method: "online" | "cash"
+      booking_payment_status: "pending" | "paid" | "failed" | "refunded"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "assigned"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+      device_type: "mobile" | "laptop" | "tablet" | "other"
       payment_status: "pending" | "partial" | "paid"
       repair_status:
         | "received"
@@ -192,6 +298,7 @@ export type Database = {
         | "testing"
         | "completed"
         | "delivered"
+      service_type: "pickup_drop" | "doorstep" | "visit_shop"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -319,6 +426,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      booking_payment_method: ["online", "cash"],
+      booking_payment_status: ["pending", "paid", "failed", "refunded"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "assigned",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
+      device_type: ["mobile", "laptop", "tablet", "other"],
       payment_status: ["pending", "partial", "paid"],
       repair_status: [
         "received",
@@ -329,6 +447,7 @@ export const Constants = {
         "completed",
         "delivered",
       ],
+      service_type: ["pickup_drop", "doorstep", "visit_shop"],
     },
   },
 } as const

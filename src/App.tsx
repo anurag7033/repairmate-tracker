@@ -9,6 +9,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrackRepair from "./pages/TrackRepair";
 import Invoice from "./pages/Invoice";
+import BookRepair from "./pages/BookRepair";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/track/:trackingId" element={<TrackRepair />} />
             <Route path="/invoice/:trackingId" element={<Invoice />} />
+            <Route path="/book-repair" element={<BookRepair />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
