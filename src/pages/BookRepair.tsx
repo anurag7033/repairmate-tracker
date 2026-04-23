@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
 import Footer from "@/components/Footer";
+import LocationPicker, { type PickedLocation } from "@/components/LocationPicker";
 
 const ISSUE_TYPES = [
   "Screen / Display",
@@ -301,6 +302,19 @@ const BookRepair = () => {
 
           {/* Address */}
           <Section icon={<MapPin className="w-5 h-5" />} title="Address">
+            <div className="mb-4">
+              <Label className="text-sm font-medium mb-1.5 block">Pick on Map (recommended)</Label>
+              <LocationPicker
+                onLocationSelect={(loc: PickedLocation) => {
+                  setForm((p) => ({
+                    ...p,
+                    full_address: loc.address || p.full_address,
+                    city: loc.city || p.city,
+                    pincode: loc.pincode || p.pincode,
+                  }));
+                }}
+              />
+            </div>
             <Field label="Full Address *">
               <Textarea value={form.full_address} onChange={(e) => update("full_address", e.target.value)} placeholder="House no, street, area, landmark" rows={2} />
             </Field>
