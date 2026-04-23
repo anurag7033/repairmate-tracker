@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
 import Footer from "@/components/Footer";
+import LocationPicker, { type PickedLocation } from "@/components/LocationPicker";
 
 const ISSUE_TYPES = [
   "Screen / Display",
