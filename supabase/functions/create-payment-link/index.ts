@@ -50,7 +50,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const amountInPaise = Math.round(balanceDue * 100);
+    // Platform fee: 2.5% of balance due
+    const PLATFORM_FEE_RATE = 0.025;
+    const platformFee = Math.round(balanceDue * PLATFORM_FEE_RATE * 100) / 100;
+    const totalPayable = Math.round((balanceDue + platformFee) * 100) / 100;
+    const amountInPaise = Math.round(totalPayable * 100);
 
     const razorpayKeyId = Deno.env.get("RAZORPAY_KEY_ID")!;
     const razorpayKeySecret = Deno.env.get("RAZORPAY_KEY_SECRET")!;
@@ -65,7 +69,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         amount: amountInPaise,
         currency: "INR",
-        description: `Mobile Repair Payment - ${trackingId}`,
+        description: `Mobile Repair Payment - ${trackingId} (incl. 2.5% platform fee)`,
         customer: {
           name: order.customer_name,
           contact: order.customer_phone,
