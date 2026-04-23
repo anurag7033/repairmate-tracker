@@ -170,6 +170,31 @@ const BookRepair = () => {
         terms_accepted: form.terms_accepted,
       });
       if (error) throw error;
+
+      // Fire-and-forget admin email notification
+      supabase.functions.invoke("notify-booking-email", {
+        body: {
+          booking_id: bookingId,
+          customer_name: form.customer_name,
+          customer_phone: form.customer_phone,
+          alternate_phone: form.alternate_phone,
+          customer_email: form.customer_email,
+          full_address: form.full_address,
+          city: form.city,
+          pincode: form.pincode,
+          device_type: form.device_type,
+          device_brand: form.device_brand,
+          device_model: form.device_model,
+          imei_serial: form.imei_serial,
+          issue_type: form.issue_type,
+          issue_description: form.issue_description,
+          service_type: form.service_type,
+          preferred_date: form.preferred_date,
+          preferred_time_slot: form.preferred_time_slot,
+          payment_method: form.payment_method,
+        },
+      }).catch((e) => console.error("Email notify failed:", e));
+
       setSuccess({ bookingId, name: form.customer_name });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
