@@ -379,41 +379,57 @@ const TrackRepair = () => {
           )}
 
           {balanceDue > 0 && order.paymentStatus !== "paid" && (
-            <Button
-              className="w-full h-14 rounded-xl font-semibold text-lg shadow-lg transition-all hover:scale-[1.02] hover:opacity-90 mt-4"
-              style={{ backgroundColor: "#f97316", color: "white" }}
-              disabled={payLoading}
-              onClick={async () => {
-                setPayLoading(true);
-                try {
-                  const { data, error } = await supabase.functions.invoke("create-payment-link", {
-                    body: { trackingId: order.trackingId },
-                  });
-                  if (error) throw error;
-                  if (data?.short_url) {
-                    window.location.href = data.short_url;
-                  } else {
-                    throw new Error("No payment link received");
+            <>
+              <div className="mt-4 p-4 rounded-xl bg-orange-50 border border-orange-200 text-sm space-y-1">
+                <div className="flex justify-between text-foreground">
+                  <span>Balance Due</span>
+                  <span className="font-semibold">₹{balanceDue.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Platform Fee (2.5%)</span>
+                  <span>₹{(balanceDue * 0.025).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between pt-2 mt-2 border-t border-orange-200 text-foreground font-bold">
+                  <span>Total Payable</span>
+                  <span>₹{(balanceDue * 1.025).toFixed(2)}</span>
+                </div>
+              </div>
+              <Button
+                className="w-full h-14 rounded-xl font-semibold text-lg shadow-lg transition-all hover:scale-[1.02] hover:opacity-90 mt-3"
+                style={{ backgroundColor: "#f97316", color: "white" }}
+                disabled={payLoading}
+                onClick={async () => {
+                  setPayLoading(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke("create-payment-link", {
+                      body: { trackingId: order.trackingId },
+                    });
+                    if (error) throw error;
+                    if (data?.short_url) {
+                      window.location.href = data.short_url;
+                    } else {
+                      throw new Error("No payment link received");
+                    }
+                  } catch (err: any) {
+                    toast({ title: "Payment Error", description: err.message || "Failed to create payment link", variant: "destructive" });
+                    setPayLoading(false);
                   }
-                } catch (err: any) {
-                  toast({ title: "Payment Error", description: err.message || "Failed to create payment link", variant: "destructive" });
-                  setPayLoading(false);
-                }
-              }}
-            >
-              {payLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Generating Payment Link...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Pay ₹{balanceDue} Now
-                  <ExternalLink className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
+                }}
+              >
+                {payLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating Payment Link...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Pay ₹{(balanceDue * 1.025).toFixed(2)} Now
+                    <ExternalLink className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </Button>
+            </>
           )}
         </div>
 
