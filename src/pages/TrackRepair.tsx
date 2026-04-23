@@ -355,14 +355,28 @@ const TrackRepair = () => {
             </div>
           )}
 
-          <Button
-            variant="outline"
-            className="w-full h-12 rounded-xl font-semibold mt-4"
-            onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}
-          >
-            <Printer className="w-5 h-5 mr-2" />
-            Print Bill / Invoice
-          </Button>
+          {order.status === "delivered" && order.paymentStatus === "paid" ? (
+            <Button
+              variant="outline"
+              className="w-full h-12 rounded-xl font-semibold mt-4"
+              onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}
+            >
+              <Printer className="w-5 h-5 mr-2" />
+              Print Bill / Invoice
+            </Button>
+          ) : (
+            <div className="mt-4 p-4 rounded-xl bg-muted/60 border border-border text-center">
+              <p className="text-sm font-medium text-muted-foreground flex items-center justify-center gap-2">
+                <Clock className="w-4 h-4" />
+                {order.paymentStatus !== "paid"
+                  ? "Your device is under repair or your payment is not received yet."
+                  : "Your device is under repair. Invoice will unlock once delivered."}
+              </p>
+              <p className="text-xs text-muted-foreground/80 mt-1">
+                Print Bill / Invoice will unlock after repair completion and full payment.
+              </p>
+            </div>
+          )}
 
           {balanceDue > 0 && order.paymentStatus !== "paid" && (
             <Button
