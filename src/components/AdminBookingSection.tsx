@@ -144,7 +144,8 @@ const AdminBookingSection = () => {
 
     // When admin marks as "assigned" and there's no linked repair order yet, create one
     if (editStatus === "assigned" && !trackingIdToLink) {
-      const newTrackingId = `AMR${Date.now().toString().slice(-8)}`;
+      // Use the booking_id as the tracking_id so they stay in sync
+      const newTrackingId = selected.booking_id;
       const { error: roError } = await supabase.from("repair_orders").insert({
         tracking_id: newTrackingId,
         customer_name: selected.customer_name,
