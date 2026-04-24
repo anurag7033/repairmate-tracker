@@ -197,6 +197,8 @@ const BookRepair = () => {
           preferred_date: form.preferred_date,
           preferred_time_slot: form.preferred_time_slot,
           payment_method: form.payment_method,
+          latitude: form.latitude,
+          longitude: form.longitude,
         },
       }).catch((e) => console.error("Email notify failed:", e));
 
