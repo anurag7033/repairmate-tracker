@@ -269,7 +269,7 @@ const AdminVoucherSection = () => {
               {/* Voucher Type */}
               <div>
                 <Label className="text-xs">Voucher Type</Label>
-                <Select value={voucherType} onValueChange={(v) => setVoucherType(v as "public" | "private")}>
+                <Select value={voucherType} onValueChange={(v) => setVoucherType(v as "public" | "private" | "new_customer")}>
                   <SelectTrigger className="rounded-lg mt-1">
                     <SelectValue />
                   </SelectTrigger>
@@ -279,6 +279,9 @@ const AdminVoucherSection = () => {
                     </SelectItem>
                     <SelectItem value="private">
                       <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Private (Single use)</span>
+                    </SelectItem>
+                    <SelectItem value="new_customer">
+                      <span className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> New Customers Only (First repair)</span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
