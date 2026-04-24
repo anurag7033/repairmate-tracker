@@ -317,7 +317,7 @@ const AdminVoucherSection = () => {
               </div>
 
               {/* Usage Limit - only for public */}
-              {voucherType === "public" && (
+              {voucherType !== "private" && (
                 <div>
                   <Label className="text-xs">Usage Limit (0 = unlimited)</Label>
                   <Input type="number" value={usageLimit} onChange={(e) => setUsageLimit(Number(e.target.value))} placeholder="e.g. 50" className="rounded-lg mt-1" />
