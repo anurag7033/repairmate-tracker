@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Plus, Ticket, Send, Trash2, Search, Percent, IndianRupee,
-  Eye, Filter, ChevronDown, Users, Lock, Clock, BarChart3,
+  Eye, Filter, ChevronDown, Users, Lock, Clock, BarChart3, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +67,7 @@ const AdminVoucherSection = () => {
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [minAmount, setMinAmount] = useState(0);
   const [maxAmount, setMaxAmount] = useState(0);
-  const [voucherType, setVoucherType] = useState<"public" | "private">("public");
+  const [voucherType, setVoucherType] = useState<"public" | "private" | "new_customer">("public");
   const [expiryDate, setExpiryDate] = useState("");
   const [usageLimit, setUsageLimit] = useState(1);
 
@@ -269,7 +269,7 @@ const AdminVoucherSection = () => {
               {/* Voucher Type */}
               <div>
                 <Label className="text-xs">Voucher Type</Label>
-                <Select value={voucherType} onValueChange={(v) => setVoucherType(v as "public" | "private")}>
+                <Select value={voucherType} onValueChange={(v) => setVoucherType(v as "public" | "private" | "new_customer")}>
                   <SelectTrigger className="rounded-lg mt-1">
                     <SelectValue />
                   </SelectTrigger>
@@ -279,6 +279,9 @@ const AdminVoucherSection = () => {
                     </SelectItem>
                     <SelectItem value="private">
                       <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Private (Single use)</span>
+                    </SelectItem>
+                    <SelectItem value="new_customer">
+                      <span className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> New Customers Only (First repair)</span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -314,7 +317,7 @@ const AdminVoucherSection = () => {
               </div>
 
               {/* Usage Limit - only for public */}
-              {voucherType === "public" && (
+              {voucherType !== "private" && (
                 <div>
                   <Label className="text-xs">Usage Limit (0 = unlimited)</Label>
                   <Input type="number" value={usageLimit} onChange={(e) => setUsageLimit(Number(e.target.value))} placeholder="e.g. 50" className="rounded-lg mt-1" />
@@ -411,8 +414,8 @@ const AdminVoucherSection = () => {
                       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                         {getDiscountLabel(v)}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.voucher_type === "public" ? "bg-blue-500/10 text-blue-600" : "bg-amber-500/10 text-amber-600"}`}>
-                        {v.voucher_type === "public" ? <><Users className="w-3 h-3 inline mr-1" />Public</> : <><Lock className="w-3 h-3 inline mr-1" />Private</>}
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.voucher_type === "public" ? "bg-blue-500/10 text-blue-600" : v.voucher_type === "new_customer" ? "bg-purple-500/10 text-purple-600" : "bg-amber-500/10 text-amber-600"}`}>
+                        {v.voucher_type === "public" ? <><Users className="w-3 h-3 inline mr-1" />Public</> : v.voucher_type === "new_customer" ? <><Sparkles className="w-3 h-3 inline mr-1" />New Customer</> : <><Lock className="w-3 h-3 inline mr-1" />Private</>}
                       </span>
                     </div>
                     {v.voucher_name && <p className="text-sm font-medium">{v.voucher_name}</p>}
