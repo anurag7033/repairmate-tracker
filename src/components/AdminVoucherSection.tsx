@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Plus, Ticket, Send, Trash2, Search, Percent, IndianRupee,
-  Eye, Filter, ChevronDown, Users, Lock, Clock, BarChart3,
+  Eye, Filter, ChevronDown, Users, Lock, Clock, BarChart3, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
