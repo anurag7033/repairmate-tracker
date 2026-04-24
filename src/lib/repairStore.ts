@@ -206,15 +206,15 @@ export async function applyVoucher(
     }
   }
 
-  // Check duplicate redemption on same order
-  const { data: existingRedemption } = await supabase
+  // Enforce one voucher per order — block if any voucher already redeemed on this order
+  const { data: anyRedemption } = await supabase
     .from("voucher_redemptions")
     .select("id")
-    .eq("voucher_id", v.id)
     .eq("order_tracking_id", currentTrackingId)
+    .limit(1)
     .maybeSingle();
-  if (existingRedemption) {
-    throw new Error("This voucher has already been applied to this order.");
+  if (anyRedemption) {
+    throw new Error("A voucher is already applied. Remove it first to apply another.");
   }
 
   // Get current order for amount checks
