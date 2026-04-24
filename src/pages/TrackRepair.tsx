@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
+import { findByTrackingId, applyVoucher, removeAppliedVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
 import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2, Printer } from "lucide-react";
 import Footer from "@/components/Footer";
