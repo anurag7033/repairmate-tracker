@@ -67,7 +67,7 @@ const AdminVoucherSection = () => {
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [minAmount, setMinAmount] = useState(0);
   const [maxAmount, setMaxAmount] = useState(0);
-  const [voucherType, setVoucherType] = useState<"public" | "private">("public");
+  const [voucherType, setVoucherType] = useState<"public" | "private" | "new_customer">("public");
   const [expiryDate, setExpiryDate] = useState("");
   const [usageLimit, setUsageLimit] = useState(1);
 
