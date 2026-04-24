@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { findByTrackingId, applyVoucher } from "@/lib/repairStore";
+import { findByTrackingId, applyVoucher, removeAppliedVoucher } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
 import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2, Printer } from "lucide-react";
 import Footer from "@/components/Footer";
@@ -87,11 +87,24 @@ const TrackRepair = () => {
       await applyVoucher(voucherCode.trim(), order.trackingId, order.customerPhone);
       toast({ title: "Voucher Applied!", description: `Discount applied successfully.` });
       setVoucherCode("");
-      // Reload order
       const updated = await findByTrackingId(trackingId!);
       if (updated) setOrder(updated);
     } catch (err: any) {
       toast({ title: "Invalid Voucher", description: err.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleRemoveVoucher = async () => {
+    setVoucherLoading(true);
+    try {
+      await removeAppliedVoucher(order.trackingId);
+      toast({ title: "Voucher Removed", description: "You can now apply a different voucher." });
+      const updated = await findByTrackingId(trackingId!);
+      if (updated) setOrder(updated);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setVoucherLoading(false);
     }
@@ -298,7 +311,20 @@ const TrackRepair = () => {
                 <span className="text-sm text-amber-600 flex items-center gap-1">
                   <Ticket className="w-4 h-4" /> Voucher Discount
                 </span>
-                <span className="font-display text-lg font-bold text-amber-600">- ₹{order.discountAmount}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-lg font-bold text-amber-600">- ₹{order.discountAmount}</span>
+                  {order.paymentStatus !== "paid" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleRemoveVoucher}
+                      disabled={voucherLoading}
+                      className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
             
@@ -328,7 +354,7 @@ const TrackRepair = () => {
           </div>
 
           {/* Voucher Apply Section */}
-          {order.paymentStatus !== "paid" && balanceDue > 0 && (
+          {order.paymentStatus !== "paid" && balanceDue > 0 && order.discountAmount === 0 && (
             <div className="p-4 bg-muted/50 rounded-xl space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium flex items-center gap-2">
