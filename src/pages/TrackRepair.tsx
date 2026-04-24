@@ -311,7 +311,20 @@ const TrackRepair = () => {
                 <span className="text-sm text-amber-600 flex items-center gap-1">
                   <Ticket className="w-4 h-4" /> Voucher Discount
                 </span>
-                <span className="font-display text-lg font-bold text-amber-600">- ₹{order.discountAmount}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-lg font-bold text-amber-600">- ₹{order.discountAmount}</span>
+                  {order.paymentStatus !== "paid" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleRemoveVoucher}
+                      disabled={voucherLoading}
+                      className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
             
