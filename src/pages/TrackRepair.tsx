@@ -354,7 +354,7 @@ const TrackRepair = () => {
           </div>
 
           {/* Voucher Apply Section */}
-          {order.paymentStatus !== "paid" && balanceDue > 0 && (
+          {order.paymentStatus !== "paid" && balanceDue > 0 && order.discountAmount === 0 && (
             <div className="p-4 bg-muted/50 rounded-xl space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium flex items-center gap-2">
