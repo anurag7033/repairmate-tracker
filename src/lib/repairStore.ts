@@ -277,3 +277,39 @@ export async function applyVoucher(
 
   return { trackingId: currentTrackingId, discountAmount: discountValue };
 }
+
+export async function removeAppliedVoucher(trackingId: string): Promise<void> {
+  const { data: redemptions, error: rErr } = await supabase
+    .from("voucher_redemptions")
+    .select("id, voucher_id")
+    .eq("order_tracking_id", trackingId);
+  if (rErr) throw rErr;
+  if (!redemptions || redemptions.length === 0) {
+    throw new Error("No voucher applied on this order.");
+  }
+
+  await supabase
+    .from("repair_orders")
+    .update({ discount_amount: 0 })
+    .eq("tracking_id", trackingId);
+
+  for (const r of redemptions as any[]) {
+    const { data: v } = await supabase
+      .from("vouchers")
+      .select("used_count, voucher_type")
+      .eq("id", r.voucher_id)
+      .single();
+    if (v) {
+      const newCount = Math.max(0, ((v as any).used_count || 1) - 1);
+      await supabase
+        .from("vouchers")
+        .update({
+          used_count: newCount,
+          status: "active",
+          is_used: false,
+        } as any)
+        .eq("id", r.voucher_id);
+    }
+    await supabase.from("voucher_redemptions").delete().eq("id", r.id);
+  }
+}
