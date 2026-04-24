@@ -206,6 +206,24 @@ export async function applyVoucher(
     }
   }
 
+  // For new_customer vouchers: ensure this is the customer's first repair
+  if (v.voucher_type === "new_customer") {
+    const cleanCurrent = currentCustomerPhone.replace(/\D/g, "");
+    // Match phone numbers ignoring formatting by comparing last 10 digits
+    const last10 = cleanCurrent.slice(-10);
+    const { data: priorOrders, error: priorErr } = await supabase
+      .from("repair_orders")
+      .select("tracking_id, customer_phone, created_at")
+      .ilike("customer_phone", `%${last10}%`);
+    if (priorErr) throw priorErr;
+    const otherOrders = (priorOrders || []).filter(
+      (o: any) => o.tracking_id !== currentTrackingId
+    );
+    if (otherOrders.length > 0) {
+      throw new Error("This voucher is only for new customers.");
+    }
+  }
+
   // Enforce one voucher per order — block if any voucher already redeemed on this order
   const { data: anyRedemption } = await supabase
     .from("voucher_redemptions")
