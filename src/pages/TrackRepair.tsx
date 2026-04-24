@@ -87,11 +87,24 @@ const TrackRepair = () => {
       await applyVoucher(voucherCode.trim(), order.trackingId, order.customerPhone);
       toast({ title: "Voucher Applied!", description: `Discount applied successfully.` });
       setVoucherCode("");
-      // Reload order
       const updated = await findByTrackingId(trackingId!);
       if (updated) setOrder(updated);
     } catch (err: any) {
       toast({ title: "Invalid Voucher", description: err.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleRemoveVoucher = async () => {
+    setVoucherLoading(true);
+    try {
+      await removeAppliedVoucher(order.trackingId);
+      toast({ title: "Voucher Removed", description: "You can now apply a different voucher." });
+      const updated = await findByTrackingId(trackingId!);
+      if (updated) setOrder(updated);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setVoucherLoading(false);
     }
