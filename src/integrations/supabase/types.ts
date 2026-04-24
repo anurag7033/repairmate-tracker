@@ -35,6 +35,8 @@ export type Database = {
           internal_notes: string | null
           issue_description: string
           issue_type: string
+          latitude: number | null
+          longitude: number | null
           payment_method: Database["public"]["Enums"]["booking_payment_method"]
           payment_status: Database["public"]["Enums"]["booking_payment_status"]
           pincode: string
@@ -67,6 +69,8 @@ export type Database = {
           internal_notes?: string | null
           issue_description: string
           issue_type: string
+          latitude?: number | null
+          longitude?: number | null
           payment_method?: Database["public"]["Enums"]["booking_payment_method"]
           payment_status?: Database["public"]["Enums"]["booking_payment_status"]
           pincode: string
@@ -99,6 +103,8 @@ export type Database = {
           internal_notes?: string | null
           issue_description?: string
           issue_type?: string
+          latitude?: number | null
+          longitude?: number | null
           payment_method?: Database["public"]["Enums"]["booking_payment_method"]
           payment_status?: Database["public"]["Enums"]["booking_payment_status"]
           pincode?: string

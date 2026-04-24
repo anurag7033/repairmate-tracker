@@ -46,6 +46,8 @@ interface Booking {
   assigned_technician: string;
   internal_notes: string;
   created_at: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
@@ -326,9 +328,27 @@ const AdminBookingSection = () => {
                 <Card title="Address" icon={<MapPin className="w-4 h-4" />}>
                   <p className="text-sm">{selected.full_address}</p>
                   <p className="text-sm text-muted-foreground mt-1">{selected.city} - {selected.pincode}</p>
-                  <Button size="sm" variant="outline" className="mt-2" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selected.full_address + ", " + selected.city + " " + selected.pincode)}`, "_blank")}>
-                    <MapPin className="w-3 h-3 mr-1" /> View on Map
-                  </Button>
+                  {selected.latitude != null && selected.longitude != null && (
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">
+                      📍 {Number(selected.latitude).toFixed(6)}, {Number(selected.longitude).toFixed(6)}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selected.latitude != null && selected.longitude != null ? (
+                      <>
+                        <Button size="sm" variant="default" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`, "_blank")}>
+                          <MapPin className="w-3 h-3 mr-1" /> Exact Pin
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selected.latitude},${selected.longitude}`, "_blank")}>
+                          Directions
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selected.full_address + ", " + selected.city + " " + selected.pincode)}`, "_blank")}>
+                        <MapPin className="w-3 h-3 mr-1" /> View on Map
+                      </Button>
+                    )}
+                  </div>
                 </Card>
 
                 {/* Device */}

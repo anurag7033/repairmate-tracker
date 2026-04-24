@@ -49,6 +49,7 @@ Deno.serve(async (req) => {
             📞 ${booking.customer_phone}${booking.alternate_phone ? ` / ${booking.alternate_phone}` : ''}<br/>
             ${booking.customer_email ? `✉️ ${booking.customer_email}<br/>` : ''}
             📍 ${booking.full_address}, ${booking.city} - ${booking.pincode}
+            ${booking.latitude && booking.longitude ? `<br/><a href="https://www.google.com/maps/search/?api=1&query=${booking.latitude},${booking.longitude}" style="color:#f97316">📌 Open exact pin (${Number(booking.latitude).toFixed(6)}, ${Number(booking.longitude).toFixed(6)})</a>` : ''}
           </p>
 
           <h3 style="margin:0 0 8px;color:#f97316;font-size:15px">Device</h3>
