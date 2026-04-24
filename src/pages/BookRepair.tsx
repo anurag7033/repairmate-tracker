@@ -97,6 +97,8 @@ const BookRepair = () => {
     preferred_time_slot: "",
     payment_method: "cash" as "online" | "cash",
     terms_accepted: false,
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
 
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
@@ -169,7 +171,9 @@ const BookRepair = () => {
         preferred_time_slot: form.preferred_time_slot,
         payment_method: form.payment_method,
         terms_accepted: form.terms_accepted,
-      });
+        latitude: form.latitude,
+        longitude: form.longitude,
+      } as any);
       if (error) throw error;
 
       // Fire-and-forget admin email notification
@@ -311,6 +315,8 @@ const BookRepair = () => {
                     full_address: loc.address || p.full_address,
                     city: loc.city || p.city,
                     pincode: loc.pincode || p.pincode,
+                    latitude: loc.lat,
+                    longitude: loc.lng,
                   }));
                 }}
               />
