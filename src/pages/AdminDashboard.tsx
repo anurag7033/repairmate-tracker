@@ -71,6 +71,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered">("all");
   const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings">("repairs");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
@@ -261,12 +262,31 @@ const AdminDashboard = () => {
     }
   };
 
+  const matchesStatusFilter = (status: RepairStatus) => {
+    if (statusFilter === "all") return true;
+    if (statusFilter === "received") return status === "received";
+    if (statusFilter === "in_progress")
+      return ["diagnosing", "waiting_for_parts", "repairing", "testing"].includes(status);
+    if (statusFilter === "repaired") return status === "completed";
+    if (statusFilter === "delivered") return status === "delivered";
+    return true;
+  };
+
   const filtered = orders.filter(
     (o) =>
-      o.trackingId.toLowerCase().includes(search.toLowerCase()) ||
-      o.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      o.mobileModel.toLowerCase().includes(search.toLowerCase())
+      matchesStatusFilter(o.status) &&
+      (o.trackingId.toLowerCase().includes(search.toLowerCase()) ||
+        o.customerName.toLowerCase().includes(search.toLowerCase()) ||
+        o.mobileModel.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const statusCounts = useMemo(() => ({
+    all: orders.length,
+    received: orders.filter((o) => o.status === "received").length,
+    in_progress: orders.filter((o) => ["diagnosing", "waiting_for_parts", "repairing", "testing"].includes(o.status)).length,
+    repaired: orders.filter((o) => o.status === "completed").length,
+    delivered: orders.filter((o) => o.status === "delivered").length,
+  }), [orders]);
 
   if (loading || !authenticated) {
     return (
@@ -575,6 +595,34 @@ const AdminDashboard = () => {
               )}
             </DialogContent>
           </Dialog>
+        </div>
+
+        {/* Status filter chips */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          {([
+            { key: "all", label: "All" },
+            { key: "received", label: "Received" },
+            { key: "in_progress", label: "In Progress" },
+            { key: "repaired", label: "Repaired" },
+            { key: "delivered", label: "Delivered" },
+          ] as const).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-colors ${
+                statusFilter === f.key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card hover:border-primary/50"
+              }`}
+            >
+              {f.label}
+              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
+                statusFilter === f.key ? "bg-primary-foreground/20" : "bg-muted"
+              }`}>
+                {statusCounts[f.key]}
+              </span>
+            </button>
+          ))}
         </div>
 
         {/* Orders */}
