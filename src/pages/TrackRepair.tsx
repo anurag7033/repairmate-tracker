@@ -431,10 +431,22 @@ const TrackRepair = () => {
                       body: { trackingId: order.trackingId },
                     });
                     if (error) throw error;
-                    if (data?.short_url) {
+                    const isValidPaymentUrl = (url: string) => {
+                      try {
+                        const parsed = new URL(url);
+                        const allowed = ["razorpay.com", "rzp.io"];
+                        return (
+                          parsed.protocol === "https:" &&
+                          allowed.some((d) => parsed.hostname === d || parsed.hostname.endsWith("." + d))
+                        );
+                      } catch {
+                        return false;
+                      }
+                    };
+                    if (data?.short_url && isValidPaymentUrl(data.short_url)) {
                       window.location.href = data.short_url;
                     } else {
-                      throw new Error("No payment link received");
+                      throw new Error("Invalid payment link received");
                     }
                   } catch (err: any) {
                     toast({ title: "Payment Error", description: err.message || "Failed to create payment link", variant: "destructive" });
