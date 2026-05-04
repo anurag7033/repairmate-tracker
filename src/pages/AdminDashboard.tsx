@@ -597,6 +597,34 @@ const AdminDashboard = () => {
           </Dialog>
         </div>
 
+        {/* Status filter chips */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          {([
+            { key: "all", label: "All" },
+            { key: "received", label: "Received" },
+            { key: "in_progress", label: "In Progress" },
+            { key: "repaired", label: "Repaired" },
+            { key: "delivered", label: "Delivered" },
+          ] as const).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-colors ${
+                statusFilter === f.key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card hover:border-primary/50"
+              }`}
+            >
+              {f.label}
+              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
+                statusFilter === f.key ? "bg-primary-foreground/20" : "bg-muted"
+              }`}>
+                {statusCounts[f.key]}
+              </span>
+            </button>
+          ))}
+        </div>
+
         {/* Orders */}
         {filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
