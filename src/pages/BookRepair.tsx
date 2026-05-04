@@ -244,12 +244,21 @@ const BookRepair = () => {
                 <Home className="w-4 h-4 mr-2" /> Home
               </Button>
               <Button
+                onClick={() => navigate(`/booking/${success.bookingId}`)}
+                className="flex-1 h-11 rounded-xl gradient-primary hover:opacity-90"
+              >
+                Track Status
+              </Button>
+              <Button
                 onClick={() => window.open(`https://wa.me/917033067221?text=Hi%2C%20my%20booking%20ID%20is%20${success.bookingId}`, "_blank")}
                 className="flex-1 h-11 rounded-xl bg-green-600 hover:bg-green-700"
               >
                 <Phone className="w-4 h-4 mr-2" /> Contact Us
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Tip: Bookmark <span className="font-mono">/booking/{success.bookingId}</span> to check your status anytime.
+            </p>
           </div>
         </div>
         <Footer />
