@@ -71,6 +71,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered">("all");
   const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings">("repairs");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
@@ -261,12 +262,31 @@ const AdminDashboard = () => {
     }
   };
 
+  const matchesStatusFilter = (status: RepairStatus) => {
+    if (statusFilter === "all") return true;
+    if (statusFilter === "received") return status === "received";
+    if (statusFilter === "in_progress")
+      return ["diagnosing", "waiting_for_parts", "repairing", "testing"].includes(status);
+    if (statusFilter === "repaired") return status === "completed";
+    if (statusFilter === "delivered") return status === "delivered";
+    return true;
+  };
+
   const filtered = orders.filter(
     (o) =>
-      o.trackingId.toLowerCase().includes(search.toLowerCase()) ||
-      o.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      o.mobileModel.toLowerCase().includes(search.toLowerCase())
+      matchesStatusFilter(o.status) &&
+      (o.trackingId.toLowerCase().includes(search.toLowerCase()) ||
+        o.customerName.toLowerCase().includes(search.toLowerCase()) ||
+        o.mobileModel.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const statusCounts = useMemo(() => ({
+    all: orders.length,
+    received: orders.filter((o) => o.status === "received").length,
+    in_progress: orders.filter((o) => ["diagnosing", "waiting_for_parts", "repairing", "testing"].includes(o.status)).length,
+    repaired: orders.filter((o) => o.status === "completed").length,
+    delivered: orders.filter((o) => o.status === "delivered").length,
+  }), [orders]);
 
   if (loading || !authenticated) {
     return (
