@@ -29,13 +29,23 @@ const TrackRepair = () => {
         if (found) {
           setOrder(found);
         } else {
+          // Not yet a repair order — but maybe it's a booking awaiting assignment
+          const { data: booking } = await supabase
+            .from("bookings")
+            .select("booking_id")
+            .eq("booking_id", trackingId)
+            .maybeSingle();
+          if (booking) {
+            navigate(`/booking/${trackingId}`, { replace: true });
+            return;
+          }
           setNotFound(true);
         }
       }
       setLoading(false);
     };
     load();
-  }, [trackingId]);
+  }, [trackingId, navigate]);
 
   if (loading) {
     return (
