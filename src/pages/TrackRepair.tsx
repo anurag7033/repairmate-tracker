@@ -23,28 +23,39 @@ const TrackRepair = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
-      if (trackingId) {
-        const found = await findByTrackingId(trackingId);
-        if (found) {
-          setOrder(found);
-        } else {
-          // Not yet a repair order — but maybe it's a booking awaiting assignment
-          const { data: booking } = await supabase
-            .from("bookings")
-            .select("booking_id")
-            .eq("booking_id", trackingId)
-            .maybeSingle();
-          if (booking) {
-            navigate(`/booking/${trackingId}`, { replace: true });
-            return;
-          }
-          setNotFound(true);
-        }
+      if (!trackingId) return;
+      const found = await findByTrackingId(trackingId);
+      if (cancelled) return;
+      if (found) {
+        setOrder(found);
+        setLoading(false);
+        return;
       }
+      // Not yet a repair order — check if it's a booking
+      const { data: booking } = await supabase
+        .from("bookings")
+        .select("booking_id, status")
+        .eq("booking_id", trackingId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (booking) {
+        // Only redirect to booking page if not yet assigned (avoid loop with TrackBooking)
+        if (booking.status !== "assigned" && booking.status !== "in_progress" && booking.status !== "completed") {
+          navigate(`/booking/${trackingId}`, { replace: true });
+          return;
+        }
+        // Assigned but repair order not yet created — keep waiting on this page
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setNotFound(true);
       setLoading(false);
     };
     load();
+    return () => { cancelled = true; };
   }, [trackingId, navigate]);
 
   if (loading) {
