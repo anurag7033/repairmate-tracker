@@ -62,52 +62,36 @@ const TrackBooking = () => {
   useEffect(() => {
     if (!bookingId) return;
     let active = true;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
 
     const load = async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("booking_id", bookingId)
-        .maybeSingle();
-
+      const { data, error } = await supabase.rpc("get_booking_by_id", {
+        p_booking_id: bookingId,
+      } as any);
       if (!active) return;
-
-      if (error || !data) {
+      const row = Array.isArray(data) ? (data as any[])[0] : data;
+      if (error || !row) {
         setNotFound(true);
         setLoading(false);
         return;
       }
-
-      const b = data as BookingRow;
+      const b = row as BookingRow;
       setBooking(b);
       setLoading(false);
 
-      // If admin assigned a tracking_id (or marked as assigned), move to main tracker
       if (b.tracking_id && (b.status === "assigned" || b.status === "in_progress" || b.status === "completed")) {
+        if (pollTimer) clearInterval(pollTimer);
         setTimeout(() => navigate(`/track/${b.tracking_id}`, { replace: true }), 1200);
       }
     };
 
     load();
-
-    const channel = supabase
-      .channel(`booking-${bookingId}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "bookings", filter: `booking_id=eq.${bookingId}` },
-        (payload) => {
-          const b = payload.new as BookingRow;
-          setBooking(b);
-          if (b.tracking_id && (b.status === "assigned" || b.status === "in_progress" || b.status === "completed")) {
-            navigate(`/track/${b.tracking_id}`, { replace: true });
-          }
-        }
-      )
-      .subscribe();
+    // Poll every 6s for status changes (replaces realtime which requires SELECT access)
+    pollTimer = setInterval(load, 6000);
 
     return () => {
       active = false;
-      supabase.removeChannel(channel);
+      if (pollTimer) clearInterval(pollTimer);
     };
   }, [bookingId, navigate]);
 
