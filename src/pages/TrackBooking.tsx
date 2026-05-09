@@ -16,7 +16,6 @@ interface BookingRow {
   id: string;
   booking_id: string;
   customer_name: string;
-  customer_phone: string;
   device_brand: string;
   device_model: string;
   device_type: string;
@@ -25,11 +24,9 @@ interface BookingRow {
   service_type: string;
   preferred_date: string | null;
   preferred_time_slot: string | null;
-  full_address: string;
   city: string;
   pincode: string;
   status: BookingStatus;
-  assigned_technician: string | null;
   tracking_id: string | null;
   created_at: string;
   updated_at: string;
@@ -65,52 +62,36 @@ const TrackBooking = () => {
   useEffect(() => {
     if (!bookingId) return;
     let active = true;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
 
     const load = async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("booking_id", bookingId)
-        .maybeSingle();
-
+      const { data, error } = await supabase.rpc("get_booking_by_id", {
+        p_booking_id: bookingId,
+      } as any);
       if (!active) return;
-
-      if (error || !data) {
+      const row = Array.isArray(data) ? (data as any[])[0] : data;
+      if (error || !row) {
         setNotFound(true);
         setLoading(false);
         return;
       }
-
-      const b = data as BookingRow;
+      const b = row as BookingRow;
       setBooking(b);
       setLoading(false);
 
-      // If admin assigned a tracking_id (or marked as assigned), move to main tracker
       if (b.tracking_id && (b.status === "assigned" || b.status === "in_progress" || b.status === "completed")) {
+        if (pollTimer) clearInterval(pollTimer);
         setTimeout(() => navigate(`/track/${b.tracking_id}`, { replace: true }), 1200);
       }
     };
 
     load();
-
-    const channel = supabase
-      .channel(`booking-${bookingId}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "bookings", filter: `booking_id=eq.${bookingId}` },
-        (payload) => {
-          const b = payload.new as BookingRow;
-          setBooking(b);
-          if (b.tracking_id && (b.status === "assigned" || b.status === "in_progress" || b.status === "completed")) {
-            navigate(`/track/${b.tracking_id}`, { replace: true });
-          }
-        }
-      )
-      .subscribe();
+    // Poll every 6s for status changes (replaces realtime which requires SELECT access)
+    pollTimer = setInterval(load, 6000);
 
     return () => {
       active = false;
-      supabase.removeChannel(channel);
+      if (pollTimer) clearInterval(pollTimer);
     };
   }, [bookingId, navigate]);
 
@@ -288,9 +269,8 @@ const TrackBooking = () => {
             {booking.preferred_time_slot && <Info label="Slot" value={booking.preferred_time_slot} />}
           </div>
           <div className="bg-muted/50 rounded-xl p-3 text-sm">
-            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Address</p>
-            <p>{booking.full_address}</p>
-            <p className="text-xs text-muted-foreground mt-1">{booking.city} - {booking.pincode}</p>
+            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Service Area</p>
+            <p>{booking.city} - {booking.pincode}</p>
           </div>
           <p className="text-xs text-muted-foreground text-center">
             Booked on {new Date(booking.created_at).toLocaleString("en-IN")}
