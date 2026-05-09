@@ -285,7 +285,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      apply_voucher_public: {
+        Args: { p_tracking_id: string; p_voucher_code: string }
+        Returns: Json
+      }
+      get_booking_by_id: {
+        Args: { p_booking_id: string }
+        Returns: {
+          booking_id: string
+          city: string
+          created_at: string
+          customer_name: string
+          device_brand: string
+          device_model: string
+          device_type: Database["public"]["Enums"]["device_type"]
+          id: string
+          issue_description: string
+          issue_type: string
+          pincode: string
+          preferred_date: string
+          preferred_time_slot: string
+          service_type: Database["public"]["Enums"]["service_type"]
+          status: Database["public"]["Enums"]["booking_status"]
+          tracking_id: string
+          updated_at: string
+        }[]
+      }
+      get_repair_by_tracking: {
+        Args: { p_tracking_id: string }
+        Returns: {
+          advance_paid: number
+          created_at: string
+          customer_name: string
+          discount_amount: number
+          id: string
+          issue_description: string
+          mobile_brand: string
+          mobile_model: string
+          payment_link: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          quotation: number
+          repair_details: string
+          status: Database["public"]["Enums"]["repair_status"]
+          tracking_id: string
+          updated_at: string
+        }[]
+      }
+      remove_voucher_public: {
+        Args: { p_tracking_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       booking_payment_method: "online" | "cash"
