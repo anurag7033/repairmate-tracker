@@ -269,9 +269,8 @@ const TrackBooking = () => {
             {booking.preferred_time_slot && <Info label="Slot" value={booking.preferred_time_slot} />}
           </div>
           <div className="bg-muted/50 rounded-xl p-3 text-sm">
-            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Address</p>
-            <p>{booking.full_address}</p>
-            <p className="text-xs text-muted-foreground mt-1">{booking.city} - {booking.pincode}</p>
+            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Service Area</p>
+            <p>{booking.city} - {booking.pincode}</p>
           </div>
           <p className="text-xs text-muted-foreground text-center">
             Booked on {new Date(booking.created_at).toLocaleString("en-IN")}
