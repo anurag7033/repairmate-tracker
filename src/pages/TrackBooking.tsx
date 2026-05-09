@@ -16,7 +16,6 @@ interface BookingRow {
   id: string;
   booking_id: string;
   customer_name: string;
-  customer_phone: string;
   device_brand: string;
   device_model: string;
   device_type: string;
@@ -25,11 +24,9 @@ interface BookingRow {
   service_type: string;
   preferred_date: string | null;
   preferred_time_slot: string | null;
-  full_address: string;
   city: string;
   pincode: string;
   status: BookingStatus;
-  assigned_technician: string | null;
   tracking_id: string | null;
   created_at: string;
   updated_at: string;
