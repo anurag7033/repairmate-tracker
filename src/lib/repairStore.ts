@@ -87,13 +87,15 @@ export async function deleteOrder(id: string): Promise<void> {
 }
 
 export async function findByTrackingId(trackingId: string): Promise<RepairOrder | null> {
-  const { data, error } = await supabase
-    .from("repair_orders")
-    .select("*")
-    .ilike("tracking_id", trackingId)
-    .maybeSingle();
+  // Use SECURITY DEFINER RPC so unauthenticated customers can read only safe fields
+  const { data, error } = await supabase.rpc("get_repair_by_tracking", {
+    p_tracking_id: trackingId,
+  } as any);
   if (error) throw error;
-  return data ? mapFromDb(data) : null;
+  const row = Array.isArray(data) ? (data as any[])[0] : data;
+  if (!row) return null;
+  // RPC does not return customer_phone or imei_number — fill with safe placeholders
+  return mapFromDb({ ...row, customer_phone: "", imei_number: "" });
 }
 
 export function generateTrackingId(): string {
