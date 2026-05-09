@@ -33,20 +33,17 @@ const TrackRepair = () => {
         setLoading(false);
         return;
       }
-      // Not yet a repair order — check if it's a booking
-      const { data: booking } = await supabase
-        .from("bookings")
-        .select("booking_id, status")
-        .eq("booking_id", trackingId)
-        .maybeSingle();
+      // Not yet a repair order — check if it's a booking via secure RPC
+      const { data: bookingData } = await supabase.rpc("get_booking_by_id", {
+        p_booking_id: trackingId,
+      } as any);
+      const booking = Array.isArray(bookingData) ? (bookingData as any[])[0] : bookingData;
       if (cancelled) return;
       if (booking) {
-        // Only redirect to booking page if not yet assigned (avoid loop with TrackBooking)
         if (booking.status !== "assigned" && booking.status !== "in_progress" && booking.status !== "completed") {
           navigate(`/booking/${trackingId}`, { replace: true });
           return;
         }
-        // Assigned but repair order not yet created — keep waiting on this page
         setNotFound(true);
         setLoading(false);
         return;
