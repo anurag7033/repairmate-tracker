@@ -307,7 +307,7 @@ const TrackRepair = () => {
                     <p className={`font-semibold text-sm ${
                       isCompleted ? "text-success" : isCurrent ? "text-primary" : "text-muted-foreground"
                     }`}>
-                      {STATUS_LABELS[statusKey] === "Completed" ? "Delivered / Completed" : STATUS_LABELS[statusKey]}
+                      {STATUS_LABELS[statusKey]}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {isCompleted ? "Completed" : isCurrent ? "In Progress" : "Pending"}
