@@ -637,19 +637,25 @@ const AdminDashboard = () => {
         ) : (
           <div className="grid gap-4">
             {filtered.map((order) => {
-              const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
+              const isPaid = order.paymentStatus === "paid";
+              const balanceDue = isPaid ? 0 : order.quotation - order.advancePaid - order.discountAmount;
+              const isReturned = order.status === "returned";
+              const isDelivered = order.status === "delivered";
+              const statusPillClass = isDelivered
+                ? "bg-success text-success-foreground"
+                : isReturned
+                ? "bg-destructive/10 text-destructive"
+                : order.status === "completed"
+                ? "bg-success/10 text-success"
+                : "bg-secondary/10 text-secondary";
               return (
-                <div key={order.id} className="bg-card rounded-2xl p-5 shadow-card border border-border animate-fade-in">
+                <div key={order.id} className={`bg-card rounded-2xl p-5 shadow-card border animate-fade-in ${isReturned ? "border-destructive/30" : "border-border"}`}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-display font-bold text-primary">{order.trackingId}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          order.status === "completed" || order.status === "delivered"
-                            ? "bg-success/10 text-success"
-                            : "bg-secondary/10 text-secondary"
-                        }`}>
-                          {STATUS_LABELS[order.status]}
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusPillClass}`}>
+                          {isDelivered ? "Completed" : STATUS_LABELS[order.status]}
                         </span>
                       </div>
                       <p className="text-sm font-medium">{order.customerName}</p>
@@ -658,15 +664,22 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(order)}>
                         <Edit className="w-3 h-3 mr-1" />Edit
                       </Button>
-                      <Button size="sm" variant="outline" className="rounded-lg text-xs text-amber-600 border-amber-300 hover:bg-amber-50" onClick={() => openVoucherDialog(order)}>
-                        <Ticket className="w-3 h-3 mr-1" />Voucher
-                      </Button>
+                      {!isReturned && (
+                        <Button size="sm" variant="outline" className="rounded-lg text-xs text-amber-600 border-amber-300 hover:bg-amber-50" onClick={() => openVoucherDialog(order)}>
+                          <Ticket className="w-3 h-3 mr-1" />Voucher
+                        </Button>
+                      )}
                       <Button size="sm" variant="outline" className="rounded-lg text-xs text-success border-success/30 hover:bg-success/10" onClick={() => sendWhatsApp(order)}>
                         <MessageCircle className="w-3 h-3 mr-1" />WhatsApp
                       </Button>
                       <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/track/${order.trackingId}`, "_blank")}>
                         <ExternalLink className="w-3 h-3 mr-1" />View
                       </Button>
+                      {!isReturned && isDelivered && isPaid && (
+                        <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}>
+                          <Printer className="w-3 h-3 mr-1" />Bill
+                        </Button>
+                      )}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="outline" className="rounded-lg text-xs text-destructive border-destructive/30 hover:bg-destructive/10">
@@ -704,13 +717,13 @@ const AdminDashboard = () => {
                     <div>
                       💳{" "}
                       <span className={
-                        order.paymentStatus === "paid" 
-                          ? "text-success font-medium" 
+                        isPaid
+                          ? "text-success font-medium"
                           : order.paymentStatus === "partial"
                           ? "text-warning font-medium"
                           : "text-muted-foreground"
                       }>
-                        {order.paymentStatus === "paid" ? "Paid" : order.paymentStatus === "partial" ? `Bal: ₹${balanceDue}` : "Pending"}
+                        {isPaid ? "Paid ✓" : order.paymentStatus === "partial" ? `Bal: ₹${balanceDue}` : "Pending"}
                       </span>
                     </div>
                     <div>📅 {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
