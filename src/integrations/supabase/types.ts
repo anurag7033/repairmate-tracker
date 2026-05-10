@@ -356,6 +356,7 @@ export type Database = {
         | "testing"
         | "completed"
         | "delivered"
+        | "returned"
       service_type: "pickup_drop" | "doorstep" | "visit_shop"
     }
     CompositeTypes: {
@@ -504,6 +505,7 @@ export const Constants = {
         "testing",
         "completed",
         "delivered",
+        "returned",
       ],
       service_type: ["pickup_drop", "doorstep", "visit_shop"],
     },
