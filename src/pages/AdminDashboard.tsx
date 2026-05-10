@@ -269,6 +269,7 @@ const AdminDashboard = () => {
       return ["diagnosing", "waiting_for_parts", "repairing", "testing"].includes(status);
     if (statusFilter === "repaired") return status === "completed";
     if (statusFilter === "delivered") return status === "delivered";
+    if (statusFilter === "returned") return status === "returned";
     return true;
   };
 
@@ -286,6 +287,7 @@ const AdminDashboard = () => {
     in_progress: orders.filter((o) => ["diagnosing", "waiting_for_parts", "repairing", "testing"].includes(o.status)).length,
     repaired: orders.filter((o) => o.status === "completed").length,
     delivered: orders.filter((o) => o.status === "delivered").length,
+    returned: orders.filter((o) => o.status === "returned").length,
   }), [orders]);
 
   if (loading || !authenticated) {
