@@ -95,7 +95,10 @@ const TrackRepair = () => {
 
   if (!order) return null;
 
-  const currentIndex = STATUS_ORDER.indexOf(order.status);
+  const isReturned = order.status === "returned";
+  const isDelivered = order.status === "delivered";
+  // For delivered, mark every step in the linear timeline as completed (green)
+  const currentIndex = isDelivered ? STATUS_ORDER.length : STATUS_ORDER.indexOf(order.status);
   const balanceDue = order.paymentStatus === "paid" ? 0 : order.quotation - order.advancePaid - order.discountAmount;
 
   const handleApplyVoucher = async () => {
