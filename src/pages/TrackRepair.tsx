@@ -320,7 +320,8 @@ const TrackRepair = () => {
         </div>
         )}
 
-        {/* Payment Card */}
+        {/* Payment Card — hidden for returned devices */}
+        {!isReturned && (
         <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.2s" }}>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-12 h-12 rounded-2xl bg-warning/10 flex items-center justify-center">
