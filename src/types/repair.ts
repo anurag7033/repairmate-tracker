@@ -5,7 +5,8 @@ export type RepairStatus =
   | "repairing" 
   | "testing" 
   | "completed" 
-  | "delivered";
+  | "delivered"
+  | "returned";
 
 export type PaymentStatus = "pending" | "paid" | "partial";
 
