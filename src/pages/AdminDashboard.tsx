@@ -606,7 +606,8 @@ const AdminDashboard = () => {
             { key: "received", label: "Received" },
             { key: "in_progress", label: "In Progress" },
             { key: "repaired", label: "Repaired" },
-            { key: "delivered", label: "Delivered" },
+            { key: "delivered", label: "Completed" },
+            { key: "returned", label: "Returned" },
           ] as const).map((f) => (
             <button
               key={f.key}
