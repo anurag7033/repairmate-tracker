@@ -126,6 +126,20 @@ const Invoice = () => {
     );
   }
 
+  if (order.status === "returned") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white p-6">
+        <div className="max-w-md text-center border border-gray-300 rounded-lg p-8 shadow">
+          <h2 className="text-xl font-bold text-red-700 mb-2">No Invoice Available</h2>
+          <p className="text-gray-700 text-sm">
+            This device was returned. No bill or invoice is generated for returned repairs.
+          </p>
+          <p className="text-xs text-gray-500 mt-3 font-mono">{order.trackingId}</p>
+        </div>
+      </div>
+    );
+  }
+
   // Parse service items
   let serviceItems: ServiceItem[] = [];
   try {

@@ -95,7 +95,10 @@ const TrackRepair = () => {
 
   if (!order) return null;
 
-  const currentIndex = STATUS_ORDER.indexOf(order.status);
+  const isReturned = order.status === "returned";
+  const isDelivered = order.status === "delivered";
+  // For delivered, mark every step in the linear timeline as completed (green)
+  const currentIndex = isDelivered ? STATUS_ORDER.length : STATUS_ORDER.indexOf(order.status);
   const balanceDue = order.paymentStatus === "paid" ? 0 : order.quotation - order.advancePaid - order.discountAmount;
 
   const handleApplyVoucher = async () => {
@@ -242,7 +245,23 @@ const TrackRepair = () => {
           );
         })()}
 
-        {/* Repair Steps Timeline */}
+        {/* Returned Banner — terminal state, no progress timeline */}
+        {isReturned ? (
+          <div className="bg-card rounded-3xl p-6 shadow-elevated border-2 border-destructive/30 mb-6 animate-fade-in backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
+                <ArrowLeft className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-bold text-destructive">Device Returned</h2>
+                <p className="text-xs text-muted-foreground">This repair has been returned to the customer.</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground bg-muted/50 rounded-xl p-3">
+              No invoice will be generated for returned devices. If you have questions, please contact us.
+            </p>
+          </div>
+        ) : (
         <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border mb-6 animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.1s" }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center">
@@ -299,8 +318,10 @@ const TrackRepair = () => {
             })}
           </div>
         </div>
+        )}
 
-        {/* Payment Card */}
+        {/* Payment Card — hidden for returned devices */}
+        {!isReturned && (
         <div className="bg-card rounded-3xl p-6 shadow-elevated border border-border animate-fade-in backdrop-blur-sm" style={{ animationDelay: "0.2s" }}>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-12 h-12 rounded-2xl bg-warning/10 flex items-center justify-center">
@@ -488,6 +509,7 @@ const TrackRepair = () => {
             </>
           )}
         </div>
+        )}
 
 
         {/* Trust Badge */}

@@ -5,7 +5,8 @@ export type RepairStatus =
   | "repairing" 
   | "testing" 
   | "completed" 
-  | "delivered";
+  | "delivered"
+  | "returned";
 
 export type PaymentStatus = "pending" | "paid" | "partial";
 
@@ -75,9 +76,11 @@ export const STATUS_LABELS: Record<RepairStatus, string> = {
   repairing: "Repairing",
   testing: "Testing",
   completed: "Repair Completed",
-  delivered: "Delivered",
+  delivered: "Completed",
+  returned: "Returned",
 };
 
+// Linear progress (excludes terminal "returned" branch)
 export const STATUS_ORDER: RepairStatus[] = [
   "received",
   "diagnosing",
@@ -87,3 +90,6 @@ export const STATUS_ORDER: RepairStatus[] = [
   "completed",
   "delivered",
 ];
+
+// All selectable statuses (used in admin dropdowns)
+export const ALL_STATUSES: RepairStatus[] = [...STATUS_ORDER, "returned"];
