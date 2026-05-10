@@ -31,7 +31,7 @@ import {
 } from "@/lib/repairStore";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER, COMMON_ISSUES, COMMON_REPAIRS
+  RepairOrder, RepairStatus, PaymentStatus, STATUS_LABELS, STATUS_ORDER, ALL_STATUSES, COMMON_ISSUES, COMMON_REPAIRS
 } from "@/types/repair";
 
 interface ServiceItem {
