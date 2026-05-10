@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
