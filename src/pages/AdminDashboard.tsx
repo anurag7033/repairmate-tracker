@@ -531,7 +531,7 @@ const AdminDashboard = () => {
                       <Select value={editingOrder.status} onValueChange={(v) => setEditingOrder({ ...editingOrder, status: v as RepairStatus })}>
                         <SelectTrigger className="rounded-lg mt-1"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {STATUS_ORDER.map((s) => (
+                          {ALL_STATUSES.map((s) => (
                             <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
                           ))}
                         </SelectContent>
