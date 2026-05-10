@@ -71,7 +71,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered" | "returned">("all");
   const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings">("repairs");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
