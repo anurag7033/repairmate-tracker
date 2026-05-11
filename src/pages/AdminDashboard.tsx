@@ -2,10 +2,13 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
+import CustomersSection from "@/components/admin/CustomersSection";
+import CustomerPickerField from "@/components/admin/CustomerPickerField";
+import { Customer } from "@/types/customer";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -72,7 +75,8 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered" | "returned">("all");
-  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings">("repairs");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers">("repairs");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -189,6 +193,7 @@ const AdminDashboard = () => {
   const openEdit = (order: RepairOrder) => {
     setEditingOrder({ ...order });
     setServiceItems(parseServiceItems(order.repairDetails));
+    setSelectedCustomer(null);
     setIsEditing(true);
     setDialogOpen(true);
   };
@@ -196,8 +201,18 @@ const AdminDashboard = () => {
   const openNew = () => {
     setEditingOrder(emptyOrder());
     setServiceItems([]);
+    setSelectedCustomer(null);
     setIsEditing(false);
     setDialogOpen(true);
+  };
+
+  const handleCustomerSelect = (c: Customer) => {
+    setSelectedCustomer(c);
+    setEditingOrder((prev) => ({
+      ...(prev || emptyOrder()),
+      customerName: c.name,
+      customerPhone: c.phone,
+    }));
   };
 
   const addServiceItem = (name: string, price: number) => {
@@ -349,12 +364,22 @@ const AdminDashboard = () => {
             <Phone className="w-4 h-4 mr-2" />
             Bookings
           </Button>
+          <Button
+            variant={activeTab === "customers" ? "default" : "outline"}
+            onClick={() => setActiveTab("customers")}
+            className="rounded-xl font-semibold"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Customers
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
           <AdminVoucherSection />
         ) : activeTab === "bookings" ? (
           <AdminBookingSection />
+        ) : activeTab === "customers" ? (
+          <CustomersSection />
         ) : (
         <>
         {/* Actions bar */}
@@ -381,6 +406,21 @@ const AdminDashboard = () => {
               </DialogHeader>
               {editingOrder && (
                 <div className="space-y-4 py-2">
+                  {!isEditing && (
+                    <div>
+                      <Label className="text-xs">Select Customer</Label>
+                      <div className="mt-1">
+                        <CustomerPickerField
+                          value={selectedCustomer}
+                          onSelect={handleCustomerSelect}
+                          onClear={() => {
+                            setSelectedCustomer(null);
+                            setEditingOrder({ ...editingOrder, customerName: "", customerPhone: "" });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">Customer Name *</Label>

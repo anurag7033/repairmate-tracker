@@ -119,10 +119,47 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string
+          phone_normalized: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone: string
+          phone_normalized: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string
+          phone_normalized?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       repair_orders: {
         Row: {
           advance_paid: number
           created_at: string
+          customer_id: string | null
           customer_name: string
           customer_phone: string
           discount_amount: number
@@ -142,6 +179,7 @@ export type Database = {
         Insert: {
           advance_paid?: number
           created_at?: string
+          customer_id?: string | null
           customer_name: string
           customer_phone: string
           discount_amount?: number
@@ -161,6 +199,7 @@ export type Database = {
         Update: {
           advance_paid?: number
           created_at?: string
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string
           discount_amount?: number
@@ -177,7 +216,15 @@ export type Database = {
           tracking_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "repair_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voucher_redemptions: {
         Row: {
@@ -311,6 +358,23 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_customers_with_stats: {
+        Args: never
+        Returns: {
+          address: string
+          created_at: string
+          email: string
+          id: string
+          last_visit: string
+          name: string
+          notes: string
+          pending_repairs: number
+          phone: string
+          total_repairs: number
+          total_spent: number
+          updated_at: string
+        }[]
+      }
       get_repair_by_tracking: {
         Args: { p_tracking_id: string }
         Returns: {
@@ -331,6 +395,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      normalize_phone: { Args: { p: string }; Returns: string }
       remove_voucher_public: {
         Args: { p_tracking_id: string }
         Returns: undefined
