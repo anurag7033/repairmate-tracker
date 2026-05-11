@@ -364,12 +364,22 @@ const AdminDashboard = () => {
             <Phone className="w-4 h-4 mr-2" />
             Bookings
           </Button>
+          <Button
+            variant={activeTab === "customers" ? "default" : "outline"}
+            onClick={() => setActiveTab("customers")}
+            className="rounded-xl font-semibold"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Customers
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
           <AdminVoucherSection />
         ) : activeTab === "bookings" ? (
           <AdminBookingSection />
+        ) : activeTab === "customers" ? (
+          <CustomersSection />
         ) : (
         <>
         {/* Actions bar */}
