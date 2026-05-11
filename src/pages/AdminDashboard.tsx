@@ -193,6 +193,7 @@ const AdminDashboard = () => {
   const openEdit = (order: RepairOrder) => {
     setEditingOrder({ ...order });
     setServiceItems(parseServiceItems(order.repairDetails));
+    setSelectedCustomer(null);
     setIsEditing(true);
     setDialogOpen(true);
   };
@@ -200,8 +201,18 @@ const AdminDashboard = () => {
   const openNew = () => {
     setEditingOrder(emptyOrder());
     setServiceItems([]);
+    setSelectedCustomer(null);
     setIsEditing(false);
     setDialogOpen(true);
+  };
+
+  const handleCustomerSelect = (c: Customer) => {
+    setSelectedCustomer(c);
+    setEditingOrder((prev) => ({
+      ...(prev || emptyOrder()),
+      customerName: c.name,
+      customerPhone: c.phone,
+    }));
   };
 
   const addServiceItem = (name: string, price: number) => {
