@@ -406,6 +406,21 @@ const AdminDashboard = () => {
               </DialogHeader>
               {editingOrder && (
                 <div className="space-y-4 py-2">
+                  {!isEditing && (
+                    <div>
+                      <Label className="text-xs">Select Customer</Label>
+                      <div className="mt-1">
+                        <CustomerPickerField
+                          value={selectedCustomer}
+                          onSelect={handleCustomerSelect}
+                          onClear={() => {
+                            setSelectedCustomer(null);
+                            setEditingOrder({ ...editingOrder, customerName: "", customerPhone: "" });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">Customer Name *</Label>
