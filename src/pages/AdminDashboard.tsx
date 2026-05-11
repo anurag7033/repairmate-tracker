@@ -2,10 +2,13 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
+import CustomersSection from "@/components/admin/CustomersSection";
+import CustomerPickerField from "@/components/admin/CustomerPickerField";
+import { Customer } from "@/types/customer";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -72,7 +75,8 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered" | "returned">("all");
-  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings">("repairs");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers">("repairs");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
