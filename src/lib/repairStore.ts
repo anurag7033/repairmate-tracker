@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { RepairOrder } from "@/types/repair";
+import { RepairOrder, STATUS_LABELS } from "@/types/repair";
 
 // Map DB snake_case to frontend camelCase
 function mapFromDb(row: any): RepairOrder {
