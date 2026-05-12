@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink, createVoucher, getVouchersForOrder
+  getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink, createVoucher, getVouchersForOrder, buildStatusWhatsAppMessage
 } from "@/lib/repairStore";
 import { supabase } from "@/integrations/supabase/client";
 import {
