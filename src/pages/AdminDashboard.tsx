@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink, createVoucher, getVouchersForOrder
+  getOrders, addOrder, updateOrder, deleteOrder, generateTrackingId, getWhatsAppLink, createVoucher, getVouchersForOrder, buildStatusWhatsAppMessage
 } from "@/lib/repairStore";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -235,8 +235,7 @@ const AdminDashboard = () => {
 
 
   const sendWhatsApp = (order: RepairOrder) => {
-    const balanceDue = order.quotation - order.advancePaid - order.discountAmount;
-    const msg = `Hello ${order.customerName},\n\nYour mobile repair update:\n📱 ${order.mobileBrand} ${order.mobileModel}\n🔖 Tracking ID: ${order.trackingId}\n📊 Status: ${STATUS_LABELS[order.status]}\n💰 Total: ₹${order.quotation}${order.discountAmount > 0 ? `\n🎟️ Discount: -₹${order.discountAmount}` : ""}\n💵 Advance Paid: ₹${order.advancePaid}\n💳 Balance Due: ₹${balanceDue}\n\n${order.status === "completed" && order.paymentLink && balanceDue > 0 ? `Pay here: ${order.paymentLink}` : ""}\n\nTrack online: ${window.location.origin}/track/${order.trackingId}\n\nThank you for choosing Anurag Mobile Repairing Centre!`;
+    const msg = buildStatusWhatsAppMessage(order);
     window.open(getWhatsAppLink(order.customerPhone, msg), "_blank");
   };
 
