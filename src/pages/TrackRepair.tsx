@@ -528,6 +528,78 @@ const TrackRepair = () => {
         </div>
         )}
 
+        {/* Customer confirms receipt — only when repair is completed and ready for pickup */}
+        {order.status === "completed" && (
+          <div className="bg-card rounded-3xl p-6 shadow-elevated border-2 border-success/30 mb-6 animate-fade-in backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-success/10 flex items-center justify-center">
+                <CheckCircle2 className="w-6 h-6 text-success" />
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-bold">Got your device?</h2>
+                <p className="text-xs text-muted-foreground">Tap below to confirm you've received it.</p>
+              </div>
+            </div>
+            <Button
+              onClick={handleMarkReceived}
+              disabled={markingReceived}
+              className="w-full h-12 rounded-xl font-semibold bg-success hover:bg-success/90 text-success-foreground"
+            >
+              {markingReceived ? (
+                <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Confirming...</>
+              ) : (
+                <><CheckCircle2 className="w-5 h-5 mr-2" /> Mark as Received</>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Delivered success panel with quick actions */}
+        {isDelivered && (
+          <div className="bg-card rounded-3xl p-6 shadow-elevated border-2 border-success/30 mb-6 animate-fade-in backdrop-blur-sm">
+            <div className="text-center mb-5">
+              <div className="w-16 h-16 rounded-3xl bg-success/10 flex items-center justify-center mx-auto mb-3">
+                <PartyPopper className="w-8 h-8 text-success" />
+              </div>
+              <h2 className="font-display text-2xl font-bold">Repair Delivered 🎉</h2>
+              <p className="text-sm text-muted-foreground mt-1">Thanks for trusting Anurag Mobile!</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {order.paymentStatus === "paid" ? (
+                <Button
+                  variant="outline"
+                  className="h-12 rounded-xl font-semibold"
+                  onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}
+                >
+                  <Printer className="w-4 h-4 mr-2" /> Print Bill
+                </Button>
+              ) : (
+                <Button variant="outline" disabled className="h-12 rounded-xl font-semibold opacity-60" title="Available after full payment">
+                  <Printer className="w-4 h-4 mr-2" /> Print Bill
+                </Button>
+              )}
+              <Button
+                className="h-12 rounded-xl font-semibold bg-amber-500 hover:bg-amber-600 text-white"
+                onClick={() => window.open(GOOGLE_REVIEW_URL, "_blank", "noopener,noreferrer")}
+              >
+                <Star className="w-4 h-4 mr-2 fill-current" /> Review on Google
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-12 rounded-xl font-semibold"
+                onClick={() => navigate("/track")}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Tracking
+              </Button>
+            </div>
+            {order.paymentStatus !== "paid" && (
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                Bill / invoice unlocks once full payment is received.
+              </p>
+            )}
+          </div>
+        )}
+
 
         {/* Trust Badge */}
         <div className="mt-8 text-center">
