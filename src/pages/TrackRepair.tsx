@@ -132,7 +132,23 @@ const TrackRepair = () => {
     }
   };
 
-  return (
+  const handleMarkReceived = async () => {
+    if (!order) return;
+    setMarkingReceived(true);
+    try {
+      await markReceivedPublic(order.trackingId);
+      toast({ title: "Device Received ✓", description: "Thank you for confirming delivery!" });
+      const updated = await findByTrackingId(order.trackingId);
+      if (updated) setOrder(updated);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err: any) {
+      toast({ title: "Could not confirm", description: err.message, variant: "destructive" });
+    } finally {
+      setMarkingReceived(false);
+    }
+  };
+
+
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex flex-col">
       {/* Hero Header */}
       <header className="gradient-hero text-primary-foreground relative overflow-hidden">
