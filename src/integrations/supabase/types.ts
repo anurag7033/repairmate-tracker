@@ -395,6 +395,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      mark_received_public: { Args: { p_tracking_id: string }; Returns: Json }
       normalize_phone: { Args: { p: string }; Returns: string }
       remove_voucher_public: {
         Args: { p_tracking_id: string }
