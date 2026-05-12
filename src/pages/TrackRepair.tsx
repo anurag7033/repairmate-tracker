@@ -148,7 +148,7 @@ const TrackRepair = () => {
     }
   };
 
-
+  return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex flex-col">
       {/* Hero Header */}
       <header className="gradient-hero text-primary-foreground relative overflow-hidden">
