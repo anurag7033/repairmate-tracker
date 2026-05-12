@@ -112,6 +112,48 @@ export function getWhatsAppLink(phone: string, message: string): string {
   return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
 }
 
+export const GOOGLE_REVIEW_URL = "https://g.page/r/CT9t1ZhIhIlUEAE/review";
+
+export async function markReceivedPublic(trackingId: string): Promise<void> {
+  const { error } = await supabase.rpc("mark_received_public", {
+    p_tracking_id: trackingId,
+  } as any);
+  if (error) throw new Error(error.message.replace(/^.*?:\s*/, ""));
+}
+
+export function buildStatusWhatsAppMessage(order: RepairOrder): string {
+  const balanceDue = Math.max(0, order.quotation - order.advancePaid - order.discountAmount);
+  const trackUrl = `${window.location.origin}/track/${order.trackingId}`;
+  const device = `${order.mobileBrand} ${order.mobileModel}`;
+  const header = `Hello ${order.customerName},`;
+  const footer = `\n\n🔗 Track: ${trackUrl}\n\n— Anurag Mobile Repairing Centre`;
+
+  switch (order.status) {
+    case "received":
+      return `${header}\n\n📥 We've received your *${device}* at our service centre.\n🔖 Tracking ID: *${order.trackingId}*\nOur technician will begin diagnosis shortly.${footer}`;
+    case "diagnosing":
+      return `${header}\n\n🔍 Our technician is *diagnosing* your *${device}*.\n🔖 Tracking ID: *${order.trackingId}*\nWe'll share an estimate once the issue is confirmed.${footer}`;
+    case "waiting_for_parts":
+      return `${header}\n\n⏳ Your *${device}* repair is on hold — *waiting for parts* to arrive.\n🔖 Tracking ID: *${order.trackingId}*\nWe'll resume the repair as soon as they're in stock.${footer}`;
+    case "repairing":
+      return `${header}\n\n🛠️ Good news — your *${device}* is *under repair* right now.\n🔖 Tracking ID: *${order.trackingId}*\nWe'll update you once it's ready for testing.${footer}`;
+    case "testing":
+      return `${header}\n\n🧪 Your *${device}* repair is done and currently in *quality testing*.\n🔖 Tracking ID: *${order.trackingId}*\nWe'll notify you as soon as it's ready for pickup.${footer}`;
+    case "completed": {
+      const payLine = balanceDue > 0
+        ? `\n💳 Balance Due: *₹${balanceDue}*${order.paymentLink ? `\n🔗 Pay: ${order.paymentLink}` : ""}`
+        : `\n✅ Payment: Fully Paid`;
+      return `${header}\n\n✅ Your *${device}* repair is *completed* and ready for pickup!\n🔖 Tracking ID: *${order.trackingId}*\n💰 Total: ₹${order.quotation}${order.discountAmount > 0 ? `\n🎟️ Discount: -₹${order.discountAmount}` : ""}${payLine}${footer}`;
+    }
+    case "delivered":
+      return `${header}\n\n🎉 Thank you for collecting your *${device}*!\n🔖 Tracking ID: *${order.trackingId}*\nWe hope you're satisfied with our service. We'd love a quick Google review:\n⭐ ${GOOGLE_REVIEW_URL}${footer}`;
+    case "returned":
+      return `${header}\n\n↩️ Your *${device}* has been *returned* as discussed.\n🔖 Tracking ID: *${order.trackingId}*\nNo invoice will be generated. Please contact us if you have any questions.${footer}`;
+    default:
+      return `${header}\n\nUpdate on your *${device}* (Tracking *${order.trackingId}*): ${STATUS_LABELS[order.status]}.${footer}`;
+  }
+}
+
 // Voucher functions
 export function generateVoucherCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
