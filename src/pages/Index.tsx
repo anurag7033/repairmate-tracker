@@ -40,10 +40,13 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Anurag Mobile Repairing Centre – Track Your Mobile Repair Status Online</title>
-        <meta name="description" content="Anurag Mobile Repairing Centre provides expert mobile phone repair services with real-time repair tracking, genuine spare parts, and secure online payments. Track your device repair status instantly." />
+        <title>Anurag Mobile Repair – Track Repair Status Online</title>
+        <meta name="description" content="Track your mobile repair status in real-time at Anurag Mobile Repairing Centre. Expert repairs, genuine parts, secure online payments." />
         <meta name="keywords" content="Anurag Mobile Repairing Centre, mobile repair, phone repair tracking, screen replacement, battery replacement, smartphone repair, mobile repair near me, repair status, online payment" />
         <link rel="canonical" href="https://tracking.anuragmobile.in/" />
+        <meta property="og:title" content="Anurag Mobile Repair – Track Repair Status Online" />
+        <meta property="og:description" content="Track your mobile repair status in real-time. Expert repairs, genuine parts, secure online payments." />
+        <meta property="og:url" content="https://tracking.anuragmobile.in/" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
@@ -54,6 +57,14 @@ const Index = () => {
           "email": "anurag.sharma7033@gmail.com",
           "image": "https://tracking.anuragmobile.in/logo.png",
           "priceRange": "₹",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Vikram Nagar, near Tooti Diwal",
+            "addressLocality": "Varanasi",
+            "addressRegion": "Uttar Pradesh",
+            "postalCode": "221001",
+            "addressCountry": "IN"
+          },
           "serviceType": ["Mobile Phone Repair", "Screen Replacement", "Battery Replacement", "Charging Port Repair", "Software Update", "IC Replacement"],
           "areaServed": "India",
           "sameAs": ["https://anuragmobile.in"]
@@ -101,6 +112,8 @@ const Index = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
+                id="tracking-id"
+                aria-label="Repair tracking ID"
                 placeholder="Enter Tracking ID (e.g. MR-A1B2C3)"
                 value={trackingId}
                 onChange={(e) => setTrackingId(e.target.value)}
@@ -120,7 +133,8 @@ const Index = () => {
       </header>
 
       {/* Features */}
-      <section className="container mx-auto py-16">
+      <section className="container mx-auto py-16" aria-labelledby="features-heading">
+        <h2 id="features-heading" className="font-display text-2xl md:text-3xl font-bold text-center mb-10">Why Choose Anurag Mobile</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
