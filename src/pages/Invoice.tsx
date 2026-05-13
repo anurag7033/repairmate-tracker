@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { findByTrackingId } from "@/lib/repairStore";
 import { RepairOrder } from "@/types/repair";
 import { supabase } from "@/integrations/supabase/client";
@@ -184,12 +185,22 @@ const Invoice = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 print:bg-white print:py-0">
+      <Helmet>
+        <title>Invoice {order.trackingId} – Anurag Mobile Repair</title>
+        <meta name="description" content={`Tax invoice for repair ${order.trackingId} at Anurag Mobile Repairing Centre.`} />
+        <meta name="robots" content="noindex,follow" />
+        <link rel="canonical" href={`https://tracking.anuragmobile.in/invoice/${order.trackingId}`} />
+        <meta property="og:title" content={`Invoice ${order.trackingId} – Anurag Mobile Repair`} />
+        <meta property="og:description" content="Tax invoice from Anurag Mobile Repairing Centre." />
+        <meta property="og:url" content={`https://tracking.anuragmobile.in/invoice/${order.trackingId}`} />
+      </Helmet>
       {/* Action Bar - hidden on print */}
       <div className="max-w-[820px] mx-auto px-4 mb-4 flex items-center justify-between print:hidden">
-        <h1 className="text-lg font-semibold text-gray-800">Invoice Preview</h1>
+        <div className="text-lg font-semibold text-gray-800">Invoice Preview</div>
         <button
           onClick={() => window.print()}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium shadow"
+          aria-label="Print or save invoice as PDF"
         >
           <Printer className="w-4 h-4" /> Print / Save PDF
         </button>
@@ -207,7 +218,7 @@ const Invoice = () => {
         <div className="border border-gray-400">
           {/* Shop header */}
           <div className="p-4 flex items-start gap-3 border-b border-gray-400">
-            <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
+            <img src={logo} alt="Anurag Mobile Repairing Centre logo" className="w-12 h-12 object-contain" />
             <div className="flex-1">
               <h2 className="text-xl font-bold text-slate-800 leading-tight">{SHOP.name}</h2>
               <p className="text-sm text-slate-700 mt-1">{SHOP.address}</p>

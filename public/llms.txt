@@ -1,0 +1,13 @@
+# Anurag Mobile Repairing Centre
+
+> Expert mobile phone repair with real-time online tracking, genuine parts, and secure online payments.
+
+Anurag Mobile Repairing Centre is a local mobile, tablet, and laptop repair service. Customers can book a repair online, track their device's repair status in real time using a tracking ID, and pay securely once the device is ready.
+
+## Pages
+- [Home – Track Repair Status](/): Enter a tracking ID to see real-time repair progress.
+- [Book Your Repair Assistance](/book-repair): Online booking form for screen, battery, charging port, software and other device repairs.
+
+## Optional
+- [Contact](https://anuragmobile.in/contact): Phone, email, and shop address.
+- [Services](https://anuragmobile.in/services): Full list of repair services offered.

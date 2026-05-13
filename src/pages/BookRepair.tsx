@@ -269,14 +269,31 @@ const BookRepair = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
-        <title>Book Repair Assistance – Anurag Mobile Repairing Centre</title>
-        <meta name="description" content="Book a mobile, laptop, or tablet repair online. Pickup & drop, doorstep, or in-store service available." />
+        <title>Book Repair Online – Anurag Mobile Repair</title>
+        <meta name="description" content="Book mobile, laptop, or tablet repair online. Pickup & drop, doorstep, or in-store service with genuine spare parts." />
+        <link rel="canonical" href="https://tracking.anuragmobile.in/book-repair" />
+        <meta property="og:title" content="Book Repair Online – Anurag Mobile Repair" />
+        <meta property="og:description" content="Book mobile, laptop, or tablet repair online with genuine parts and expert technicians." />
+        <meta property="og:url" content="https://tracking.anuragmobile.in/book-repair" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "serviceType": "Mobile Phone Repair",
+          "provider": {
+            "@type": "LocalBusiness",
+            "name": "Anurag Mobile Repairing Centre",
+            "telephone": "+917033067221",
+            "url": "https://tracking.anuragmobile.in"
+          },
+          "areaServed": "India",
+          "description": "Online booking for mobile, tablet, and laptop repair with pickup, doorstep, or in-store options."
+        })}</script>
       </Helmet>
 
       <header className="gradient-hero text-primary-foreground">
         <nav className="container mx-auto flex items-center justify-between py-4">
           <button onClick={() => navigate("/")} className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="w-10 h-10 rounded-lg" />
+            <img src={logo} alt="Anurag Mobile Repairing Centre logo" className="w-10 h-10 rounded-lg" />
             <div className="text-left">
               <span className="font-display text-lg font-bold leading-tight block">Anurag Mobile</span>
               <p className="text-xs text-primary-foreground/60 leading-tight">Book Your Repair</p>
@@ -390,8 +407,8 @@ const BookRepair = () => {
               <div className="flex flex-wrap gap-3">
                 {imageUrls.map((url) => (
                   <div key={url} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
-                    <img src={url} alt="Issue" className="w-full h-full object-cover" />
-                    <button type="button" onClick={() => removeImage(url)} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center">
+                    <img src={url} alt="Mobile repair issue preview" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => removeImage(url)} aria-label="Remove uploaded image" className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -489,10 +506,10 @@ const Section = ({ icon, title, children }: { icon: React.ReactNode; title: stri
 );
 
 const Field = ({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) => (
-  <div className={className}>
-    <Label className="text-sm font-medium mb-1.5 block">{label}</Label>
+  <Label className={`block ${className}`}>
+    <span className="text-sm font-medium mb-1.5 block">{label}</span>
     {children}
-  </div>
+  </Label>
 );
 
 export default BookRepair;

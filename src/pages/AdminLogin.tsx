@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Shield, Lock, ArrowLeft, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,14 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+      <Helmet>
+        <title>Admin Login – Anurag Mobile Repair</title>
+        <meta name="description" content="Staff login for Anurag Mobile Repairing Centre admin dashboard." />
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href="https://tracking.anuragmobile.in/admin" />
+        <meta property="og:title" content="Admin Login – Anurag Mobile Repair" />
+        <meta property="og:url" content="https://tracking.anuragmobile.in/admin" />
+      </Helmet>
       <div className="w-full max-w-sm">
         <Button
           variant="ghost"

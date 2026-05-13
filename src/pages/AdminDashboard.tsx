@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
   Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users,
@@ -314,11 +315,19 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Admin Dashboard – Anurag Mobile Repair</title>
+        <meta name="description" content="Manage repairs, bookings, vouchers, and customers for Anurag Mobile Repairing Centre." />
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href="https://tracking.anuragmobile.in/admin/dashboard" />
+        <meta property="og:title" content="Admin Dashboard – Anurag Mobile Repair" />
+        <meta property="og:url" content="https://tracking.anuragmobile.in/admin/dashboard" />
+      </Helmet>
       {/* Top bar */}
       <header className="gradient-hero text-primary-foreground sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="w-9 h-9 rounded-lg" />
+            <img src={logo} alt="Anurag Mobile Repairing Centre logo" className="w-9 h-9 rounded-lg" />
             <span className="font-display text-lg font-bold">Anurag Mobile Admin</span>
           </div>
           <Button
