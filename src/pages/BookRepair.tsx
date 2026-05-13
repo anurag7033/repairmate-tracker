@@ -506,10 +506,10 @@ const Section = ({ icon, title, children }: { icon: React.ReactNode; title: stri
 );
 
 const Field = ({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) => (
-  <div className={className}>
-    <Label className="text-sm font-medium mb-1.5 block">{label}</Label>
+  <Label className={`block ${className}`}>
+    <span className="text-sm font-medium mb-1.5 block">{label}</span>
     {children}
-  </div>
+  </Label>
 );
 
 export default BookRepair;
