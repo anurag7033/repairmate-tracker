@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { findByTrackingId, applyVoucher, removeAppliedVoucher, markReceivedPublic, GOOGLE_REVIEW_URL } from "@/lib/repairStore";
 import { RepairOrder, STATUS_LABELS, STATUS_ORDER } from "@/types/repair";
 import { ArrowLeft, Smartphone, CheckCircle2, Circle, Clock, CreditCard, ExternalLink, Sparkles, Shield, Wrench, Ticket, CalendarDays, Loader2, Printer, Star, PartyPopper } from "lucide-react";
@@ -150,6 +151,15 @@ const TrackRepair = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex flex-col">
+      <Helmet>
+        <title>{`Repair Status ${order.trackingId} – Anurag Mobile`}</title>
+        <meta name="description" content={`Real-time repair status for ${order.mobileBrand || "your device"} ${order.mobileModel || ""} at Anurag Mobile Repairing Centre.`.trim()} />
+        <meta name="robots" content="noindex,follow" />
+        <link rel="canonical" href={`https://tracking.anuragmobile.in/track/${order.trackingId}`} />
+        <meta property="og:title" content={`Repair Status ${order.trackingId} – Anurag Mobile`} />
+        <meta property="og:description" content="Track your mobile repair status in real-time." />
+        <meta property="og:url" content={`https://tracking.anuragmobile.in/track/${order.trackingId}`} />
+      </Helmet>
       {/* Hero Header */}
       <header className="gradient-hero text-primary-foreground relative overflow-hidden">
         {/* Decorative elements */}
@@ -164,7 +174,7 @@ const TrackRepair = () => {
             Back to Home
           </Link>
           <div className="flex items-center gap-2">
-            <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg shadow-lg" />
+            <img src={logo} alt="Anurag Mobile Repairing Centre logo" className="w-8 h-8 rounded-lg shadow-lg" />
             <span className="font-display text-sm font-bold">Anurag Mobile</span>
           </div>
         </div>
@@ -421,6 +431,8 @@ const TrackRepair = () => {
               </div>
               <div className="flex gap-2">
                 <Input
+                  id="voucher-code"
+                  aria-label="Voucher code"
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                   placeholder="Enter voucher code"
