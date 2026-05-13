@@ -136,6 +136,11 @@ const TrackBooking = () => {
       <Helmet>
         <title>Track Booking {booking.booking_id} – Anurag Mobile</title>
         <meta name="description" content="Track the status of your repair booking. We'll notify you when a technician is assigned." />
+        <meta name="robots" content="noindex,follow" />
+        <link rel="canonical" href={`https://tracking.anuragmobile.in/booking/${booking.booking_id}`} />
+        <meta property="og:title" content={`Track Booking ${booking.booking_id} – Anurag Mobile`} />
+        <meta property="og:description" content="Track the status of your repair booking in real time." />
+        <meta property="og:url" content={`https://tracking.anuragmobile.in/booking/${booking.booking_id}`} />
       </Helmet>
 
       <header className="gradient-hero text-primary-foreground relative overflow-hidden">
@@ -148,7 +153,7 @@ const TrackBooking = () => {
             <ArrowLeft className="w-4 h-4" /> Back to Home
           </Link>
           <div className="flex items-center gap-2">
-            <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg shadow-lg" />
+            <img src={logo} alt="Anurag Mobile Repairing Centre logo" className="w-8 h-8 rounded-lg shadow-lg" />
             <span className="font-display text-sm font-bold">Anurag Mobile</span>
           </div>
         </div>
