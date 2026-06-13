@@ -742,7 +742,7 @@ const AdminDashboard = () => {
           <div className="grid gap-4">
             {filtered.map((order) => {
               const isPaid = order.paymentStatus === "paid";
-              const balanceDue = isPaid ? 0 : order.quotation - order.advancePaid - order.discountAmount;
+              const balanceDue = isPaid ? 0 : Math.max(0, order.quotation - order.advancePaid - order.discountAmount - (order.adminDiscount || 0) - (order.pendingPaymentReceived || 0));
               const isReturned = order.status === "returned";
               const isDelivered = order.status === "delivered";
               const statusPillClass = isDelivered
