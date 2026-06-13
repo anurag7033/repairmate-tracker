@@ -50,6 +50,8 @@ export async function addOrder(order: Omit<RepairOrder, "id" | "createdAt" | "up
       status: order.status,
       quotation: order.quotation,
       advance_paid: order.advancePaid,
+      admin_discount: order.adminDiscount || 0,
+      pending_payment_received: order.pendingPaymentReceived || 0,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
