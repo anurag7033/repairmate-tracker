@@ -420,6 +420,9 @@ const TrackRepair = () => {
                 <span className="font-display text-2xl font-bold text-success">₹0 · Paid</span>
               </div>
             )}
+          </div>
+
+
 
           <div className="flex items-center justify-center mb-5">
             <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
