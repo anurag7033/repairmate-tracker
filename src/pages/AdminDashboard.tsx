@@ -856,7 +856,7 @@ const AdminDashboard = () => {
               <div className="p-3 bg-muted/50 rounded-xl text-sm">
                 <p className="font-semibold">{voucherOrder.customerName}</p>
                 <p className="text-muted-foreground text-xs">Tracking ID: {voucherOrder.trackingId} • {voucherOrder.mobileBrand} {voucherOrder.mobileModel}</p>
-                <p className="text-xs text-muted-foreground mt-1">Balance: ₹{voucherOrder.quotation - voucherOrder.advancePaid - voucherOrder.discountAmount}</p>
+                <p className="text-xs text-muted-foreground mt-1">Balance: ₹{Math.max(0, voucherOrder.quotation - voucherOrder.advancePaid - voucherOrder.discountAmount - (voucherOrder.adminDiscount || 0) - (voucherOrder.pendingPaymentReceived || 0))}</p>
               </div>
 
               <div>
