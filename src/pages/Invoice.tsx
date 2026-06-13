@@ -164,8 +164,10 @@ const Invoice = () => {
 
   const grossSubtotal = normalized.reduce((s, it) => s + it.quantity * it.price, 0);
   const totalQty = normalized.reduce((s, it) => s + it.quantity, 0);
-  const totalDiscount = Number(order.discountAmount || 0);
-  // Distribute discount proportionally across items for display
+  const voucherDiscount = Number(order.discountAmount || 0);
+  const adminDiscount = Number((order as any).adminDiscount || 0);
+  const totalDiscount = voucherDiscount + adminDiscount;
+  // Distribute combined discount proportionally across items for display
   const itemsWithDiscount = normalized.map((it) => {
     const itemGross = it.quantity * it.price;
     const itemDiscount = grossSubtotal > 0 ? (itemGross / grossSubtotal) * totalDiscount : 0;
@@ -177,11 +179,31 @@ const Invoice = () => {
   const finalTotal = Math.max(0, subTotal - totalDiscount);
   const onlinePaid = payments.reduce((s, p) => s + p.amount, 0);
   const advancePaid = Number(order.advancePaid || 0);
-  const totalReceived = Math.max(advancePaid, onlinePaid);
+  const pendingReceived = Number((order as any).pendingPaymentReceived || 0);
+  const totalReceived = Math.max(advancePaid + pendingReceived, onlinePaid);
   const balance = Math.max(0, finalTotal - totalReceived);
+  const isFullyPaid = balance <= 0 && finalTotal > 0;
   const paymentMode = onlinePaid > 0
     ? (payments[0]?.method ? payments[0].method.toUpperCase() : "Online")
-    : (advancePaid > 0 ? "Cash" : "Pending");
+    : (totalReceived > 0 ? "Cash" : "Pending");
+
+  // Block invoice when balance is still due
+  if (!isFullyPaid) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white p-6 print:hidden">
+        <div className="max-w-md text-center border border-gray-300 rounded-lg p-8 shadow">
+          <h2 className="text-xl font-bold text-orange-700 mb-2">Invoice Unavailable</h2>
+          <p className="text-gray-700 text-sm">
+            Invoice can only be generated after full payment.
+          </p>
+          <p className="text-sm text-gray-700 mt-3">
+            Outstanding balance: <strong className="text-red-700">{formatINR(balance)}</strong>
+          </p>
+          <p className="text-xs text-gray-500 mt-3 font-mono">{order.trackingId}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 print:bg-white print:py-0">
