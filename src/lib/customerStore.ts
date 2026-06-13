@@ -146,6 +146,8 @@ export async function getRepairsByCustomerId(customerId: string): Promise<Repair
     paymentStatus: row.payment_status,
     paymentLink: row.payment_link || "",
     discountAmount: Number(row.discount_amount || 0),
+    adminDiscount: Number(row.admin_discount || 0),
+    pendingPaymentReceived: Number(row.pending_payment_received || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }));
