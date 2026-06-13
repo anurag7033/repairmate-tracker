@@ -23,7 +23,12 @@ export interface RepairOrder {
   status: RepairStatus;
   quotation: number;
   advancePaid: number;
+  /** Voucher discount applied to the order */
   discountAmount: number;
+  /** Admin-only manual discount (independent of voucher) */
+  adminDiscount: number;
+  /** Pending payment received from customer after the advance */
+  pendingPaymentReceived: number;
   paymentStatus: PaymentStatus;
   paymentLink: string;
   createdAt: string;

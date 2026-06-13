@@ -66,6 +66,9 @@ const emptyOrder = (): Partial<RepairOrder> => ({
   status: "received",
   quotation: 0,
   advancePaid: 0,
+  discountAmount: 0,
+  adminDiscount: 0,
+  pendingPaymentReceived: 0,
   paymentStatus: "pending",
   paymentLink: "",
 });
@@ -148,14 +151,22 @@ const AdminDashboard = () => {
     const repairDetails = JSON.stringify(serviceItems);
     const quotation = serviceTotal > 0 ? serviceTotal : (editingOrder.quotation || 0);
 
-    // Auto-update payment status based on advance paid
+    // Auto-update payment status based on all payments + discounts
     let paymentStatus = editingOrder.paymentStatus || "pending";
     const advancePaid = editingOrder.advancePaid || 0;
-    
-    if (advancePaid >= quotation && quotation > 0) {
+    const voucherDisc = editingOrder.discountAmount || 0;
+    const adminDisc = editingOrder.adminDiscount || 0;
+    const pendingRcv = editingOrder.pendingPaymentReceived || 0;
+    const totalPaid = advancePaid + pendingRcv;
+    const totalDiscount = voucherDisc + adminDisc;
+    const remaining = Math.max(0, quotation - totalDiscount - totalPaid);
+
+    if (quotation > 0 && remaining <= 0) {
       paymentStatus = "paid";
-    } else if (advancePaid > 0) {
+    } else if (totalPaid > 0) {
       paymentStatus = "partial";
+    } else {
+      paymentStatus = "pending";
     }
 
     try {
@@ -599,39 +610,84 @@ const AdminDashboard = () => {
                   </div>
 
                   {/* Payment Section */}
-                  <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
-                    <Label className="text-xs font-semibold text-foreground">💰 Payment Details</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Estimated Amount (₹)</Label>
-                        <Input 
-                          type="number" 
-                          value={editingOrder.quotation || 0} 
-                          onChange={(e) => setEditingOrder({ ...editingOrder, quotation: Number(e.target.value) })} 
-                          className="rounded-lg mt-1" 
-                        />
+                  {(() => {
+                    const billAmount = serviceTotal > 0 ? serviceTotal : (editingOrder.quotation || 0);
+                    const voucherDisc = editingOrder.discountAmount || 0;
+                    const adminDisc = editingOrder.adminDiscount || 0;
+                    const advancePaid = editingOrder.advancePaid || 0;
+                    const pendingRcv = editingOrder.pendingPaymentReceived || 0;
+                    const totalPaid = advancePaid + pendingRcv;
+                    const remaining = Math.max(0, billAmount - voucherDisc - adminDisc - advancePaid - pendingRcv);
+                    const status: PaymentStatus =
+                      billAmount > 0 && remaining <= 0 ? "paid" : totalPaid > 0 ? "partial" : "pending";
+                    const statusColor =
+                      status === "paid"
+                        ? "bg-green-500/10 text-green-600 border-green-500/30"
+                        : status === "partial"
+                        ? "bg-orange-500/10 text-orange-600 border-orange-500/30"
+                        : "bg-red-500/10 text-red-600 border-red-500/30";
+                    const statusLabel = status === "paid" ? "PAID" : status === "partial" ? "PARTIALLY PAID" : "UNPAID";
+                    return (
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
+                        <Label className="text-xs font-semibold text-foreground">💰 Payment Details</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Bill Amount (₹)</Label>
+                            <Input
+                              type="number"
+                              value={editingOrder.quotation || 0}
+                              onChange={(e) => setEditingOrder({ ...editingOrder, quotation: Number(e.target.value) })}
+                              className="rounded-lg mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Advance Paid (₹)</Label>
+                            <Input
+                              type="number"
+                              value={editingOrder.advancePaid || 0}
+                              onChange={(e) => setEditingOrder({ ...editingOrder, advancePaid: Number(e.target.value) })}
+                              className="rounded-lg mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Admin Discount (₹)</Label>
+                            <Input
+                              type="number"
+                              value={editingOrder.adminDiscount || 0}
+                              onChange={(e) => setEditingOrder({ ...editingOrder, adminDiscount: Number(e.target.value) })}
+                              className="rounded-lg mt-1"
+                              placeholder="Manual discount"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Pending Payment Received (₹)</Label>
+                            <Input
+                              type="number"
+                              value={editingOrder.pendingPaymentReceived || 0}
+                              onChange={(e) => setEditingOrder({ ...editingOrder, pendingPaymentReceived: Number(e.target.value) })}
+                              className="rounded-lg mt-1"
+                              placeholder="Amount received after advance"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Live summary */}
+                        <div className="rounded-lg bg-card border border-border p-3 space-y-1.5 text-sm">
+                          <div className="flex justify-between"><span className="text-muted-foreground">Bill Amount</span><span className="font-medium">₹{billAmount}</span></div>
+                          {voucherDisc > 0 && <div className="flex justify-between text-amber-600"><span>Voucher Discount</span><span>- ₹{voucherDisc}</span></div>}
+                          {adminDisc > 0 && <div className="flex justify-between text-amber-600"><span>Admin Discount</span><span>- ₹{adminDisc}</span></div>}
+                          {advancePaid > 0 && <div className="flex justify-between text-green-600"><span>Advance Payment</span><span>- ₹{advancePaid}</span></div>}
+                          {pendingRcv > 0 && <div className="flex justify-between text-green-600"><span>Pending Payment Received</span><span>- ₹{pendingRcv}</span></div>}
+                          <div className="flex justify-between border-t border-border pt-1.5"><span className="font-semibold">Total Paid</span><span className="font-semibold">₹{totalPaid}</span></div>
+                          <div className="flex justify-between"><span className="font-semibold">Remaining Balance</span><span className={`font-bold ${remaining > 0 ? "text-red-600" : "text-green-600"}`}>₹{remaining}</span></div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-border">
+                            <span className="text-xs text-muted-foreground">Payment Status</span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${statusColor}`}>{statusLabel}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Advance Paid (₹)</Label>
-                        <Input 
-                          type="number" 
-                          value={editingOrder.advancePaid || 0} 
-                          onChange={(e) => setEditingOrder({ ...editingOrder, advancePaid: Number(e.target.value) })} 
-                          className="rounded-lg mt-1" 
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <span className="text-xs text-muted-foreground">Final Total (from services)</span>
-                      <span className="font-bold text-primary">₹{serviceTotal > 0 ? serviceTotal : editingOrder.quotation || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Balance Due</span>
-                      <span className="font-bold text-primary">
-                        ₹{(serviceTotal > 0 ? serviceTotal : (editingOrder.quotation || 0)) - (editingOrder.advancePaid || 0)}
-                      </span>
-                    </div>
-                  </div>
+                    );
+                  })()}
                   
                   <div>
                     <Label className="text-xs">Payment Link</Label>
@@ -686,7 +742,7 @@ const AdminDashboard = () => {
           <div className="grid gap-4">
             {filtered.map((order) => {
               const isPaid = order.paymentStatus === "paid";
-              const balanceDue = isPaid ? 0 : order.quotation - order.advancePaid - order.discountAmount;
+              const balanceDue = isPaid ? 0 : Math.max(0, order.quotation - order.advancePaid - order.discountAmount - (order.adminDiscount || 0) - (order.pendingPaymentReceived || 0));
               const isReturned = order.status === "returned";
               const isDelivered = order.status === "delivered";
               const statusPillClass = isDelivered
@@ -723,8 +779,13 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/track/${order.trackingId}`, "_blank")}>
                         <ExternalLink className="w-3 h-3 mr-1" />View
                       </Button>
-                      {!isReturned && isDelivered && isPaid && (
+                      {!isReturned && isPaid && (
                         <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}>
+                          <Printer className="w-3 h-3 mr-1" />Bill
+                        </Button>
+                      )}
+                      {!isReturned && !isPaid && (
+                        <Button size="sm" variant="outline" className="rounded-lg text-xs opacity-50 cursor-not-allowed" disabled title="Invoice can only be generated after full payment.">
                           <Printer className="w-3 h-3 mr-1" />Bill
                         </Button>
                       )}
@@ -800,7 +861,7 @@ const AdminDashboard = () => {
               <div className="p-3 bg-muted/50 rounded-xl text-sm">
                 <p className="font-semibold">{voucherOrder.customerName}</p>
                 <p className="text-muted-foreground text-xs">Tracking ID: {voucherOrder.trackingId} • {voucherOrder.mobileBrand} {voucherOrder.mobileModel}</p>
-                <p className="text-xs text-muted-foreground mt-1">Balance: ₹{voucherOrder.quotation - voucherOrder.advancePaid - voucherOrder.discountAmount}</p>
+                <p className="text-xs text-muted-foreground mt-1">Balance: ₹{Math.max(0, voucherOrder.quotation - voucherOrder.advancePaid - voucherOrder.discountAmount - (voucherOrder.adminDiscount || 0) - (voucherOrder.pendingPaymentReceived || 0))}</p>
               </div>
 
               <div>

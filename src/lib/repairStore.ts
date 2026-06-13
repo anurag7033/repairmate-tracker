@@ -19,6 +19,8 @@ function mapFromDb(row: any): RepairOrder {
     paymentStatus: row.payment_status,
     paymentLink: row.payment_link || "",
     discountAmount: Number(row.discount_amount || 0),
+    adminDiscount: Number(row.admin_discount || 0),
+    pendingPaymentReceived: Number(row.pending_payment_received || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -48,6 +50,8 @@ export async function addOrder(order: Omit<RepairOrder, "id" | "createdAt" | "up
       status: order.status,
       quotation: order.quotation,
       advance_paid: order.advancePaid,
+      admin_discount: order.adminDiscount || 0,
+      pending_payment_received: order.pendingPaymentReceived || 0,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
@@ -71,6 +75,8 @@ export async function updateOrder(order: RepairOrder): Promise<void> {
       status: order.status,
       quotation: order.quotation,
       advance_paid: order.advancePaid,
+      admin_discount: order.adminDiscount || 0,
+      pending_payment_received: order.pendingPaymentReceived || 0,
       payment_status: order.paymentStatus,
       payment_link: order.paymentLink,
     })
@@ -122,7 +128,7 @@ export async function markReceivedPublic(trackingId: string): Promise<void> {
 }
 
 export function buildStatusWhatsAppMessage(order: RepairOrder): string {
-  const balanceDue = Math.max(0, order.quotation - order.advancePaid - order.discountAmount);
+  const balanceDue = Math.max(0, order.quotation - order.advancePaid - order.discountAmount - (order.adminDiscount || 0) - (order.pendingPaymentReceived || 0));
   const trackUrl = `${window.location.origin}/track/${order.trackingId}`;
   const device = `${order.mobileBrand} ${order.mobileModel}`;
   const header = `Hello ${order.customerName},`;

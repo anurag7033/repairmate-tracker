@@ -101,7 +101,7 @@ const TrackRepair = () => {
   const isDelivered = order.status === "delivered";
   // For delivered, mark every step in the linear timeline as completed (green)
   const currentIndex = isDelivered ? STATUS_ORDER.length : STATUS_ORDER.indexOf(order.status);
-  const balanceDue = order.paymentStatus === "paid" ? 0 : order.quotation - order.advancePaid - order.discountAmount;
+  const balanceDue = order.paymentStatus === "paid" ? 0 : Math.max(0, order.quotation - order.advancePaid - order.discountAmount - (order.adminDiscount || 0) - (order.pendingPaymentReceived || 0));
 
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;
@@ -394,13 +394,35 @@ const TrackRepair = () => {
               </div>
             )}
             
-            {balanceDue > 0 && (
+            {(order.adminDiscount || 0) > 0 && (
+              <div className="flex items-center justify-between p-3 bg-amber-500/10 rounded-xl">
+                <span className="text-sm text-amber-600">Additional Discount</span>
+                <span className="font-display text-lg font-bold text-amber-600">- ₹{order.adminDiscount}</span>
+              </div>
+            )}
+
+            {(order.pendingPaymentReceived || 0) > 0 && (
+              <div className="flex items-center justify-between p-3 bg-success/10 rounded-xl">
+                <span className="text-sm text-success">Payment Received</span>
+                <span className="font-display text-lg font-bold text-success">- ₹{order.pendingPaymentReceived}</span>
+              </div>
+            )}
+
+            {order.paymentStatus !== "paid" && balanceDue > 0 && (
               <div className="flex items-center justify-between p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
                 <span className="text-sm font-medium text-primary">Balance Due</span>
                 <span className="font-display text-2xl font-bold text-primary">₹{balanceDue}</span>
               </div>
             )}
+            {order.paymentStatus === "paid" && (
+              <div className="flex items-center justify-between p-4 bg-success/10 rounded-xl border-2 border-success/20">
+                <span className="text-sm font-medium text-success">Balance Due</span>
+                <span className="font-display text-2xl font-bold text-success">₹0 · Paid</span>
+              </div>
+            )}
           </div>
+
+
 
           <div className="flex items-center justify-center mb-5">
             <span className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
