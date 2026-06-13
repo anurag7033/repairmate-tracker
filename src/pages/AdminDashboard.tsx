@@ -151,14 +151,22 @@ const AdminDashboard = () => {
     const repairDetails = JSON.stringify(serviceItems);
     const quotation = serviceTotal > 0 ? serviceTotal : (editingOrder.quotation || 0);
 
-    // Auto-update payment status based on advance paid
+    // Auto-update payment status based on all payments + discounts
     let paymentStatus = editingOrder.paymentStatus || "pending";
     const advancePaid = editingOrder.advancePaid || 0;
-    
-    if (advancePaid >= quotation && quotation > 0) {
+    const voucherDisc = editingOrder.discountAmount || 0;
+    const adminDisc = editingOrder.adminDiscount || 0;
+    const pendingRcv = editingOrder.pendingPaymentReceived || 0;
+    const totalPaid = advancePaid + pendingRcv;
+    const totalDiscount = voucherDisc + adminDisc;
+    const remaining = Math.max(0, quotation - totalDiscount - totalPaid);
+
+    if (quotation > 0 && remaining <= 0) {
       paymentStatus = "paid";
-    } else if (advancePaid > 0) {
+    } else if (totalPaid > 0) {
       paymentStatus = "partial";
+    } else {
+      paymentStatus = "pending";
     }
 
     try {
