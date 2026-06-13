@@ -66,6 +66,9 @@ const emptyOrder = (): Partial<RepairOrder> => ({
   status: "received",
   quotation: 0,
   advancePaid: 0,
+  discountAmount: 0,
+  adminDiscount: 0,
+  pendingPaymentReceived: 0,
   paymentStatus: "pending",
   paymentLink: "",
 });
