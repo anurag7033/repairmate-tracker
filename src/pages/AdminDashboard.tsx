@@ -779,8 +779,13 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/track/${order.trackingId}`, "_blank")}>
                         <ExternalLink className="w-3 h-3 mr-1" />View
                       </Button>
-                      {!isReturned && isDelivered && isPaid && (
+                      {!isReturned && isPaid && (
                         <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => window.open(`/invoice/${order.trackingId}`, "_blank")}>
+                          <Printer className="w-3 h-3 mr-1" />Bill
+                        </Button>
+                      )}
+                      {!isReturned && !isPaid && (
+                        <Button size="sm" variant="outline" className="rounded-lg text-xs opacity-50 cursor-not-allowed" disabled title="Invoice can only be generated after full payment.">
                           <Printer className="w-3 h-3 mr-1" />Bill
                         </Button>
                       )}
