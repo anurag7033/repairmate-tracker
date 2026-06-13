@@ -128,7 +128,7 @@ export async function markReceivedPublic(trackingId: string): Promise<void> {
 }
 
 export function buildStatusWhatsAppMessage(order: RepairOrder): string {
-  const balanceDue = Math.max(0, order.quotation - order.advancePaid - order.discountAmount);
+  const balanceDue = Math.max(0, order.quotation - order.advancePaid - order.discountAmount - (order.adminDiscount || 0) - (order.pendingPaymentReceived || 0));
   const trackUrl = `${window.location.origin}/track/${order.trackingId}`;
   const device = `${order.mobileBrand} ${order.mobileModel}`;
   const header = `Hello ${order.customerName},`;
