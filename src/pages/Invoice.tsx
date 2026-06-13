@@ -341,6 +341,18 @@ const Invoice = () => {
                 <span>Sub Total</span>
                 <span className="font-semibold">: &nbsp;&nbsp; {formatINR(subTotal)}</span>
               </div>
+              {voucherDiscount > 0 && (
+                <div className="flex justify-between p-2 border-b border-gray-300">
+                  <span>Voucher Discount</span>
+                  <span className="text-green-700">: &nbsp;&nbsp; -{formatINR(voucherDiscount)}</span>
+                </div>
+              )}
+              {adminDiscount > 0 && (
+                <div className="flex justify-between p-2 border-b border-gray-300">
+                  <span>Additional Discount</span>
+                  <span className="text-green-700">: &nbsp;&nbsp; -{formatINR(adminDiscount)}</span>
+                </div>
+              )}
               <div className="flex justify-between p-2 border-b border-gray-400 bg-gray-50">
                 <span className="font-bold">Total</span>
                 <span className="font-bold">: &nbsp;&nbsp; {formatINR(finalTotal)}</span>
@@ -349,13 +361,19 @@ const Invoice = () => {
                 <p className="font-bold text-sm">Invoice Amount In Words :</p>
                 <p className="text-sm mt-1">{numberToWords(finalTotal)}</p>
               </div>
+              {advancePaid > 0 && (
+                <div className="flex justify-between p-2 border-b border-gray-300">
+                  <span>Advance Payment</span>
+                  <span>: &nbsp;&nbsp; {formatINR(advancePaid)}</span>
+                </div>
+              )}
               <div className="flex justify-between p-2 border-b border-gray-300">
-                <span>Received</span>
-                <span>: &nbsp;&nbsp; {formatINR(totalReceived)}</span>
+                <span>Final Paid Amount</span>
+                <span className="font-semibold">: &nbsp;&nbsp; {formatINR(totalReceived)}</span>
               </div>
-              <div className="flex justify-between p-2 border-b border-gray-300">
-                <span>Balance</span>
-                <span className={balance > 0 ? "text-red-700 font-semibold" : ""}>: &nbsp;&nbsp; {formatINR(balance)}</span>
+              <div className="flex justify-between p-2 border-b border-gray-300 bg-green-50">
+                <span className="font-bold text-green-700">Payment Status</span>
+                <span className="font-bold text-green-700">: &nbsp;&nbsp; PAID</span>
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between p-2">
