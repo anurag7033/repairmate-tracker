@@ -23,7 +23,6 @@ function mapFromDb(row: any): RepairOrder {
     pendingPaymentReceived: Number(row.pending_payment_received || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    updatedAt: row.updated_at,
   };
 }
 
