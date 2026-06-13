@@ -157,6 +157,7 @@ export type Database = {
       }
       repair_orders: {
         Row: {
+          admin_discount: number
           advance_paid: number
           created_at: string
           customer_id: string | null
@@ -170,6 +171,7 @@ export type Database = {
           mobile_model: string
           payment_link: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          pending_payment_received: number
           quotation: number
           repair_details: string | null
           status: Database["public"]["Enums"]["repair_status"]
@@ -177,6 +179,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_discount?: number
           advance_paid?: number
           created_at?: string
           customer_id?: string | null
@@ -190,6 +193,7 @@ export type Database = {
           mobile_model: string
           payment_link?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pending_payment_received?: number
           quotation?: number
           repair_details?: string | null
           status?: Database["public"]["Enums"]["repair_status"]
@@ -197,6 +201,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_discount?: number
           advance_paid?: number
           created_at?: string
           customer_id?: string | null
@@ -210,6 +215,7 @@ export type Database = {
           mobile_model?: string
           payment_link?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pending_payment_received?: number
           quotation?: number
           repair_details?: string | null
           status?: Database["public"]["Enums"]["repair_status"]
@@ -378,6 +384,7 @@ export type Database = {
       get_repair_by_tracking: {
         Args: { p_tracking_id: string }
         Returns: {
+          admin_discount: number
           advance_paid: number
           created_at: string
           customer_name: string
@@ -388,6 +395,7 @@ export type Database = {
           mobile_model: string
           payment_link: string
           payment_status: Database["public"]["Enums"]["payment_status"]
+          pending_payment_received: number
           quotation: number
           repair_details: string
           status: Database["public"]["Enums"]["repair_status"]
