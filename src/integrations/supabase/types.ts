@@ -155,6 +155,63 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          brand: string
+          category: string
+          created_at: string
+          description: string
+          discount_type: string
+          discount_value: number
+          final_price: number
+          id: string
+          image_url: string | null
+          low_stock_threshold: number
+          name: string
+          product_code: string
+          selling_price: number
+          status: string
+          stock_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          brand?: string
+          category?: string
+          created_at?: string
+          description?: string
+          discount_type?: string
+          discount_value?: number
+          final_price?: number
+          id?: string
+          image_url?: string | null
+          low_stock_threshold?: number
+          name: string
+          product_code: string
+          selling_price?: number
+          status?: string
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          category?: string
+          created_at?: string
+          description?: string
+          discount_type?: string
+          discount_value?: number
+          final_price?: number
+          id?: string
+          image_url?: string | null
+          low_stock_threshold?: number
+          name?: string
+          product_code?: string
+          selling_price?: number
+          status?: string
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       repair_orders: {
         Row: {
           admin_discount: number
