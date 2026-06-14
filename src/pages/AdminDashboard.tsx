@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
 import CustomersSection from "@/components/admin/CustomersSection";
+import ProductsSection from "@/components/admin/ProductsSection";
 import CustomerPickerField from "@/components/admin/CustomerPickerField";
 import { Customer } from "@/types/customer";
 import BarcodeScanner from "@/components/BarcodeScanner";
@@ -79,7 +80,7 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered" | "returned">("all");
-  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers">("repairs");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers" | "products">("repairs");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
@@ -358,7 +359,7 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto py-6">
         {/* Tab Switcher */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <Button
             variant={activeTab === "repairs" ? "default" : "outline"}
             onClick={() => setActiveTab("repairs")}
@@ -391,6 +392,14 @@ const AdminDashboard = () => {
             <Users className="w-4 h-4 mr-2" />
             Customers
           </Button>
+          <Button
+            variant={activeTab === "products" ? "default" : "outline"}
+            onClick={() => setActiveTab("products")}
+            className="rounded-xl font-semibold"
+          >
+            <Package className="w-4 h-4 mr-2" />
+            Products
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
@@ -399,6 +408,8 @@ const AdminDashboard = () => {
           <AdminBookingSection />
         ) : activeTab === "customers" ? (
           <CustomersSection />
+        ) : activeTab === "products" ? (
+          <ProductsSection />
         ) : (
         <>
         {/* Actions bar */}
