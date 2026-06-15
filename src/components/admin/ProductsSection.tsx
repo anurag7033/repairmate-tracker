@@ -37,6 +37,7 @@ const emptyInput = (): ProductInput => ({
   description: "",
   imageUrl: null,
   sellingPrice: 0,
+  purchasePrice: 0,
   discountType: "amount",
   discountValue: 0,
   stockQuantity: 0,
@@ -127,6 +128,7 @@ const ProductsSection = () => {
       description: p.description,
       imageUrl: p.imageUrl,
       sellingPrice: p.sellingPrice,
+      purchasePrice: p.purchasePrice,
       discountType: p.discountType,
       discountValue: p.discountValue,
       stockQuantity: p.stockQuantity,
@@ -408,6 +410,17 @@ const ProductsSection = () => {
               <Input type="number" min={0} value={form.sellingPrice}
                 onChange={(e) => setForm(f => ({ ...f, sellingPrice: Number(e.target.value) || 0 }))}
                 className="rounded-xl" />
+            </div>
+            <div>
+              <Label>Purchase Price (₹) <span className="text-xs text-muted-foreground">(admin only)</span></Label>
+              <Input type="number" min={0} value={form.purchasePrice}
+                onChange={(e) => setForm(f => ({ ...f, purchasePrice: Number(e.target.value) || 0 }))}
+                className="rounded-xl" />
+              {form.purchasePrice > 0 && form.sellingPrice > 0 && (
+                <p className="text-xs text-success mt-1">
+                  Profit/unit: ₹{(form.sellingPrice - form.purchasePrice).toLocaleString("en-IN")}
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>

@@ -13,6 +13,7 @@ type Row = {
   discount_type: string;
   discount_value: number;
   final_price: number;
+  purchase_price?: number;
   stock_quantity: number;
   low_stock_threshold: number;
   status: string;
@@ -29,6 +30,7 @@ const mapRow = (r: Row): Product => ({
   description: r.description ?? "",
   imageUrl: r.image_url,
   sellingPrice: Number(r.selling_price) || 0,
+  purchasePrice: Number(r.purchase_price) || 0,
   discountType: (r.discount_type as Product["discountType"]) || "amount",
   discountValue: Number(r.discount_value) || 0,
   finalPrice: Number(r.final_price) || 0,
@@ -56,6 +58,7 @@ export interface ProductInput {
   description: string;
   imageUrl: string | null;
   sellingPrice: number;
+  purchasePrice: number;
   discountType: "amount" | "percentage";
   discountValue: number;
   stockQuantity: number;
@@ -71,12 +74,14 @@ const toRow = (p: ProductInput) => ({
   description: p.description,
   image_url: p.imageUrl,
   selling_price: p.sellingPrice,
+  purchase_price: p.purchasePrice || 0,
   discount_type: p.discountType,
   discount_value: p.discountValue,
   stock_quantity: p.stockQuantity,
   low_stock_threshold: p.lowStockThreshold,
   status: p.status,
 });
+
 
 export async function addProduct(p: ProductInput): Promise<Product> {
   const { data, error } = await supabase

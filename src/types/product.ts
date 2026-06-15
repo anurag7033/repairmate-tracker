@@ -10,6 +10,7 @@ export interface Product {
   description: string;
   imageUrl: string | null;
   sellingPrice: number;
+  purchasePrice: number;
   discountType: DiscountType;
   discountValue: number;
   finalPrice: number;

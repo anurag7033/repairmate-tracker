@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Edit, Save, X, Phone, Mail, MapPin, FileText, Printer, ExternalLink, Loader2 } from "lucide-react";
+import { Edit, Save, X, Phone, Mail, MapPin, FileText, Printer, ExternalLink, Loader2, Wrench, Receipt } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Customer } from "@/types/customer";
 import { RepairOrder, STATUS_LABELS } from "@/types/repair";
-import { getCustomerById, updateCustomer, getRepairsByCustomerId } from "@/lib/customerStore";
+import { SalesInvoice, PAYMENT_METHOD_LABELS } from "@/types/salesInvoice";
+import { getCustomerById, updateCustomer, getRepairsByCustomerId, getSalesInvoicesByCustomerId } from "@/lib/customerStore";
 
 interface Props {
   customerId: string | null;
@@ -22,6 +24,7 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
   const { toast } = useToast();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [repairs, setRepairs] = useState<RepairOrder[]>([]);
+  const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Customer | null>(null);
@@ -31,12 +34,17 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
     let cancelled = false;
     setLoading(true);
     setEditing(false);
-    Promise.all([getCustomerById(customerId), getRepairsByCustomerId(customerId)])
-      .then(([c, r]) => {
+    Promise.all([
+      getCustomerById(customerId),
+      getRepairsByCustomerId(customerId),
+      getSalesInvoicesByCustomerId(customerId),
+    ])
+      .then(([c, r, inv]) => {
         if (cancelled) return;
         setCustomer(c);
         setDraft(c);
         setRepairs(r);
+        setInvoices(inv);
       })
       .catch((e) => toast({ title: "Error", description: e.message, variant: "destructive" }))
       .finally(() => !cancelled && setLoading(false));
@@ -56,9 +64,15 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
     }
   };
 
-  const totalSpent = repairs
+  const totalRepairSpent = repairs
     .filter((r) => r.paymentStatus === "paid")
     .reduce((s, r) => s + Math.max(r.quotation - r.discountAmount, 0), 0);
+  const totalPurchaseSpent = invoices.reduce((s, i) => s + i.grandTotal, 0);
+  const totalSpent = totalRepairSpent + totalPurchaseSpent;
+  const lastVisit = [
+    ...repairs.map((r) => r.createdAt),
+    ...invoices.map((i) => i.createdAt),
+  ].sort().reverse()[0];
 
   const statusPill = (status: RepairOrder["status"]) => {
     if (status === "delivered") return "bg-success text-success-foreground";
@@ -66,7 +80,7 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
     if (status === "completed") return "bg-success/10 text-success";
     return "bg-secondary/10 text-secondary";
   };
-  const paymentPill = (p: RepairOrder["paymentStatus"]) =>
+  const paymentPill = (p: string) =>
     p === "paid" ? "bg-success/10 text-success" : p === "partial" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground";
 
   return (
@@ -76,7 +90,7 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
           <DialogTitle className="font-display flex items-center justify-between">
             <span>Customer Details</span>
             {customer && !editing && (
-              <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setEditing(true)}>
+              <Button size="sm" variant="outline" className="rounded-lg mr-8" onClick={() => setEditing(true)}>
                 <Edit className="w-3 h-3 mr-1" />Edit
               </Button>
             )}
@@ -136,82 +150,126 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-card border border-border text-center">
                 <div className="text-xs text-muted-foreground">Total Repairs</div>
                 <div className="font-display text-2xl font-bold text-primary">{repairs.length}</div>
               </div>
               <div className="p-3 rounded-xl bg-card border border-border text-center">
-                <div className="text-xs text-muted-foreground">Pending</div>
-                <div className="font-display text-2xl font-bold text-warning">
-                  {repairs.filter((r) => !["delivered", "returned"].includes(r.status)).length}
-                </div>
+                <div className="text-xs text-muted-foreground">Total Purchases</div>
+                <div className="font-display text-2xl font-bold text-secondary">{invoices.length}</div>
               </div>
               <div className="p-3 rounded-xl bg-card border border-border text-center">
                 <div className="text-xs text-muted-foreground">Total Spent</div>
                 <div className="font-display text-2xl font-bold text-success">₹{totalSpent.toLocaleString("en-IN")}</div>
               </div>
+              <div className="p-3 rounded-xl bg-card border border-border text-center">
+                <div className="text-xs text-muted-foreground">Last Visit</div>
+                <div className="font-display text-sm font-bold mt-2">
+                  {lastVisit ? new Date(lastVisit).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "—"}
+                </div>
+              </div>
             </div>
 
-            {/* Repair history */}
-            <div>
-              <h4 className="font-semibold mb-2">Repair History</h4>
-              {repairs.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-6 text-center">No repairs yet.</p>
-              ) : (
-                <div className="bg-card border border-border rounded-xl overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead className="bg-muted/50 text-muted-foreground">
-                        <tr>
-                          <th className="text-left px-3 py-2">Tracking</th>
-                          <th className="text-left px-3 py-2">Device</th>
-                          <th className="text-left px-3 py-2">Issue</th>
-                          <th className="text-left px-3 py-2">Status</th>
-                          <th className="text-left px-3 py-2">Payment</th>
-                          <th className="text-left px-3 py-2">Date</th>
-                          <th className="text-right px-3 py-2">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {repairs.map((r) => (
-                          <tr key={r.id} className="border-t border-border">
-                            <td className="px-3 py-2 font-mono font-semibold text-primary">{r.trackingId}</td>
-                            <td className="px-3 py-2">{r.mobileBrand} {r.mobileModel}</td>
-                            <td className="px-3 py-2 max-w-[160px] truncate">{r.issueDescription || "—"}</td>
-                            <td className="px-3 py-2">
-                              <span className={`px-2 py-0.5 rounded-full font-semibold ${statusPill(r.status)}`}>
-                                {r.status === "delivered" ? "Completed" : STATUS_LABELS[r.status]}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className={`px-2 py-0.5 rounded-full font-semibold ${paymentPill(r.paymentStatus)}`}>
-                                {r.paymentStatus === "paid" ? "Paid" : r.paymentStatus === "partial" ? "Partial" : "Pending"}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-muted-foreground">
-                              {new Date(r.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex gap-1 justify-end">
-                                <Button size="sm" variant="outline" className="rounded-lg h-7 px-2" onClick={() => window.open(`/track/${r.trackingId}`, "_blank")}>
-                                  <ExternalLink className="w-3 h-3" />
-                                </Button>
-                                {r.status === "delivered" && r.paymentStatus === "paid" && (
-                                  <Button size="sm" variant="outline" className="rounded-lg h-7 px-2" onClick={() => window.open(`/invoice/${r.trackingId}`, "_blank")}>
-                                    <Printer className="w-3 h-3" />
-                                  </Button>
-                                )}
-                              </div>
-                            </td>
+            <Tabs defaultValue="repairs">
+              <TabsList className="grid grid-cols-2 w-full">
+                <TabsTrigger value="repairs"><Wrench className="w-3 h-3 mr-2" />Repair History ({repairs.length})</TabsTrigger>
+                <TabsTrigger value="purchases"><Receipt className="w-3 h-3 mr-2" />Purchase History ({invoices.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="repairs">
+                {repairs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-6 text-center">No repairs yet.</p>
+                ) : (
+                  <div className="bg-card border border-border rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-muted/50 text-muted-foreground">
+                          <tr>
+                            <th className="text-left px-3 py-2">Tracking</th>
+                            <th className="text-left px-3 py-2">Device</th>
+                            <th className="text-left px-3 py-2">Issue</th>
+                            <th className="text-left px-3 py-2">Status</th>
+                            <th className="text-left px-3 py-2">Amount</th>
+                            <th className="text-left px-3 py-2">Date</th>
+                            <th className="text-right px-3 py-2">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {repairs.map((r) => (
+                            <tr key={r.id} className="border-t border-border">
+                              <td className="px-3 py-2 font-mono font-semibold text-primary">{r.trackingId}</td>
+                              <td className="px-3 py-2">{r.mobileBrand} {r.mobileModel}</td>
+                              <td className="px-3 py-2 max-w-[160px] truncate">{r.issueDescription || "—"}</td>
+                              <td className="px-3 py-2">
+                                <span className={`px-2 py-0.5 rounded-full font-semibold ${statusPill(r.status)}`}>
+                                  {r.status === "delivered" ? "Completed" : STATUS_LABELS[r.status]}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 font-semibold">₹{r.quotation.toLocaleString("en-IN")}</td>
+                              <td className="px-3 py-2 text-muted-foreground">
+                                {new Date(r.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex gap-1 justify-end">
+                                  <Button size="sm" variant="outline" className="rounded-lg h-7 px-2" onClick={() => window.open(`/track/${r.trackingId}`, "_blank")}>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </Button>
+                                  {r.status === "delivered" && r.paymentStatus === "paid" && (
+                                    <Button size="sm" variant="outline" className="rounded-lg h-7 px-2" onClick={() => window.open(`/invoice/${r.trackingId}`, "_blank")}>
+                                      <Printer className="w-3 h-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="purchases">
+                {invoices.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-6 text-center">No purchases yet.</p>
+                ) : (
+                  <div className="bg-card border border-border rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-muted/50 text-muted-foreground">
+                          <tr>
+                            <th className="text-left px-3 py-2">Invoice #</th>
+                            <th className="text-left px-3 py-2">Amount</th>
+                            <th className="text-left px-3 py-2">Method</th>
+                            <th className="text-left px-3 py-2">Status</th>
+                            <th className="text-left px-3 py-2">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {invoices.map((i) => (
+                            <tr key={i.id} className="border-t border-border">
+                              <td className="px-3 py-2 font-mono font-semibold text-primary">{i.invoiceNumber}</td>
+                              <td className="px-3 py-2 font-semibold">₹{i.grandTotal.toLocaleString("en-IN")}</td>
+                              <td className="px-3 py-2">{PAYMENT_METHOD_LABELS[i.paymentMethod]}</td>
+                              <td className="px-3 py-2">
+                                <span className={`px-2 py-0.5 rounded-full font-semibold ${paymentPill(i.paymentStatus)}`}>
+                                  {i.paymentStatus === "paid" ? "Paid" : i.paymentStatus === "partial" ? "Partial" : "Pending"}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 text-muted-foreground">
+                                {new Date(i.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </DialogContent>

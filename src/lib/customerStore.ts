@@ -1,6 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Customer, CustomerWithStats } from "@/types/customer";
 import { RepairOrder } from "@/types/repair";
+import { SalesInvoice } from "@/types/salesInvoice";
+import { getInvoicesByCustomerId } from "@/lib/salesInvoiceStore";
+
+export async function getSalesInvoicesByCustomerId(customerId: string): Promise<SalesInvoice[]> {
+  return getInvoicesByCustomerId(customerId);
+}
 
 function mapCustomer(row: any): Customer {
   return {

@@ -169,6 +169,7 @@ export type Database = {
           low_stock_threshold: number
           name: string
           product_code: string
+          purchase_price: number
           selling_price: number
           status: string
           stock_quantity: number
@@ -187,6 +188,7 @@ export type Database = {
           low_stock_threshold?: number
           name: string
           product_code: string
+          purchase_price?: number
           selling_price?: number
           status?: string
           stock_quantity?: number
@@ -205,6 +207,7 @@ export type Database = {
           low_stock_threshold?: number
           name?: string
           product_code?: string
+          purchase_price?: number
           selling_price?: number
           status?: string
           stock_quantity?: number
@@ -282,6 +285,161 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "repair_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_invoice_items: {
+        Row: {
+          created_at: string
+          discount: number
+          id: string
+          invoice_id: string
+          line_total: number
+          product_code: string
+          product_id: string | null
+          product_name: string
+          profit_per_unit: number
+          purchase_price: number
+          quantity: number
+          total_profit: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          discount?: number
+          id?: string
+          invoice_id: string
+          line_total?: number
+          product_code: string
+          product_id?: string | null
+          product_name: string
+          profit_per_unit?: number
+          purchase_price?: number
+          quantity?: number
+          total_profit?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          discount?: number
+          id?: string
+          invoice_id?: string
+          line_total?: number
+          product_code?: string
+          product_id?: string | null
+          product_name?: string
+          profit_per_unit?: number
+          purchase_price?: number
+          quantity?: number
+          total_profit?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_invoices: {
+        Row: {
+          amount_received: number
+          change_returned: number
+          created_at: string
+          customer_address: string | null
+          customer_alt_phone: string | null
+          customer_email: string | null
+          customer_gst: string | null
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string
+          grand_total: number
+          gst_amount: number
+          gst_percent: number
+          id: string
+          invoice_discount: number
+          invoice_number: string
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["sales_payment_method"]
+          payment_status: Database["public"]["Enums"]["sales_payment_status"]
+          product_discount_total: number
+          remaining_amount: number
+          subtotal: number
+          total_profit: number
+          total_purchase_cost: number
+          updated_at: string
+        }
+        Insert: {
+          amount_received?: number
+          change_returned?: number
+          created_at?: string
+          customer_address?: string | null
+          customer_alt_phone?: string | null
+          customer_email?: string | null
+          customer_gst?: string | null
+          customer_id?: string | null
+          customer_name: string
+          customer_phone: string
+          grand_total?: number
+          gst_amount?: number
+          gst_percent?: number
+          id?: string
+          invoice_discount?: number
+          invoice_number?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["sales_payment_method"]
+          payment_status?: Database["public"]["Enums"]["sales_payment_status"]
+          product_discount_total?: number
+          remaining_amount?: number
+          subtotal?: number
+          total_profit?: number
+          total_purchase_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          amount_received?: number
+          change_returned?: number
+          created_at?: string
+          customer_address?: string | null
+          customer_alt_phone?: string | null
+          customer_email?: string | null
+          customer_gst?: string | null
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string
+          grand_total?: number
+          gst_amount?: number
+          gst_percent?: number
+          id?: string
+          invoice_discount?: number
+          invoice_number?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["sales_payment_method"]
+          payment_status?: Database["public"]["Enums"]["sales_payment_status"]
+          product_discount_total?: number
+          remaining_amount?: number
+          subtotal?: number
+          total_profit?: number
+          total_purchase_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoices_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
@@ -399,6 +557,7 @@ export type Database = {
         Args: { p_tracking_id: string; p_voucher_code: string }
         Returns: Json
       }
+      generate_sales_invoice_number: { Args: never; Returns: string }
       get_booking_by_id: {
         Args: { p_booking_id: string }
         Returns: {
@@ -488,6 +647,8 @@ export type Database = {
         | "completed"
         | "delivered"
         | "returned"
+      sales_payment_method: "cash" | "upi" | "card" | "bank_transfer" | "mixed"
+      sales_payment_status: "paid" | "partial" | "pending"
       service_type: "pickup_drop" | "doorstep" | "visit_shop"
     }
     CompositeTypes: {
@@ -638,6 +799,8 @@ export const Constants = {
         "delivered",
         "returned",
       ],
+      sales_payment_method: ["cash", "upi", "card", "bank_transfer", "mixed"],
+      sales_payment_status: ["paid", "partial", "pending"],
       service_type: ["pickup_drop", "doorstep", "visit_shop"],
     },
   },
