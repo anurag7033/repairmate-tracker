@@ -401,6 +401,14 @@ const AdminDashboard = () => {
             <Package className="w-4 h-4 mr-2" />
             Products
           </Button>
+          <Button
+            variant={activeTab === "sales" ? "default" : "outline"}
+            onClick={() => setActiveTab("sales")}
+            className="rounded-xl font-semibold"
+          >
+            <Receipt className="w-4 h-4 mr-2" />
+            Sales Invoice
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
@@ -411,6 +419,8 @@ const AdminDashboard = () => {
           <CustomersSection />
         ) : activeTab === "products" ? (
           <ProductsSection />
+        ) : activeTab === "sales" ? (
+          <SalesInvoicesSection />
         ) : (
         <>
         {/* Actions bar */}
