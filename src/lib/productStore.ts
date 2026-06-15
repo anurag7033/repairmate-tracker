@@ -13,6 +13,7 @@ type Row = {
   discount_type: string;
   discount_value: number;
   final_price: number;
+  purchase_price?: number;
   stock_quantity: number;
   low_stock_threshold: number;
   status: string;
