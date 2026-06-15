@@ -37,6 +37,7 @@ const emptyInput = (): ProductInput => ({
   description: "",
   imageUrl: null,
   sellingPrice: 0,
+  purchasePrice: 0,
   discountType: "amount",
   discountValue: 0,
   stockQuantity: 0,
