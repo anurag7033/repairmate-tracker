@@ -128,6 +128,7 @@ const ProductsSection = () => {
       description: p.description,
       imageUrl: p.imageUrl,
       sellingPrice: p.sellingPrice,
+      purchasePrice: p.purchasePrice,
       discountType: p.discountType,
       discountValue: p.discountValue,
       stockQuantity: p.stockQuantity,
