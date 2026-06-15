@@ -30,6 +30,7 @@ const mapRow = (r: Row): Product => ({
   description: r.description ?? "",
   imageUrl: r.image_url,
   sellingPrice: Number(r.selling_price) || 0,
+  purchasePrice: Number(r.purchase_price) || 0,
   discountType: (r.discount_type as Product["discountType"]) || "amount",
   discountValue: Number(r.discount_value) || 0,
   finalPrice: Number(r.final_price) || 0,
