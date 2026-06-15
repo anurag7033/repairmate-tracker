@@ -58,12 +58,29 @@ export interface ProductInput {
   description: string;
   imageUrl: string | null;
   sellingPrice: number;
+  purchasePrice: number;
   discountType: "amount" | "percentage";
   discountValue: number;
   stockQuantity: number;
   lowStockThreshold: number;
   status: "active" | "inactive";
 }
+
+const toRow = (p: ProductInput) => ({
+  product_code: p.productCode.trim(),
+  name: p.name.trim(),
+  category: p.category.trim(),
+  brand: p.brand.trim(),
+  description: p.description,
+  image_url: p.imageUrl,
+  selling_price: p.sellingPrice,
+  purchase_price: p.purchasePrice || 0,
+  discount_type: p.discountType,
+  discount_value: p.discountValue,
+  stock_quantity: p.stockQuantity,
+  low_stock_threshold: p.lowStockThreshold,
+  status: p.status,
+});
 
 const toRow = (p: ProductInput) => ({
   product_code: p.productCode.trim(),
