@@ -81,13 +81,13 @@ export async function getSalesInvoiceById(id: string): Promise<SalesInvoice | nu
     .maybeSingle();
   if (error) throw error;
   if (!inv) return null;
-  const { data: items, error: ie } = await supabase
-    .from("sales_invoice_items" as any)
-    .select("*")
-    .eq("invoice_id", id)
-    .order("created_at", { ascending: true });
+  const [{ data: items, error: ie }, { data: payments, error: pe }] = await Promise.all([
+    supabase.from("sales_invoice_items" as any).select("*").eq("invoice_id", id).order("created_at", { ascending: true }),
+    supabase.from("sales_invoice_payments" as any).select("*").eq("invoice_id", id).order("created_at", { ascending: true }),
+  ]);
   if (ie) throw ie;
-  return mapInvoice(inv as any, (items as any[]) || []);
+  if (pe) throw pe;
+  return mapInvoice(inv as any, (items as any[]) || [], (payments as any[]) || []);
 }
 
 export async function getInvoicesByCustomerId(customerId: string): Promise<SalesInvoice[]> {
