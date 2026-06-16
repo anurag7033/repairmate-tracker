@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   SalesInvoice,
   SalesInvoiceItem,
+  SalesPayment,
   SalesPaymentMethod,
   SalesPaymentStatus,
 } from "@/types/salesInvoice";
