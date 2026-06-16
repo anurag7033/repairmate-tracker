@@ -577,18 +577,23 @@ const SalesInvoicesSection = () => {
         </DialogContent>
       </Dialog>
 
-      {/* View / Print */}
+      {/* View / Print / Pay / Share */}
       <Dialog open={!!viewInvoice} onOpenChange={(o) => !o && setViewInvoice(null)}>
-        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-display flex items-center justify-between">
-              <span>{viewInvoice?.invoiceNumber}</span>
-              <Button size="sm" variant="outline" className="rounded-lg mr-8" onClick={() => window.print()}>
-                <Printer className="w-3 h-3 mr-1" /> Print
-              </Button>
+        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl print:max-w-full print:max-h-none print:overflow-visible print:border-0 print:p-0 print:rounded-none print:shadow-none">
+          <DialogHeader className="print:hidden">
+            <DialogTitle className="font-display">
+              Invoice {viewInvoice?.invoiceNumber}
             </DialogTitle>
           </DialogHeader>
-          {viewInvoice && <SalesInvoicePrint invoice={viewInvoice} />}
+          {viewInvoice && (
+            <SalesInvoiceView
+              invoice={viewInvoice}
+              onUpdated={(inv) => {
+                setViewInvoice(inv);
+                refresh();
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
