@@ -221,3 +221,63 @@ export async function deleteSalesInvoice(id: string): Promise<void> {
   const { error } = await supabase.from("sales_invoices" as any).delete().eq("id", id);
   if (error) throw error;
 }
+
+export interface AddPaymentInput {
+  invoiceId: string;
+  amount: number;
+  paymentMethod?: string;
+  updatedBy?: string;
+  note?: string;
+}
+
+export async function addInvoicePayment(input: AddPaymentInput): Promise<SalesInvoice> {
+  const current = await getSalesInvoiceById(input.invoiceId);
+  if (!current) throw new Error("Invoice not found");
+  if (input.amount <= 0) throw new Error("Amount must be greater than 0");
+
+  const previousBalance = current.remainingAmount;
+  const newReceived = +(current.amountReceived + input.amount).toFixed(2);
+  const grandTotal = current.grandTotal;
+  const diff = newReceived - grandTotal;
+  const changeReturned = diff > 0 ? +diff.toFixed(2) : 0;
+  const remainingAmount = diff < 0 ? +(-diff).toFixed(2) : 0;
+  let paymentStatus: SalesPaymentStatus = "pending";
+  if (newReceived >= grandTotal && grandTotal > 0) paymentStatus = "paid";
+  else if (newReceived > 0) paymentStatus = "partial";
+
+  const { error: upErr } = await supabase
+    .from("sales_invoices" as any)
+    .update({
+      amount_received: newReceived,
+      change_returned: changeReturned,
+      remaining_amount: remainingAmount,
+      payment_status: paymentStatus,
+    })
+    .eq("id", input.invoiceId);
+  if (upErr) throw upErr;
+
+  const { error: insErr } = await supabase
+    .from("sales_invoice_payments" as any)
+    .insert({
+      invoice_id: input.invoiceId,
+      amount: input.amount,
+      previous_balance: previousBalance,
+      new_balance: remainingAmount,
+      payment_method: input.paymentMethod || null,
+      updated_by: input.updatedBy || null,
+      note: input.note || null,
+    });
+  if (insErr) throw insErr;
+
+  const updated = await getSalesInvoiceById(input.invoiceId);
+  if (!updated) throw new Error("Invoice not found after update");
+  return updated;
+}
+
+export async function updateInvoicePaymentStatus(invoiceId: string, status: SalesPaymentStatus): Promise<void> {
+  const { error } = await supabase
+    .from("sales_invoices" as any)
+    .update({ payment_status: status })
+    .eq("id", invoiceId);
+  if (error) throw error;
+}
