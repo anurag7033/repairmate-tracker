@@ -7,7 +7,7 @@ import {
   SalesPaymentStatus,
 } from "@/types/salesInvoice";
 
-const mapInvoice = (row: any, items: any[] = []): SalesInvoice => ({
+const mapInvoice = (row: any, items: any[] = [], payments: any[] = []): SalesInvoice => ({
   id: row.id,
   invoiceNumber: row.invoice_number,
   customerId: row.customer_id,
@@ -34,6 +34,19 @@ const mapInvoice = (row: any, items: any[] = []): SalesInvoice => ({
   createdAt: row.created_at,
   updatedAt: row.updated_at,
   items: items.map(mapItem),
+  payments: payments.map(mapPayment),
+});
+
+const mapPayment = (row: any): SalesPayment => ({
+  id: row.id,
+  invoiceId: row.invoice_id,
+  amount: Number(row.amount) || 0,
+  previousBalance: Number(row.previous_balance) || 0,
+  newBalance: Number(row.new_balance) || 0,
+  paymentMethod: row.payment_method || null,
+  updatedBy: row.updated_by || null,
+  note: row.note || null,
+  createdAt: row.created_at,
 });
 
 const mapItem = (row: any): SalesInvoiceItem => ({
