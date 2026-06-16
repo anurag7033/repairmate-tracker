@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Trash2, Loader2, FileText, Printer, X, Receipt, Eye,
+  Plus, Search, Trash2, Loader2, FileText, X, Receipt, Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
