@@ -43,6 +43,19 @@ export interface SalesInvoice {
   createdAt: string;
   updatedAt: string;
   items?: SalesInvoiceItem[];
+  payments?: SalesPayment[];
+}
+
+export interface SalesPayment {
+  id: string;
+  invoiceId: string;
+  amount: number;
+  previousBalance: number;
+  newBalance: number;
+  paymentMethod: string | null;
+  updatedBy: string | null;
+  note: string | null;
+  createdAt: string;
 }
 
 export const PAYMENT_METHOD_LABELS: Record<SalesPaymentMethod, string> = {

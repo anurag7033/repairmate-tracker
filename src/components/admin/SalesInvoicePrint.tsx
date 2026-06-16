@@ -27,13 +27,32 @@ const SalesInvoicePrint = ({ invoice }: Props) => {
     <>
       <style>{`
         @media print {
-          @page { size: A4; margin: 12mm; }
-          body * { visibility: hidden; }
-          #sales-invoice-print, #sales-invoice-print * { visibility: visible; }
-          #sales-invoice-print { position: absolute; left: 0; top: 0; width: 100%; }
+          @page { size: A4; margin: 10mm; }
+          html, body { background: white !important; }
+          body * { visibility: hidden !important; }
+          #sales-invoice-print, #sales-invoice-print * { visibility: visible !important; }
+          #sales-invoice-print {
+            position: absolute;
+            left: 0; top: 0;
+            width: 190mm;
+            margin: 0 auto;
+            padding: 0 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            font-size: 11px;
+            color: #000;
+            background: #fff;
+            page-break-inside: avoid;
+          }
+          #sales-invoice-print table { font-size: 10.5px; }
+          #sales-invoice-print h2 { font-size: 16px; }
+          #sales-invoice-print h3 { font-size: 14px; }
+          .no-print { display: none !important; }
         }
       `}</style>
       <div id="sales-invoice-print" className="bg-white text-black p-6 rounded-xl border border-border">
+
         <div className="flex justify-between items-start border-b-2 border-primary pb-4 mb-4">
           <div className="flex items-center gap-3">
             <img src={logo} alt="Logo" className="w-14 h-14 rounded-lg" />
