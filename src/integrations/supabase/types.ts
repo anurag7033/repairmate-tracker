@@ -355,6 +355,50 @@ export type Database = {
           },
         ]
       }
+      sales_invoice_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          new_balance: number
+          note: string | null
+          payment_method: string | null
+          previous_balance: number
+          updated_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          new_balance: number
+          note?: string | null
+          payment_method?: string | null
+          previous_balance: number
+          updated_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          new_balance?: number
+          note?: string | null
+          payment_method?: string | null
+          previous_balance?: number
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoice_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_invoices: {
         Row: {
           amount_received: number
