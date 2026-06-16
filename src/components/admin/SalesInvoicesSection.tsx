@@ -20,6 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import CustomerPickerField from "@/components/admin/CustomerPickerField";
 import SalesInvoicePrint from "@/components/admin/SalesInvoicePrint";
+import SalesInvoiceView from "@/components/admin/SalesInvoiceView";
 import { Customer } from "@/types/customer";
 import { Product } from "@/types/product";
 import { getProducts } from "@/lib/productStore";
