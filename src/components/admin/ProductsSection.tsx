@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X,
+  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon,
 } from "lucide-react";
+import BulkStockUpdateDialog from "./BulkStockUpdateDialog";
+import BarcodeLabelDialog from "./BarcodeLabelDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
