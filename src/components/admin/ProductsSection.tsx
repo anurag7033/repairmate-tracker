@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X,
+  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon,
 } from "lucide-react";
+import BulkStockUpdateDialog from "./BulkStockUpdateDialog";
+import BarcodeLabelDialog from "./BarcodeLabelDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +74,9 @@ const ProductsSection = () => {
   const [form, setForm] = useState<ProductInput>(emptyInput());
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
 
   const refresh = async () => {
     try {
@@ -230,6 +235,9 @@ const ProductsSection = () => {
             <SelectItem value="out_of_stock">Out of Stock</SelectItem>
           </SelectContent>
         </Select>
+        <Button onClick={() => setBulkOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
+          <Upload className="w-4 h-4 mr-2" />Bulk Stock Update
+        </Button>
         <Button onClick={openAdd} className="h-11 rounded-xl font-semibold">
           <Plus className="w-4 h-4 mr-2" />Add Product
         </Button>
@@ -310,6 +318,15 @@ const ProductsSection = () => {
                       </td>
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-1 justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-lg text-xs"
+                            title="Print barcode labels"
+                            onClick={() => setBarcodeProduct(p)}
+                          >
+                            <BarcodeIcon className="w-3 h-3" />
+                          </Button>
                           <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(p)}>
                             <Edit className="w-3 h-3" />
                           </Button>
@@ -480,6 +497,13 @@ const ProductsSection = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BulkStockUpdateDialog open={bulkOpen} onOpenChange={setBulkOpen} onCompleted={refresh} />
+      <BarcodeLabelDialog
+        open={!!barcodeProduct}
+        onOpenChange={(v) => { if (!v) setBarcodeProduct(null); }}
+        product={barcodeProduct}
+      />
     </div>
   );
 };
