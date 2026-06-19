@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon,
+  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet,
 } from "lucide-react";
 import BulkStockUpdateDialog from "./BulkStockUpdateDialog";
+import BulkProductImportDialog from "./BulkProductImportDialog";
 import BarcodeLabelDialog from "./BarcodeLabelDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +77,7 @@ const ProductsSection = () => {
   const [uploading, setUploading] = useState(false);
 
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
 
   const refresh = async () => {
@@ -235,6 +237,9 @@ const ProductsSection = () => {
             <SelectItem value="out_of_stock">Out of Stock</SelectItem>
           </SelectContent>
         </Select>
+        <Button onClick={() => setImportOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
+          <FileSpreadsheet className="w-4 h-4 mr-2" />Import Products
+        </Button>
         <Button onClick={() => setBulkOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
           <Upload className="w-4 h-4 mr-2" />Bulk Stock Update
         </Button>
@@ -499,6 +504,7 @@ const ProductsSection = () => {
       </Dialog>
 
       <BulkStockUpdateDialog open={bulkOpen} onOpenChange={setBulkOpen} onCompleted={refresh} />
+      <BulkProductImportDialog open={importOpen} onOpenChange={setImportOpen} onCompleted={refresh} />
       <BarcodeLabelDialog
         open={!!barcodeProduct}
         onOpenChange={(v) => { if (!v) setBarcodeProduct(null); }}
