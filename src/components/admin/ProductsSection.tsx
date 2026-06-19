@@ -504,6 +504,7 @@ const ProductsSection = () => {
       </Dialog>
 
       <BulkStockUpdateDialog open={bulkOpen} onOpenChange={setBulkOpen} onCompleted={refresh} />
+      <BulkProductImportDialog open={importOpen} onOpenChange={setImportOpen} onCompleted={refresh} />
       <BarcodeLabelDialog
         open={!!barcodeProduct}
         onOpenChange={(v) => { if (!v) setBarcodeProduct(null); }}
