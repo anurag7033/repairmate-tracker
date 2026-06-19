@@ -128,3 +128,53 @@ export async function uploadProductImage(file: File): Promise<string> {
   const { data } = supabase.storage.from("booking-images").getPublicUrl(path);
   return data.publicUrl;
 }
+
+/** Look up products by their product codes in a single round-trip. */
+export async function getProductsByCodes(
+  codes: string[]
+): Promise<Map<string, { id: string; stockQuantity: number; name: string; productCode: string }>> {
+  const unique = Array.from(new Set(codes.map((c) => c.trim()).filter(Boolean)));
+  const out = new Map<string, { id: string; stockQuantity: number; name: string; productCode: string }>();
+  if (unique.length === 0) return out;
+  const CHUNK = 200;
+  for (let i = 0; i < unique.length; i += CHUNK) {
+    const slice = unique.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, product_code, stock_quantity, name")
+      .in("product_code", slice);
+    if (error) throw error;
+    for (const r of data as any[]) {
+      out.set(String(r.product_code).toUpperCase(), {
+        id: r.id,
+        stockQuantity: Number(r.stock_quantity) || 0,
+        name: r.name,
+        productCode: r.product_code,
+      });
+    }
+  }
+  return out;
+}
+
+/** Apply absolute stock_quantity values in batched parallel updates. */
+export async function bulkSetStock(
+  updates: Array<{ id: string; stockQuantity: number }>
+): Promise<number> {
+  if (updates.length === 0) return 0;
+  const CONCURRENCY = 8;
+  let done = 0;
+  for (let i = 0; i < updates.length; i += CONCURRENCY) {
+    const batch = updates.slice(i, i + CONCURRENCY);
+    await Promise.all(
+      batch.map(async (u) => {
+        const { error } = await supabase
+          .from("products")
+          .update({ stock_quantity: Math.max(0, Math.floor(u.stockQuantity)) })
+          .eq("id", u.id);
+        if (error) throw error;
+        done++;
+      })
+    );
+  }
+  return done;
+}
