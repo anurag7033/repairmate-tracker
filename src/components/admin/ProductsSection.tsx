@@ -318,6 +318,15 @@ const ProductsSection = () => {
                       </td>
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-1 justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-lg text-xs"
+                            title="Print barcode labels"
+                            onClick={() => setBarcodeProduct(p)}
+                          >
+                            <BarcodeIcon className="w-3 h-3" />
+                          </Button>
                           <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => openEdit(p)}>
                             <Edit className="w-3 h-3" />
                           </Button>
