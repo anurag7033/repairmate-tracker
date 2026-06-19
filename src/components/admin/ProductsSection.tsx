@@ -235,6 +235,9 @@ const ProductsSection = () => {
             <SelectItem value="out_of_stock">Out of Stock</SelectItem>
           </SelectContent>
         </Select>
+        <Button onClick={() => setBulkOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
+          <Upload className="w-4 h-4 mr-2" />Bulk Stock Update
+        </Button>
         <Button onClick={openAdd} className="h-11 rounded-xl font-semibold">
           <Plus className="w-4 h-4 mr-2" />Add Product
         </Button>
