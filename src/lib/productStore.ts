@@ -332,6 +332,3 @@ export async function bulkImportProducts(
 
   return result;
 }
-
-  return done;
-}
