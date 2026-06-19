@@ -497,6 +497,13 @@ const ProductsSection = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BulkStockUpdateDialog open={bulkOpen} onOpenChange={setBulkOpen} onCompleted={refresh} />
+      <BarcodeLabelDialog
+        open={!!barcodeProduct}
+        onOpenChange={(v) => { if (!v) setBarcodeProduct(null); }}
+        product={barcodeProduct}
+      />
     </div>
   );
 };
