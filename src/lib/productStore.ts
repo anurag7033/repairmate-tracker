@@ -175,6 +175,160 @@ export async function bulkSetStock(
         done++;
       })
     );
+}
+
+export type ImportMode = "add" | "update" | "merge";
+
+export interface ImportRowInput {
+  productCode: string;
+  name?: string;
+  category?: string;
+  brand?: string;
+  description?: string;
+  imageUrl?: string | null;
+  sellingPrice?: number;
+  purchasePrice?: number;
+  discountType?: "amount" | "percentage";
+  discountValue?: number;
+  stockQuantity?: number;
+  lowStockThreshold?: number;
+  status?: "active" | "inactive";
+}
+
+export interface ImportResult {
+  inserted: number;
+  updated: number;
+  skipped: number;
+  errors: Array<{ productCode: string; error: string }>;
+}
+
+const toInsertRow = (r: ImportRowInput) => ({
+  product_code: r.productCode.trim(),
+  name: (r.name || "").trim(),
+  category: (r.category || "").trim(),
+  brand: (r.brand || "").trim(),
+  description: r.description || "",
+  image_url: r.imageUrl ?? null,
+  selling_price: Number(r.sellingPrice) || 0,
+  purchase_price: Number(r.purchasePrice) || 0,
+  discount_type: r.discountType || "amount",
+  discount_value: Number(r.discountValue) || 0,
+  stock_quantity: Math.max(0, Math.floor(Number(r.stockQuantity) || 0)),
+  low_stock_threshold: Math.max(0, Math.floor(Number(r.lowStockThreshold) || 0)),
+  status: r.status || "active",
+});
+
+const toUpdateRow = (r: ImportRowInput, existing: Row, mode: "update" | "merge") => {
+  const row: Record<string, any> = {};
+  const setIf = (key: string, value: any, fallback: any) => {
+    if (value !== undefined && value !== null && value !== "") row[key] = value;
+    else if (mode === "update") row[key] = fallback;
+  };
+  setIf("name", r.name?.trim(), existing.name);
+  setIf("category", r.category?.trim(), existing.category);
+  setIf("brand", r.brand?.trim(), existing.brand);
+  setIf("description", r.description, existing.description);
+  setIf("image_url", r.imageUrl, existing.image_url);
+  if (r.sellingPrice !== undefined) row.selling_price = Number(r.sellingPrice) || 0;
+  if (r.purchasePrice !== undefined) row.purchase_price = Number(r.purchasePrice) || 0;
+  if (r.discountType !== undefined) row.discount_type = r.discountType;
+  if (r.discountValue !== undefined) row.discount_value = Number(r.discountValue) || 0;
+  if (r.lowStockThreshold !== undefined) row.low_stock_threshold = Math.floor(Number(r.lowStockThreshold) || 0);
+  if (r.status !== undefined) row.status = r.status;
+
+  if (mode === "merge") {
+    if (r.stockQuantity !== undefined) {
+      row.stock_quantity = Math.max(0, (Number(existing.stock_quantity) || 0) + Math.floor(Number(r.stockQuantity) || 0));
+    }
+  } else {
+    if (r.stockQuantity !== undefined) {
+      row.stock_quantity = Math.max(0, Math.floor(Number(r.stockQuantity) || 0));
+    }
   }
+  return row;
+};
+
+/** Bulk import rows with mode: add (insert only), update (overwrite fields), merge (sum stock + fill fields). */
+export async function bulkImportProducts(
+  rows: ImportRowInput[],
+  mode: ImportMode
+): Promise<ImportResult> {
+  const result: ImportResult = { inserted: 0, updated: 0, skipped: 0, errors: [] };
+  if (rows.length === 0) return result;
+
+  // Pre-fetch existing by code
+  const codes = rows.map((r) => r.productCode.trim()).filter(Boolean);
+  const existingMap = new Map<string, Row>();
+  const CHUNK = 200;
+  for (let i = 0; i < codes.length; i += CHUNK) {
+    const slice = codes.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .in("product_code", slice);
+    if (error) throw error;
+    for (const r of data as Row[]) existingMap.set(r.product_code.toUpperCase(), r);
+  }
+
+  const toInsert: any[] = [];
+  const toUpdate: Array<{ id: string; row: Record<string, any>; code: string }> = [];
+
+  for (const r of rows) {
+    const code = r.productCode.trim();
+    if (!code) {
+      result.errors.push({ productCode: "(empty)", error: "Missing product code" });
+      continue;
+    }
+    const existing = existingMap.get(code.toUpperCase());
+    if (mode === "add") {
+      if (existing) {
+        result.skipped++;
+        continue;
+      }
+      if (!r.name?.trim()) {
+        result.errors.push({ productCode: code, error: "Name required for new product" });
+        continue;
+      }
+      toInsert.push(toInsertRow(r));
+    } else {
+      if (!existing) {
+        result.skipped++;
+        continue;
+      }
+      toUpdate.push({ id: existing.id, row: toUpdateRow(r, existing, mode), code });
+    }
+  }
+
+  // Batch insert
+  if (toInsert.length > 0) {
+    for (let i = 0; i < toInsert.length; i += 100) {
+      const slice = toInsert.slice(i, i + 100);
+      const { error, data } = await supabase.from("products").insert(slice).select("id");
+      if (error) {
+        for (const ins of slice) {
+          result.errors.push({ productCode: ins.product_code, error: error.message });
+        }
+      } else {
+        result.inserted += (data?.length ?? slice.length);
+      }
+    }
+  }
+
+  // Parallel updates with concurrency cap
+  const CONCURRENCY = 8;
+  for (let i = 0; i < toUpdate.length; i += CONCURRENCY) {
+    const batch = toUpdate.slice(i, i + CONCURRENCY);
+    await Promise.all(
+      batch.map(async (u) => {
+        const { error } = await supabase.from("products").update(u.row).eq("id", u.id);
+        if (error) result.errors.push({ productCode: u.code, error: error.message });
+        else result.updated++;
+      })
+    );
+  }
+
+  return result;
+}
+
   return done;
 }
