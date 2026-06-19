@@ -175,7 +175,10 @@ export async function bulkSetStock(
         done++;
       })
     );
+  }
+  return done;
 }
+
 
 export type ImportMode = "add" | "update" | "merge";
 
