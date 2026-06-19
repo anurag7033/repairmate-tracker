@@ -75,6 +75,9 @@ const ProductsSection = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
+
   const refresh = async () => {
     try {
       setLoading(true);
