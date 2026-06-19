@@ -77,6 +77,7 @@ const ProductsSection = () => {
   const [uploading, setUploading] = useState(false);
 
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
 
   const refresh = async () => {
