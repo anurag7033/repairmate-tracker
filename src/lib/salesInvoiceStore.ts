@@ -283,3 +283,111 @@ export async function updateInvoicePaymentStatus(invoiceId: string, status: Sale
     .eq("id", invoiceId);
   if (error) throw error;
 }
+
+// ============ Returns ============
+import type { SalesReturn, SalesReturnItem } from "@/types/salesInvoiceReturn";
+
+const mapReturn = (r: any, items: any[] = []): SalesReturn => ({
+  id: r.id,
+  invoiceId: r.invoice_id,
+  refundAmount: Number(r.refund_amount) || 0,
+  refundMethod: r.refund_method || null,
+  reason: r.reason || null,
+  restock: !!r.restock,
+  createdBy: r.created_by || null,
+  createdAt: r.created_at,
+  items: items.map(mapReturnItem),
+});
+
+const mapReturnItem = (r: any): SalesReturnItem => ({
+  id: r.id,
+  returnId: r.return_id,
+  invoiceItemId: r.invoice_item_id,
+  productId: r.product_id,
+  productCode: r.product_code,
+  productName: r.product_name,
+  quantity: Number(r.quantity) || 0,
+  unitPrice: Number(r.unit_price) || 0,
+  refundAmount: Number(r.refund_amount) || 0,
+  restock: !!r.restock,
+  createdAt: r.created_at,
+});
+
+export async function getReturnsByInvoice(invoiceId: string): Promise<SalesReturn[]> {
+  const { data: rets, error } = await supabase
+    .from("sales_invoice_returns" as any)
+    .select("*")
+    .eq("invoice_id", invoiceId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const ids = ((rets as any[]) || []).map((r) => r.id);
+  if (ids.length === 0) return [];
+  const { data: items, error: ie } = await supabase
+    .from("sales_invoice_return_items" as any)
+    .select("*")
+    .in("return_id", ids);
+  if (ie) throw ie;
+  const byRet = new Map<string, any[]>();
+  for (const it of (items as any[]) || []) {
+    const arr = byRet.get(it.return_id) || [];
+    arr.push(it);
+    byRet.set(it.return_id, arr);
+  }
+  return (rets as any[]).map((r) => mapReturn(r, byRet.get(r.id) || []));
+}
+
+export interface CreateReturnInput {
+  invoiceId: string;
+  reason?: string;
+  refundMethod?: string;
+  restock: boolean;
+  createdBy?: string;
+  items: Array<{
+    invoiceItemId: string;
+    productId: string | null;
+    productCode: string;
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    refundAmount: number;
+    restock: boolean;
+  }>;
+}
+
+export async function createSalesReturn(input: CreateReturnInput): Promise<SalesReturn> {
+  if (!input.items.length) throw new Error("Select at least one item to return.");
+  const refundTotal = input.items.reduce((s, i) => s + (i.refundAmount || 0), 0);
+
+  const { data: ret, error } = await supabase
+    .from("sales_invoice_returns" as any)
+    .insert({
+      invoice_id: input.invoiceId,
+      refund_amount: refundTotal,
+      refund_method: input.refundMethod || null,
+      reason: input.reason || null,
+      restock: input.restock,
+      created_by: input.createdBy || null,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+
+  const rid = (ret as any).id;
+  const rows = input.items.map((i) => ({
+    return_id: rid,
+    invoice_item_id: i.invoiceItemId,
+    product_id: i.productId,
+    product_code: i.productCode,
+    product_name: i.productName,
+    quantity: i.quantity,
+    unit_price: i.unitPrice,
+    refund_amount: i.refundAmount,
+    restock: i.restock,
+  }));
+  const { data: items, error: ie } = await supabase
+    .from("sales_invoice_return_items" as any)
+    .insert(rows)
+    .select("*");
+  if (ie) throw ie;
+  return mapReturn(ret as any, (items as any[]) || []);
+}
