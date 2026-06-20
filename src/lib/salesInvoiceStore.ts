@@ -28,6 +28,7 @@ const mapInvoice = (row: any, items: any[] = [], payments: any[] = []): SalesInv
   remainingAmount: Number(row.remaining_amount) || 0,
   totalPurchaseCost: Number(row.total_purchase_cost) || 0,
   totalProfit: Number(row.total_profit) || 0,
+  totalReturned: Number(row.total_returned) || 0,
   paymentMethod: row.payment_method as SalesPaymentMethod,
   paymentStatus: row.payment_status as SalesPaymentStatus,
   notes: row.notes || "",
@@ -62,6 +63,7 @@ const mapItem = (row: any): SalesInvoiceItem => ({
   purchasePrice: Number(row.purchase_price) || 0,
   profitPerUnit: Number(row.profit_per_unit) || 0,
   totalProfit: Number(row.total_profit) || 0,
+  returnedQuantity: Number(row.returned_quantity) || 0,
 });
 
 export async function getSalesInvoices(): Promise<SalesInvoice[]> {
