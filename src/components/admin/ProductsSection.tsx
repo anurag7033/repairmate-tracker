@@ -251,6 +251,12 @@ const ProductsSection = () => {
             <SelectItem value="out_of_stock">Out of Stock</SelectItem>
           </SelectContent>
         </Select>
+        <ProductBarcodeScanner
+          onScan={openDetailsByCode}
+          label="Scan"
+          className="h-11 rounded-xl font-semibold"
+          title="Scan Product Barcode"
+        />
         <Button onClick={() => setImportOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
           <FileSpreadsheet className="w-4 h-4 mr-2" />Import Products
         </Button>
