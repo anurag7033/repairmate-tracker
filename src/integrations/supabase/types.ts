@@ -305,6 +305,7 @@ export type Database = {
           profit_per_unit: number
           purchase_price: number
           quantity: number
+          returned_quantity: number
           total_profit: number
           unit_price: number
         }
@@ -320,6 +321,7 @@ export type Database = {
           profit_per_unit?: number
           purchase_price?: number
           quantity?: number
+          returned_quantity?: number
           total_profit?: number
           unit_price?: number
         }
@@ -335,6 +337,7 @@ export type Database = {
           profit_per_unit?: number
           purchase_price?: number
           quantity?: number
+          returned_quantity?: number
           total_profit?: number
           unit_price?: number
         }
@@ -399,6 +402,111 @@ export type Database = {
           },
         ]
       }
+      sales_invoice_return_items: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_item_id: string | null
+          product_code: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          refund_amount: number
+          restock: boolean
+          return_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_item_id?: string | null
+          product_code: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          refund_amount?: number
+          restock?: boolean
+          return_id: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_item_id?: string | null
+          product_code?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          refund_amount?: number
+          restock?: boolean
+          return_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoice_return_items_invoice_item_id_fkey"
+            columns: ["invoice_item_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoice_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoice_returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_invoice_returns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string
+          reason: string | null
+          refund_amount: number
+          refund_method: string | null
+          restock: boolean
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id: string
+          reason?: string | null
+          refund_amount?: number
+          refund_method?: string | null
+          restock?: boolean
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string
+          reason?: string | null
+          refund_amount?: number
+          refund_method?: string | null
+          restock?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoice_returns_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_invoices: {
         Row: {
           amount_received: number
@@ -425,6 +533,7 @@ export type Database = {
           subtotal: number
           total_profit: number
           total_purchase_cost: number
+          total_returned: number
           updated_at: string
         }
         Insert: {
@@ -452,6 +561,7 @@ export type Database = {
           subtotal?: number
           total_profit?: number
           total_purchase_cost?: number
+          total_returned?: number
           updated_at?: string
         }
         Update: {
@@ -479,6 +589,7 @@ export type Database = {
           subtotal?: number
           total_profit?: number
           total_purchase_cost?: number
+          total_returned?: number
           updated_at?: string
         }
         Relationships: [

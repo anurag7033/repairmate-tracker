@@ -332,3 +332,28 @@ export async function bulkImportProducts(
 
   return result;
 }
+
+/** Lookup a single product by its code (case-insensitive). */
+export async function findProductByCode(code: string): Promise<Product | null> {
+  const c = (code || "").trim();
+  if (!c) return null;
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .ilike("product_code", c)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapRow(data as Row) : null;
+}
+
+/** Increment product stock by a delta (negative allowed but clamped to 0). */
+export async function adjustProductStock(id: string, delta: number): Promise<Product> {
+  const { data: cur, error: ge } = await supabase
+    .from("products").select("stock_quantity").eq("id", id).single();
+  if (ge) throw ge;
+  const next = Math.max(0, (Number((cur as any).stock_quantity) || 0) + Math.floor(delta));
+  const { data, error } = await supabase
+    .from("products").update({ stock_quantity: next }).eq("id", id).select("*").single();
+  if (error) throw error;
+  return mapRow(data as Row);
+}

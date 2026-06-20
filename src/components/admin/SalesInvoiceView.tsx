@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Printer, MessageCircle, Wallet, History, Loader2, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Printer, MessageCircle, Wallet, History, Loader2, Download, Undo2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,8 +8,10 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import SalesInvoicePrint from "@/components/admin/SalesInvoicePrint";
+import SalesInvoiceReturnDialog from "@/components/admin/SalesInvoiceReturnDialog";
 import { SalesInvoice, PAYMENT_METHOD_LABELS } from "@/types/salesInvoice";
-import { addInvoicePayment } from "@/lib/salesInvoiceStore";
+import { SalesReturn } from "@/types/salesInvoiceReturn";
+import { addInvoicePayment, getReturnsByInvoice } from "@/lib/salesInvoiceStore";
 
 interface Props {
   invoice: SalesInvoice;
@@ -59,6 +61,25 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
   const [payMethod, setPayMethod] = useState<string>(invoice.paymentMethod || "cash");
   const [payNote, setPayNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [returnOpen, setReturnOpen] = useState(false);
+  const [returns, setReturns] = useState<SalesReturn[]>([]);
+  const [loadingReturns, setLoadingReturns] = useState(false);
+
+  const loadReturns = async () => {
+    try {
+      setLoadingReturns(true);
+      setReturns(await getReturnsByInvoice(invoice.id));
+    } catch {/* ignore */} finally {
+      setLoadingReturns(false);
+    }
+  };
+  useEffect(() => { loadReturns(); /* eslint-disable-next-line */ }, [invoice.id]);
+
+  const hasReturnableItems = (invoice.items || []).some(
+    (it) => (it.quantity || 0) - (it.returnedQuantity || 0) > 0
+  );
+  const totalReturned = invoice.totalReturned || 0;
+  const netTotal = Math.max(0, invoice.grandTotal - totalReturned);
 
   const handlePrint = () => window.print();
 
@@ -115,6 +136,11 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
           <Button size="sm" variant="outline" className="rounded-lg text-green-600 border-green-600/30 hover:bg-green-50" onClick={handleWhatsApp}>
             <MessageCircle className="w-4 h-4 mr-1" /> WhatsApp
           </Button>
+          {hasReturnableItems && (
+            <Button size="sm" variant="outline" className="rounded-lg text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setReturnOpen(true)}>
+              <Undo2 className="w-4 h-4 mr-1" /> Return Items
+            </Button>
+          )}
           {invoice.remainingAmount > 0 && (
             <Button size="sm" className="rounded-lg gradient-primary" onClick={() => { setShowPayment((v) => !v); setPayAmount(invoice.remainingAmount); }}>
               <Wallet className="w-4 h-4 mr-1" /> Update Payment
@@ -122,6 +148,18 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
           )}
         </div>
       </div>
+
+      {totalReturned > 0 && (
+        <div className="print:hidden p-3 rounded-xl border border-warning/30 bg-warning/5 text-xs flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-warning">
+            <RotateCcw className="w-4 h-4" />
+            <span className="font-semibold">Returned amount: ₹{totalReturned.toLocaleString("en-IN")}</span>
+          </div>
+          <div className="text-muted-foreground">
+            Net Total: <span className="font-bold text-foreground">₹{netTotal.toLocaleString("en-IN")}</span>
+          </div>
+        </div>
+      )}
 
       {/* Update payment form */}
       {showPayment && invoice.remainingAmount > 0 && (
@@ -209,6 +247,66 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
           </div>
         )}
       </div>
+
+      {/* Returns history */}
+      <div className="print:hidden p-4 rounded-xl border border-border bg-card">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 font-semibold text-sm">
+            <RotateCcw className="w-4 h-4" /> Returns
+          </div>
+          {hasReturnableItems && (
+            <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setReturnOpen(true)}>
+              <Undo2 className="w-4 h-4 mr-1" /> New Return
+            </Button>
+          )}
+        </div>
+        {loadingReturns ? (
+          <p className="text-xs text-muted-foreground"><Loader2 className="inline w-3 h-3 animate-spin mr-1" /> Loading...</p>
+        ) : returns.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No returns recorded for this invoice.</p>
+        ) : (
+          <div className="space-y-3">
+            {returns.map((r) => (
+              <div key={r.id} className="border border-border rounded-lg p-3 text-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-semibold text-warning">
+                    Refund: ₹{r.refundAmount.toLocaleString("en-IN")}
+                    {r.refundMethod && <span className="ml-2 text-muted-foreground font-normal">via {r.refundMethod}</span>}
+                  </div>
+                  <div className="text-muted-foreground">
+                    {new Date(r.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                  </div>
+                </div>
+                {r.reason && <div className="text-muted-foreground mb-2">Reason: {r.reason}</div>}
+                <table className="w-full">
+                  <tbody>
+                    {(r.items || []).map((it) => (
+                      <tr key={it.id} className="border-t border-border">
+                        <td className="py-1">
+                          <span className="font-semibold">{it.productName}</span>
+                          <span className="ml-2 font-mono text-muted-foreground">{it.productCode}</span>
+                        </td>
+                        <td className="py-1 text-right">Qty: {it.quantity}</td>
+                        <td className="py-1 text-right font-semibold">₹{it.refundAmount.toLocaleString("en-IN")}</td>
+                        <td className="py-1 text-right text-[10px] text-muted-foreground">
+                          {it.restock ? "Restocked" : "Not restocked"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <SalesInvoiceReturnDialog
+        invoice={invoice}
+        open={returnOpen}
+        onOpenChange={setReturnOpen}
+        onCompleted={(inv) => { onUpdated(inv); loadReturns(); }}
+      />
     </div>
   );
 };
