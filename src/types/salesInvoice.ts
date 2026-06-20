@@ -14,6 +14,7 @@ export interface SalesInvoiceItem {
   purchasePrice: number;
   profitPerUnit: number;
   totalProfit: number;
+  returnedQuantity?: number;
 }
 
 export interface SalesInvoice {
@@ -37,6 +38,7 @@ export interface SalesInvoice {
   remainingAmount: number;
   totalPurchaseCost: number;
   totalProfit: number;
+  totalReturned?: number;
   paymentMethod: SalesPaymentMethod;
   paymentStatus: SalesPaymentStatus;
   notes: string;
