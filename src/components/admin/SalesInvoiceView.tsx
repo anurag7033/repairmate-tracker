@@ -136,6 +136,11 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
           <Button size="sm" variant="outline" className="rounded-lg text-green-600 border-green-600/30 hover:bg-green-50" onClick={handleWhatsApp}>
             <MessageCircle className="w-4 h-4 mr-1" /> WhatsApp
           </Button>
+          {hasReturnableItems && (
+            <Button size="sm" variant="outline" className="rounded-lg text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setReturnOpen(true)}>
+              <Undo2 className="w-4 h-4 mr-1" /> Return Items
+            </Button>
+          )}
           {invoice.remainingAmount > 0 && (
             <Button size="sm" className="rounded-lg gradient-primary" onClick={() => { setShowPayment((v) => !v); setPayAmount(invoice.remainingAmount); }}>
               <Wallet className="w-4 h-4 mr-1" /> Update Payment
@@ -143,6 +148,18 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
           )}
         </div>
       </div>
+
+      {totalReturned > 0 && (
+        <div className="print:hidden p-3 rounded-xl border border-warning/30 bg-warning/5 text-xs flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-warning">
+            <RotateCcw className="w-4 h-4" />
+            <span className="font-semibold">Returned amount: ₹{totalReturned.toLocaleString("en-IN")}</span>
+          </div>
+          <div className="text-muted-foreground">
+            Net Total: <span className="font-bold text-foreground">₹{netTotal.toLocaleString("en-IN")}</span>
+          </div>
+        </div>
+      )}
 
       {/* Update payment form */}
       {showPayment && invoice.remainingAmount > 0 && (
