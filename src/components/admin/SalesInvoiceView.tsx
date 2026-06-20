@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Printer, MessageCircle, Wallet, History, Loader2, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Printer, MessageCircle, Wallet, History, Loader2, Download, Undo2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,8 +8,10 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import SalesInvoicePrint from "@/components/admin/SalesInvoicePrint";
+import SalesInvoiceReturnDialog from "@/components/admin/SalesInvoiceReturnDialog";
 import { SalesInvoice, PAYMENT_METHOD_LABELS } from "@/types/salesInvoice";
-import { addInvoicePayment } from "@/lib/salesInvoiceStore";
+import { SalesReturn } from "@/types/salesInvoiceReturn";
+import { addInvoicePayment, getReturnsByInvoice } from "@/lib/salesInvoiceStore";
 
 interface Props {
   invoice: SalesInvoice;
