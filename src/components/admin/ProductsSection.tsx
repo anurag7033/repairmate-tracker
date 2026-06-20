@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet,
+  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet, Eye,
 } from "lucide-react";
 import BulkStockUpdateDialog from "./BulkStockUpdateDialog";
 import BulkProductImportDialog from "./BulkProductImportDialog";
 import BarcodeLabelDialog from "./BarcodeLabelDialog";
+import ProductBarcodeScanner from "./ProductBarcodeScanner";
+import ProductDetailsSheet from "./ProductDetailsSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,6 +81,18 @@ const ProductsSection = () => {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
+  const [detailsProduct, setDetailsProduct] = useState<Product | null>(null);
+
+  const openDetailsByCode = (code: string) => {
+    const c = code.trim().toUpperCase();
+    const hit = products.find((p) => p.productCode.toUpperCase() === c);
+    if (hit) {
+      setDetailsProduct(hit);
+      setSearch(hit.productCode);
+    } else {
+      toast({ title: "Not found", description: `No product with code "${code}"`, variant: "destructive" });
+    }
+  };
 
   const refresh = async () => {
     try {
