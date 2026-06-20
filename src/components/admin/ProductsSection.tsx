@@ -347,6 +347,15 @@ const ProductsSection = () => {
                             size="sm"
                             variant="outline"
                             className="rounded-lg text-xs"
+                            title="View details"
+                            onClick={() => setDetailsProduct(p)}
+                          >
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-lg text-xs"
                             title="Print barcode labels"
                             onClick={() => setBarcodeProduct(p)}
                           >
@@ -529,6 +538,14 @@ const ProductsSection = () => {
         open={!!barcodeProduct}
         onOpenChange={(v) => { if (!v) setBarcodeProduct(null); }}
         product={barcodeProduct}
+      />
+      <ProductDetailsSheet
+        product={detailsProduct}
+        open={!!detailsProduct}
+        onOpenChange={(v) => { if (!v) setDetailsProduct(null); }}
+        onChanged={(p) => { setDetailsProduct(p); refresh(); }}
+        onEdit={(p) => { setDetailsProduct(null); openEdit(p); }}
+        onPrintBarcode={(p) => { setDetailsProduct(null); setBarcodeProduct(p); }}
       />
     </div>
   );
