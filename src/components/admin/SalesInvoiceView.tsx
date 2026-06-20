@@ -61,6 +61,25 @@ const SalesInvoiceView = ({ invoice, onUpdated }: Props) => {
   const [payMethod, setPayMethod] = useState<string>(invoice.paymentMethod || "cash");
   const [payNote, setPayNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [returnOpen, setReturnOpen] = useState(false);
+  const [returns, setReturns] = useState<SalesReturn[]>([]);
+  const [loadingReturns, setLoadingReturns] = useState(false);
+
+  const loadReturns = async () => {
+    try {
+      setLoadingReturns(true);
+      setReturns(await getReturnsByInvoice(invoice.id));
+    } catch {/* ignore */} finally {
+      setLoadingReturns(false);
+    }
+  };
+  useEffect(() => { loadReturns(); /* eslint-disable-next-line */ }, [invoice.id]);
+
+  const hasReturnableItems = (invoice.items || []).some(
+    (it) => (it.quantity || 0) - (it.returnedQuantity || 0) > 0
+  );
+  const totalReturned = invoice.totalReturned || 0;
+  const netTotal = Math.max(0, invoice.grandTotal - totalReturned);
 
   const handlePrint = () => window.print();
 
