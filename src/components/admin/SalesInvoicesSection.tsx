@@ -21,9 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 import CustomerPickerField from "@/components/admin/CustomerPickerField";
 import SalesInvoicePrint from "@/components/admin/SalesInvoicePrint";
 import SalesInvoiceView from "@/components/admin/SalesInvoiceView";
+import ProductBarcodeScanner from "@/components/admin/ProductBarcodeScanner";
 import { Customer } from "@/types/customer";
 import { Product } from "@/types/product";
-import { getProducts } from "@/lib/productStore";
+import { getProducts, findProductByCode } from "@/lib/productStore";
 import {
   SalesInvoice, SalesPaymentMethod, PAYMENT_METHOD_LABELS,
 } from "@/types/salesInvoice";
@@ -166,6 +167,31 @@ const SalesInvoicesSection = () => {
       };
     });
     setProductQuery("");
+  };
+
+  const handleScannedCode = async (code: string) => {
+    const c = (code || "").trim();
+    if (!c) return;
+    // Try local list first (no network)
+    const local = products.find(
+      (p) => p.productCode.toUpperCase() === c.toUpperCase() && p.status === "active"
+    );
+    if (local) {
+      addProductToInvoice(local);
+      toast({ title: "Added", description: `${local.name} added to invoice.` });
+      return;
+    }
+    try {
+      const p = await findProductByCode(c);
+      if (!p) {
+        toast({ title: "Not found", description: `No product with code "${c}"`, variant: "destructive" });
+        return;
+      }
+      addProductToInvoice(p);
+      toast({ title: "Added", description: `${p.name} added to invoice.` });
+    } catch (e: any) {
+      toast({ title: "Lookup failed", description: e.message, variant: "destructive" });
+    }
   };
 
   const updateItem = (idx: number, patch: Partial<DraftItem>) => {
