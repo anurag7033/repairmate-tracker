@@ -64,11 +64,40 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
     }
   };
 
-  const totalRepairSpent = repairs
-    .filter((r) => r.paymentStatus === "paid")
-    .reduce((s, r) => s + Math.max(r.quotation - r.discountAmount, 0), 0);
-  const totalPurchaseSpent = invoices.reduce((s, i) => s + i.grandTotal, 0);
-  const totalSpent = totalRepairSpent + totalPurchaseSpent;
+  // Repairs: bill net of discount; paid includes partial (advance + pending received) or full if 'paid'
+  const repairStats = repairs.reduce(
+    (acc, r) => {
+      const discount = (r.discountAmount || 0) + (r.adminDiscount || 0);
+      const billed = Math.max(0, (r.quotation || 0) - discount);
+      const paid = r.paymentStatus === "paid"
+        ? billed
+        : Math.min(billed, (r.advancePaid || 0) + (r.pendingPaymentReceived || 0));
+      const due = Math.max(0, billed - paid);
+      acc.discount += discount;
+      acc.paid += paid;
+      acc.due += due;
+      return acc;
+    },
+    { discount: 0, paid: 0, due: 0 }
+  );
+
+  // Invoices: paid = grandTotal - remainingAmount (partial included); discount = product + invoice
+  const invoiceStats = invoices.reduce(
+    (acc, i) => {
+      const discount = (i.productDiscountTotal || 0) + (i.invoiceDiscount || 0);
+      const paid = Math.max(0, (i.grandTotal || 0) - (i.remainingAmount || 0));
+      const due = Math.max(0, i.remainingAmount || 0);
+      acc.discount += discount;
+      acc.paid += paid;
+      acc.due += due;
+      return acc;
+    },
+    { discount: 0, paid: 0, due: 0 }
+  );
+
+  const totalSpent = repairStats.paid + invoiceStats.paid;
+  const totalDiscount = repairStats.discount + invoiceStats.discount;
+  const totalDue = repairStats.due + invoiceStats.due;
   const lastVisit = [
     ...repairs.map((r) => r.createdAt),
     ...invoices.map((i) => i.createdAt),
@@ -167,6 +196,23 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
                 <div className="text-xs text-muted-foreground">Last Visit</div>
                 <div className="font-display text-sm font-bold mt-2">
                   {lastVisit ? new Date(lastVisit).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "—"}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-warning/5 border border-warning/30 text-center">
+                <div className="text-xs text-muted-foreground">Total Discount</div>
+                <div className="font-display text-xl font-bold text-warning">₹{totalDiscount.toLocaleString("en-IN")}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-success/5 border border-success/30 text-center">
+                <div className="text-xs text-muted-foreground">Amount Paid</div>
+                <div className="font-display text-xl font-bold text-success">₹{totalSpent.toLocaleString("en-IN")}</div>
+              </div>
+              <div className={`p-3 rounded-xl text-center border ${totalDue > 0 ? "bg-destructive/5 border-destructive/30" : "bg-muted/50 border-border"}`}>
+                <div className="text-xs text-muted-foreground">Due Balance</div>
+                <div className={`font-display text-xl font-bold ${totalDue > 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                  ₹{totalDue.toLocaleString("en-IN")}
                 </div>
               </div>
             </div>

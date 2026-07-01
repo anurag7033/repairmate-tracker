@@ -441,12 +441,21 @@ const ProductsSection = () => {
             </div>
             <div>
               <Label>Product Code *</Label>
-              <Input
-                value={form.productCode}
-                onChange={(e) => setForm(f => ({ ...f, productCode: e.target.value.toUpperCase() }))}
-                placeholder="e.g. AM001, LCD-IP11"
-                className="rounded-xl font-mono"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={form.productCode}
+                  onChange={(e) => setForm(f => ({ ...f, productCode: e.target.value.toUpperCase() }))}
+                  placeholder="e.g. AM001, LCD-IP11"
+                  className="rounded-xl font-mono flex-1"
+                />
+                <ProductBarcodeScanner
+                  onScan={(code) => setForm(f => ({ ...f, productCode: code.trim().toUpperCase() }))}
+                  label=""
+                  iconOnly
+                  className="rounded-xl shrink-0"
+                  title="Scan Product Code"
+                />
+              </div>
             </div>
             <div>
               <Label>Category</Label>
