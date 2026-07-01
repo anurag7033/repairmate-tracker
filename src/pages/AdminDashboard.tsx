@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package, Receipt,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package, Receipt, ShoppingBag,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
 import CustomersSection from "@/components/admin/CustomersSection";
 import ProductsSection from "@/components/admin/ProductsSection";
 import SalesInvoicesSection from "@/components/admin/SalesInvoicesSection";
+import OrdersSection from "@/components/admin/OrdersSection";
 import CustomerPickerField from "@/components/admin/CustomerPickerField";
 import { Customer } from "@/types/customer";
 import BarcodeScanner from "@/components/BarcodeScanner";
