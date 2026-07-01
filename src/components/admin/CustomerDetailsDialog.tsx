@@ -200,6 +200,23 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-warning/5 border border-warning/30 text-center">
+                <div className="text-xs text-muted-foreground">Total Discount</div>
+                <div className="font-display text-xl font-bold text-warning">₹{totalDiscount.toLocaleString("en-IN")}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-success/5 border border-success/30 text-center">
+                <div className="text-xs text-muted-foreground">Amount Paid</div>
+                <div className="font-display text-xl font-bold text-success">₹{totalSpent.toLocaleString("en-IN")}</div>
+              </div>
+              <div className={`p-3 rounded-xl text-center border ${totalDue > 0 ? "bg-destructive/5 border-destructive/30" : "bg-muted/50 border-border"}`}>
+                <div className="text-xs text-muted-foreground">Due Balance</div>
+                <div className={`font-display text-xl font-bold ${totalDue > 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                  ₹{totalDue.toLocaleString("en-IN")}
+                </div>
+              </div>
+            </div>
+
             <Tabs defaultValue="repairs">
               <TabsList className="grid grid-cols-2 w-full">
                 <TabsTrigger value="repairs"><Wrench className="w-3 h-3 mr-2" />Repair History ({repairs.length})</TabsTrigger>
