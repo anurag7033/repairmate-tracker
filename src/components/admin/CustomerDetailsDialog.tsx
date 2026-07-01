@@ -64,11 +64,40 @@ const CustomerDetailsDialog = ({ customerId, onClose, onChanged }: Props) => {
     }
   };
 
-  const totalRepairSpent = repairs
-    .filter((r) => r.paymentStatus === "paid")
-    .reduce((s, r) => s + Math.max(r.quotation - r.discountAmount, 0), 0);
-  const totalPurchaseSpent = invoices.reduce((s, i) => s + i.grandTotal, 0);
-  const totalSpent = totalRepairSpent + totalPurchaseSpent;
+  // Repairs: bill net of discount; paid includes partial (advance + pending received) or full if 'paid'
+  const repairStats = repairs.reduce(
+    (acc, r) => {
+      const discount = (r.discountAmount || 0) + (r.adminDiscount || 0);
+      const billed = Math.max(0, (r.quotation || 0) - discount);
+      const paid = r.paymentStatus === "paid"
+        ? billed
+        : Math.min(billed, (r.advancePaid || 0) + (r.pendingPaymentReceived || 0));
+      const due = Math.max(0, billed - paid);
+      acc.discount += discount;
+      acc.paid += paid;
+      acc.due += due;
+      return acc;
+    },
+    { discount: 0, paid: 0, due: 0 }
+  );
+
+  // Invoices: paid = grandTotal - remainingAmount (partial included); discount = product + invoice
+  const invoiceStats = invoices.reduce(
+    (acc, i) => {
+      const discount = (i.productDiscountTotal || 0) + (i.invoiceDiscount || 0);
+      const paid = Math.max(0, (i.grandTotal || 0) - (i.remainingAmount || 0));
+      const due = Math.max(0, i.remainingAmount || 0);
+      acc.discount += discount;
+      acc.paid += paid;
+      acc.due += due;
+      return acc;
+    },
+    { discount: 0, paid: 0, due: 0 }
+  );
+
+  const totalSpent = repairStats.paid + invoiceStats.paid;
+  const totalDiscount = repairStats.discount + invoiceStats.discount;
+  const totalDue = repairStats.due + invoiceStats.due;
   const lastVisit = [
     ...repairs.map((r) => r.createdAt),
     ...invoices.map((i) => i.createdAt),
