@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package, Receipt,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package, Receipt, ShoppingBag,
 } from "lucide-react";
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
 import CustomersSection from "@/components/admin/CustomersSection";
 import ProductsSection from "@/components/admin/ProductsSection";
 import SalesInvoicesSection from "@/components/admin/SalesInvoicesSection";
+import OrdersSection from "@/components/admin/OrdersSection";
 import CustomerPickerField from "@/components/admin/CustomerPickerField";
 import { Customer } from "@/types/customer";
 import BarcodeScanner from "@/components/BarcodeScanner";
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered" | "returned">("all");
-  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers" | "products" | "sales">("repairs");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers" | "products" | "sales" | "orders">("repairs");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
@@ -409,6 +410,14 @@ const AdminDashboard = () => {
             <Receipt className="w-4 h-4 mr-2" />
             Sales Invoice
           </Button>
+          <Button
+            variant={activeTab === "orders" ? "default" : "outline"}
+            onClick={() => setActiveTab("orders")}
+            className="rounded-xl font-semibold"
+          >
+            <ShoppingBag className="w-4 h-4 mr-2" />
+            Orders
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
@@ -421,8 +430,11 @@ const AdminDashboard = () => {
           <ProductsSection />
         ) : activeTab === "sales" ? (
           <SalesInvoicesSection />
+        ) : activeTab === "orders" ? (
+          <OrdersSection />
         ) : (
         <>
+
         {/* Actions bar */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
