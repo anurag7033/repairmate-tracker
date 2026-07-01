@@ -410,6 +410,14 @@ const AdminDashboard = () => {
             <Receipt className="w-4 h-4 mr-2" />
             Sales Invoice
           </Button>
+          <Button
+            variant={activeTab === "orders" ? "default" : "outline"}
+            onClick={() => setActiveTab("orders")}
+            className="rounded-xl font-semibold"
+          >
+            <ShoppingBag className="w-4 h-4 mr-2" />
+            Orders
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
@@ -422,8 +430,11 @@ const AdminDashboard = () => {
           <ProductsSection />
         ) : activeTab === "sales" ? (
           <SalesInvoicesSection />
+        ) : activeTab === "orders" ? (
+          <OrdersSection />
         ) : (
         <>
+
         {/* Actions bar */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
