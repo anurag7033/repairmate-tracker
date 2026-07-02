@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet, Eye,
+  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet, Eye, Download,
 } from "lucide-react";
 import BulkStockUpdateDialog from "./BulkStockUpdateDialog";
 import BulkProductImportDialog from "./BulkProductImportDialog";
@@ -33,6 +33,7 @@ import {
   getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage,
   ProductInput,
 } from "@/lib/productStore";
+import * as XLSX from "xlsx";
 
 const emptyInput = (): ProductInput => ({
   productCode: "",
@@ -259,6 +260,42 @@ const ProductsSection = () => {
         />
         <Button onClick={() => setImportOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
           <FileSpreadsheet className="w-4 h-4 mr-2" />Import Products
+        </Button>
+        <Button
+          onClick={() => {
+            if (products.length === 0) {
+              toast({ title: "No products to export", variant: "destructive" });
+              return;
+            }
+            const rows = products.map((p) => ({
+              "Product Code": p.productCode,
+              Name: p.name,
+              Category: p.category,
+              Brand: p.brand,
+              Description: p.description,
+              "Image URL": p.imageUrl ?? "",
+              "Selling Price": p.sellingPrice,
+              "Purchase Price": p.purchasePrice,
+              "Discount Type": p.discountType,
+              "Discount Value": p.discountValue,
+              "Final Price": p.finalPrice,
+              "Stock Quantity": p.stockQuantity,
+              "Low Stock Threshold": p.lowStockThreshold,
+              Status: p.status,
+              "Created At": p.createdAt,
+              "Updated At": p.updatedAt,
+            }));
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Products");
+            const ts = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `products-${ts}.xlsx`);
+            toast({ title: `Exported ${rows.length} products` });
+          }}
+          variant="outline"
+          className="h-11 rounded-xl font-semibold"
+        >
+          <Download className="w-4 h-4 mr-2" />Export Excel
         </Button>
         <Button onClick={() => setBulkOpen(true)} variant="outline" className="h-11 rounded-xl font-semibold">
           <Upload className="w-4 h-4 mr-2" />Bulk Stock Update

@@ -275,9 +275,7 @@ const Index = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() => {
-                    // TODO: destination will be provided by user
-                  }}
+                  onClick={() => navigate("/shop")}
                   className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/40"
                 >
                   <ShoppingBag className="w-4 h-4 mr-2" />
