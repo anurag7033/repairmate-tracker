@@ -99,8 +99,8 @@ const BarcodeLabelDialog = ({ open, onOpenChange, product }: Props) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center bg-muted/40 rounded-xl p-4">
-          <svg ref={previewRef} />
+        <div className="flex justify-center items-center bg-white rounded-xl p-4 border border-border min-h-[140px]">
+          <svg ref={previewRef} className="max-w-full h-auto" />
         </div>
 
         <div className="flex items-end gap-3">
