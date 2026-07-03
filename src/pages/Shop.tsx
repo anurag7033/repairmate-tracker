@@ -2,16 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import {
-  Search, ShoppingCart, Plus, Minus, Trash2, Package, ArrowLeft, MessageCircle, X, Loader2,
+  Search, ShoppingCart, Plus, Minus, Trash2, Package, ArrowLeft, X, Loader2,
+  Truck, CreditCard, Tag, Check, Loader,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/productStore";
 import { Product, stockStatusOf } from "@/types/product";
+import { createCustomerOrder, applyVoucherToOrder } from "@/lib/customerOrderStore";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 
