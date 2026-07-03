@@ -129,38 +129,62 @@ const Shop = () => {
 
   const removeItem = (id: string) => setCart((prev) => prev.filter((c) => c.productId !== id));
 
-  const submitOrder = () => {
-    if (cartDetailed.length === 0) {
-      toast({ title: "Cart is empty", variant: "destructive" });
+  const discountAmount = paymentMethod === "online" && voucher ? Math.min(voucher.discount, cartTotal) : 0;
+  const grandTotal = Math.max(0, cartTotal - discountAmount);
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    if (paymentMethod !== "online") {
+      toast({ title: "Voucher only for online payment", variant: "destructive" });
       return;
     }
-    if (!name.trim() || !phone.trim()) {
-      toast({ title: "Name and phone required", variant: "destructive" });
-      return;
+    setVoucherLoading(true);
+    try {
+      const res = await applyVoucherToOrder(voucherCode.trim().toUpperCase(), cartTotal, phone.trim());
+      setVoucher({ id: res.voucherId, code: res.voucherCode, discount: res.discountAmount });
+      toast({ title: "Voucher applied", description: `₹${res.discountAmount.toLocaleString("en-IN")} off` });
+    } catch (e: any) {
+      setVoucher(null);
+      toast({ title: "Voucher error", description: e.message, variant: "destructive" });
+    } finally {
+      setVoucherLoading(false);
     }
-    const lines = cartDetailed.map(
-      (i, idx) =>
-        `${idx + 1}. ${i.product.name} (${i.product.productCode}) × ${i.qty} = ₹${(i.product.finalPrice * i.qty).toLocaleString("en-IN")}`
-    );
-    const msg = [
-      "*New Order — Anurag Mobile*",
-      "",
-      `*Name:* ${name}`,
-      `*Phone:* ${phone}`,
-      address.trim() ? `*Address:* ${address}` : "",
-      "",
-      "*Items:*",
-      ...lines,
-      "",
-      `*Total: ₹${cartTotal.toLocaleString("en-IN")}*`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-    const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
-    setCart([]);
-    setCheckoutOpen(false);
-    toast({ title: "Order sent via WhatsApp" });
+  };
+
+  const removeVoucher = () => { setVoucher(null); setVoucherCode(""); };
+
+  const submitOrder = async () => {
+    if (cartDetailed.length === 0) return toast({ title: "Cart is empty", variant: "destructive" });
+    if (!name.trim() || !phone.trim() || !address.trim())
+      return toast({ title: "Name, phone and address are required", variant: "destructive" });
+
+    setPlacingOrder(true);
+    try {
+      const order = await createCustomerOrder({
+        customerName: name.trim(),
+        customerPhone: phone.trim(),
+        customerEmail: email.trim() || undefined,
+        deliveryAddress: address.trim(),
+        paymentMethod,
+        voucherId: voucher?.id ?? null,
+        voucherCode: voucher?.code ?? null,
+        discountAmount,
+        items: cartDetailed.map((i) => ({
+          productId: i.product.id,
+          productCode: i.product.productCode,
+          productName: i.product.name,
+          unitPrice: i.product.finalPrice,
+          quantity: i.qty,
+        })),
+      });
+      setCart([]);
+      setCheckoutOpen(false);
+      navigate(`/order-success/${order.orderId}`);
+    } catch (e: any) {
+      toast({ title: "Order failed", description: e.message, variant: "destructive" });
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   return (
