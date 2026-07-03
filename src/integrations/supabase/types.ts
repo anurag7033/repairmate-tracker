@@ -119,6 +119,125 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          line_total: number
+          order_id: string
+          product_code: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          line_total: number
+          order_id: string
+          product_code: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          line_total?: number
+          order_id?: string
+          product_code?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "customer_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_orders: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          delivery_address: string
+          discount_amount: number
+          grand_total: number
+          id: string
+          order_id: string
+          order_status: string
+          payment_method: string
+          payment_status: string
+          subtotal: number
+          updated_at: string
+          voucher_code: string | null
+          voucher_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          delivery_address: string
+          discount_amount?: number
+          grand_total?: number
+          id?: string
+          order_id?: string
+          order_status?: string
+          payment_method: string
+          payment_status?: string
+          subtotal?: number
+          updated_at?: string
+          voucher_code?: string | null
+          voucher_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          delivery_address?: string
+          discount_amount?: number
+          grand_total?: number
+          id?: string
+          order_id?: string
+          order_status?: string
+          payment_method?: string
+          payment_status?: string
+          subtotal?: number
+          updated_at?: string
+          voucher_code?: string | null
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_orders_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -712,6 +831,11 @@ export type Database = {
         Args: { p_tracking_id: string; p_voucher_code: string }
         Returns: Json
       }
+      apply_voucher_to_customer_order: {
+        Args: { p_phone: string; p_subtotal: number; p_voucher_code: string }
+        Returns: Json
+      }
+      generate_customer_order_id: { Args: never; Returns: string }
       generate_sales_invoice_number: { Args: never; Returns: string }
       get_booking_by_id: {
         Args: { p_booking_id: string }

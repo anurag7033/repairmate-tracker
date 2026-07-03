@@ -1,64 +1,76 @@
-## Customers Section — Implementation Plan
+# Customer Orders System
 
-### 1. Database (migration)
+Full end-to-end flow from cart checkout to admin approval and customer order tracking.
 
-**New table `customers`:**
-- `id` uuid PK
-- `name` text
-- `phone` text **UNIQUE** (normalized last 10 digits) — prevents duplicates
-- `email` text nullable
-- `address` text nullable
-- `notes` text nullable
-- `created_at`, `updated_at`
+## 1. Database (new tables via migration)
 
-**Link repairs:**
-- Add `customer_id` uuid nullable FK on `repair_orders` (keep existing `customer_name`/`customer_phone` for back-compat & existing records).
-- Backfill: create `customers` rows from distinct phones in `repair_orders` and set `customer_id`.
-- Trigger on `repair_orders` insert/update: if `customer_id` null but phone present → upsert customer by phone, set `customer_id`. Keeps everything in sync without breaking existing flows.
+**`customer_orders`**
+- `id uuid pk`, `order_id text unique` (e.g. `ORD-2026-0001` from a new sequence)
+- `customer_name`, `customer_phone`, `customer_email` (nullable), `delivery_address text`
+- `payment_method text` — `'cod' | 'online'`
+- `payment_status text` — `'pending' | 'paid' | 'failed'` (COD stays `pending` until delivery)
+- `order_status text` — `'placed' | 'accepted' | 'preparing' | 'out_for_delivery' | 'delivered' | 'cancelled'`
+- `subtotal`, `discount_amount`, `grand_total` numeric
+- `voucher_id uuid null`, `voucher_code text null`
+- `admin_notes text null`, `created_at`, `updated_at`
 
-**RLS:** authenticated full access (matches existing admin model). No public read (PII).
+**`customer_order_items`**
+- `id`, `order_id uuid fk`, `product_id uuid fk`, `product_code`, `product_name`
+- `unit_price`, `quantity`, `line_total`
 
-**View / RPC** `get_customers_with_stats()` returning:
-- customer fields + `total_repairs`, `pending_repairs` (status not in delivered/returned), `last_visit` (max created_at), `total_spent` (sum quotation - discount where paid).
+Both tables:
+- GRANT SELECT/INSERT to `anon` on `customer_orders` + items (public checkout)
+- GRANT SELECT/INSERT/UPDATE/DELETE to `authenticated` (admin)
+- RLS: anon can INSERT orders + items and SELECT their own by `order_id` (public tracking); authenticated can do everything.
 
-### 2. Frontend
+Sequence + trigger to auto-generate `order_id`. Reuse existing `apply_voucher_public`-style logic — add new RPC `apply_voucher_to_order(voucher_code, subtotal, phone)` returning `{ voucher_id, discount_amount }` without mutating vouchers yet; increment `used_count` on order creation.
 
-**Types** (`src/types/customer.ts`): `Customer`, `CustomerWithStats`.
+## 2. Shop checkout (`src/pages/Shop.tsx`)
 
-**Store** (`src/lib/customerStore.ts`):
-- `getCustomersWithStats()`, `getCustomerById(id)`, `getRepairsByCustomerId(id)`
-- `createCustomer(data)` — checks duplicate by phone, returns existing if match
-- `updateCustomer(id, data)`
-- `searchCustomers(query)` — by name/phone
+Replace WhatsApp checkout modal with a proper multi-step order form:
+1. Name, phone, email (optional), address (required)
+2. Payment method radio: **Cash on Delivery** / **Pay Online**
+3. Voucher code input — only visible when `Pay Online` selected; validates against RPC, shows discount preview
+4. Order summary (items, subtotal, discount, total)
+5. **Place Order** button → inserts `customer_orders` + items, redirects to success page
 
-**Admin Dashboard** (`src/pages/AdminDashboard.tsx`):
-- Add new tab **"Customers"** alongside existing tabs (the project uses tabbed admin per memory).
-- Tab content = `<CustomersSection />`.
+Online payment: initially mark `payment_status = 'pending'` and route to a placeholder "Pay Now" screen (Razorpay integration already exists — reuse `create-payment-link` edge function pattern in a follow-up if needed). For this iteration, online orders are created with `payment_status = 'pending'` and can be marked paid manually by admin or via existing Razorpay flow.
 
-**New components:**
-- `src/components/admin/CustomersSection.tsx` — table with search, sort (latest / most repairs), badges, empty state, loading skeletons. Row click → opens details.
-- `src/components/admin/CustomerDetailsDialog.tsx` (or full page `/admin/customers/:id`) — profile + repair history table with status & payment badges, click repair → existing repair edit/invoice.
-- `src/components/admin/CustomerPickerField.tsx` — searchable combobox used in the new-repair form. Shows matching customers, "+ Add New Customer" inline option that opens a small create modal. On select → auto-fills name/phone/email/address in the parent repair form.
+## 3. Success page (`src/pages/OrderSuccess.tsx`)
 
-**Repair form integration:**
-- Locate the existing "new repair entry" form (in `AdminDashboard.tsx` or a sub-component). Replace the manual name+phone inputs with `CustomerPickerField` while keeping email/address fields editable. On save, pass `customer_id` along with existing fields (DB trigger also covers fallback).
+- Route: `/order-success/:orderId`
+- Shows big Order ID, summary, "Track Order" button → `/track-order/:orderId`
 
-**Status badges:** reuse existing `STATUS_LABELS` and color logic from current admin pills for consistency across Completed / Pending / Returned / Delivered / Payment Due / Paid.
+## 4. Order tracking (`src/pages/TrackOrder.tsx`)
 
-### 3. Sync guarantees
-- Editing a customer updates name/phone everywhere via JOIN on `customer_id` for new views; existing denormalized `customer_name`/`customer_phone` on repair rows kept as historical snapshot (typical billing practice). Customer page always shows live customer record; repair list keeps showing repair-time snapshot — documented in code.
-- Trigger ensures every new repair links to a customer row.
+- Route: `/track-order` (input form) and `/track-order/:orderId`
+- Public lookup by `order_id` — vertical timeline of status transitions (matches existing repair-tracking style)
 
-### 4. Out of scope / non-goals
-- Not changing customer-facing tracking pages.
-- Not changing invoice format.
-- Not adding auth/roles changes.
+## 5. Admin Orders section (`src/components/admin/OrdersSection.tsx`)
 
-### Files to create/edit
-- migration (new)
-- `src/types/customer.ts` (new)
-- `src/lib/customerStore.ts` (new)
-- `src/components/admin/CustomersSection.tsx` (new)
-- `src/components/admin/CustomerDetailsDialog.tsx` (new)
-- `src/components/admin/CustomerPickerField.tsx` (new)
-- `src/pages/AdminDashboard.tsx` (edit — add tab, swap repair form name/phone inputs for picker)
+Replace placeholder with:
+- Tabs: All / Pending / Accepted / Out for Delivery / Delivered / Cancelled
+- Table: Order ID, Customer, Items count, Total, Payment (COD/Online + paid badge), Status, Actions
+- Row click → drawer with full details (items, address, voucher used)
+- Action buttons: **Accept**, **Mark Preparing**, **Out for Delivery**, **Delivered**, **Cancel**
+- Toggle payment status for COD (mark paid on delivery), for online (mark paid)
+
+## 6. Store layer (`src/lib/customerOrderStore.ts`)
+
+CRUD helpers: `createCustomerOrder`, `getCustomerOrders` (admin), `getCustomerOrderById` (public), `updateOrderStatus`, `updateOrderPayment`, `applyVoucherToOrder`.
+
+## 7. Routing (`src/App.tsx`)
+
+Add `/order-success/:orderId`, `/track-order`, `/track-order/:orderId`.
+
+## Technical Notes
+
+- Voucher discount is **only** allowed when `payment_method = 'online'` (validated both client-side and in RPC).
+- Stock decrement on order creation via trigger on `customer_order_items` (same pattern as `decrement_product_stock`).
+- Realtime not required in v1 — admin refreshes / customer polls tracking page.
+- Not touching existing Razorpay wiring in this pass; online orders are placed with `payment_status = 'pending'` and admin (or future Razorpay hook) flips to `paid`.
+
+## Out of scope (ask if needed later)
+- Automatic Razorpay payment link generation for online orders
+- Email/SMS notifications on status change
+- Customer login / order history list
