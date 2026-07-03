@@ -12,6 +12,8 @@ import TrackBooking from "./pages/TrackBooking";
 import Invoice from "./pages/Invoice";
 import BookRepair from "./pages/BookRepair";
 import Shop from "./pages/Shop";
+import OrderSuccess from "./pages/OrderSuccess";
+import TrackOrder from "./pages/TrackOrder";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ScrollToTop from "./components/ScrollToTop";
