@@ -36,7 +36,13 @@ const Shop = () => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucher, setVoucher] = useState<{ id: string; code: string; discount: number } | null>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   useEffect(() => {
     (async () => {
