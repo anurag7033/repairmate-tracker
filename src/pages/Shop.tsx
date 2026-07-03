@@ -382,33 +382,85 @@ const Shop = () => {
       </main>
 
       {checkoutOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setCheckoutOpen(false)}>
-          <div className="bg-card rounded-2xl w-full max-w-md p-6 shadow-elevated" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg font-bold">Your Details</h3>
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setCheckoutOpen(false)}>
+          <div className="bg-card rounded-2xl w-full max-w-lg my-8 shadow-elevated max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b">
+              <h3 className="font-display text-lg font-bold">Checkout</h3>
               <button onClick={() => setCheckoutOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="ck-name">Name *</Label>
-                <Input id="ck-name" value={name} onChange={(e) => setName(e.target.value)} className="h-10 rounded-lg" />
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="ck-name">Name *</Label>
+                  <Input id="ck-name" value={name} onChange={(e) => setName(e.target.value)} className="h-10 rounded-lg" />
+                </div>
+                <div>
+                  <Label htmlFor="ck-phone">Phone *</Label>
+                  <Input id="ck-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 rounded-lg" />
+                </div>
               </div>
               <div>
-                <Label htmlFor="ck-phone">Phone *</Label>
-                <Input id="ck-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 rounded-lg" />
+                <Label htmlFor="ck-email">Email (optional)</Label>
+                <Input id="ck-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-lg" />
               </div>
               <div>
-                <Label htmlFor="ck-addr">Delivery Address</Label>
+                <Label htmlFor="ck-addr">Delivery Address *</Label>
                 <Textarea id="ck-addr" value={address} onChange={(e) => setAddress(e.target.value)} className="rounded-lg" rows={3} />
               </div>
-              <div className="flex items-center justify-between pt-2 border-t">
-                <span className="text-sm text-muted-foreground">Total</span>
-                <span className="font-bold text-lg">₹{cartTotal.toLocaleString("en-IN")}</span>
+
+              <div>
+                <Label className="mb-2 block">Payment Method *</Label>
+                <RadioGroup value={paymentMethod} onValueChange={(v) => { setPaymentMethod(v as any); if (v !== "online") setVoucher(null); }} className="grid grid-cols-2 gap-2">
+                  <label className={`flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"}`}>
+                    <RadioGroupItem value="cod" id="pm-cod" />
+                    <Truck className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Cash on Delivery</span>
+                  </label>
+                  <label className={`flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer ${paymentMethod === "online" ? "border-primary bg-primary/5" : "border-border"}`}>
+                    <RadioGroupItem value="online" id="pm-online" />
+                    <CreditCard className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Pay Online</span>
+                  </label>
+                </RadioGroup>
               </div>
-              <Button onClick={submitOrder} className="w-full h-11 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold">
-                <MessageCircle className="w-4 h-4 mr-2" /> Send Order on WhatsApp
+
+              {paymentMethod === "online" && (
+                <div>
+                  <Label className="mb-2 flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Voucher Code (optional)</Label>
+                  {voucher ? (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-200">
+                      <div className="flex items-center gap-2 text-green-800">
+                        <Check className="w-4 h-4" />
+                        <span className="font-mono font-semibold">{voucher.code}</span>
+                        <span className="text-sm">−₹{voucher.discount.toLocaleString("en-IN")}</span>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={removeVoucher} className="text-destructive">Remove</Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input value={voucherCode} onChange={(e) => setVoucherCode(e.target.value.toUpperCase())} placeholder="ENTER CODE" className="h-10 rounded-lg font-mono uppercase" />
+                      <Button onClick={handleApplyVoucher} disabled={voucherLoading || !voucherCode.trim()} className="h-10 rounded-lg">
+                        {voucherLoading ? <Loader className="w-4 h-4 animate-spin" /> : "Apply"}
+                      </Button>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-muted-foreground mt-1">Vouchers apply to online payments only.</p>
+                </div>
+              )}
+
+              <div className="rounded-xl bg-muted/50 p-4 space-y-1.5 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal ({cartCount} items)</span><span>₹{cartTotal.toLocaleString("en-IN")}</span></div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-700"><span>Voucher discount</span><span>−₹{discountAmount.toLocaleString("en-IN")}</span></div>
+                )}
+                <div className="flex justify-between font-bold text-base pt-2 border-t border-border"><span>Total</span><span className="text-primary">₹{grandTotal.toLocaleString("en-IN")}</span></div>
+              </div>
+            </div>
+            <div className="p-5 border-t">
+              <Button onClick={submitOrder} disabled={placingOrder} className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+                {placingOrder ? <><Loader className="w-4 h-4 mr-2 animate-spin" /> Placing Order...</> : `Place Order · ₹${grandTotal.toLocaleString("en-IN")}`}
               </Button>
             </div>
           </div>
