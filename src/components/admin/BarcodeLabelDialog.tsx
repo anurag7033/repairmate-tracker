@@ -23,19 +23,24 @@ const BarcodeLabelDialog = ({ open, onOpenChange, product }: Props) => {
   const code = useMemo(() => (product?.productCode || "").trim(), [product]);
 
   useEffect(() => {
-    if (!open || !code || !previewRef.current) return;
-    try {
-      JsBarcode(previewRef.current, code, {
-        format: "CODE128",
-        displayValue: true,
-        height: 50,
-        width: 1.6,
-        fontSize: 12,
-        margin: 6,
-      });
-    } catch {
-      /* ignore */
-    }
+    if (!open || !code) return;
+    const t = setTimeout(() => {
+      if (!previewRef.current) return;
+      try {
+        JsBarcode(previewRef.current, code, {
+          format: "CODE128",
+          displayValue: true,
+          height: 80,
+          width: 2,
+          fontSize: 16,
+          margin: 10,
+          background: "#ffffff",
+        });
+      } catch (e) {
+        console.error("Barcode render failed", e);
+      }
+    }, 50);
+    return () => clearTimeout(t);
   }, [open, code]);
 
   useEffect(() => {
@@ -94,8 +99,8 @@ const BarcodeLabelDialog = ({ open, onOpenChange, product }: Props) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center bg-muted/40 rounded-xl p-4">
-          <svg ref={previewRef} />
+        <div className="flex justify-center items-center bg-white rounded-xl p-4 border border-border min-h-[140px]">
+          <svg ref={previewRef} className="max-w-full h-auto" />
         </div>
 
         <div className="flex items-end gap-3">
