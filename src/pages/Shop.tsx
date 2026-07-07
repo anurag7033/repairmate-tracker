@@ -15,6 +15,21 @@ import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/productStore";
 import { Product, stockStatusOf } from "@/types/product";
 import { createCustomerOrder, applyVoucherToOrder } from "@/lib/customerOrderStore";
+import { supabase } from "@/integrations/supabase/client";
+
+declare global {
+  interface Window { Razorpay: any }
+}
+
+const loadRazorpay = () =>
+  new Promise<boolean>((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 
