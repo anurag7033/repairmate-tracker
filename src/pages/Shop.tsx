@@ -15,6 +15,21 @@ import { useToast } from "@/hooks/use-toast";
 import { getProducts } from "@/lib/productStore";
 import { Product, stockStatusOf } from "@/types/product";
 import { createCustomerOrder, applyVoucherToOrder } from "@/lib/customerOrderStore";
+import { supabase } from "@/integrations/supabase/client";
+
+declare global {
+  interface Window { Razorpay: any }
+}
+
+const loadRazorpay = () =>
+  new Promise<boolean>((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 
@@ -158,28 +173,95 @@ const Shop = () => {
     if (!name.trim() || !phone.trim() || !address.trim())
       return toast({ title: "Name, phone and address are required", variant: "destructive" });
 
+    const itemsPayload = cartDetailed.map((i) => ({
+      productId: i.product.id,
+      productCode: i.product.productCode,
+      productName: i.product.name,
+      unitPrice: i.product.finalPrice,
+      quantity: i.qty,
+    }));
+
     setPlacingOrder(true);
     try {
-      const order = await createCustomerOrder({
-        customerName: name.trim(),
-        customerPhone: phone.trim(),
-        customerEmail: email.trim() || undefined,
-        deliveryAddress: address.trim(),
-        paymentMethod,
-        voucherId: voucher?.id ?? null,
-        voucherCode: voucher?.code ?? null,
-        discountAmount,
-        items: cartDetailed.map((i) => ({
-          productId: i.product.id,
-          productCode: i.product.productCode,
-          productName: i.product.name,
-          unitPrice: i.product.finalPrice,
-          quantity: i.qty,
-        })),
-      });
-      setCart([]);
-      setCheckoutOpen(false);
-      navigate(`/order-success/${order.orderId}`);
+      if (paymentMethod === "online") {
+        const ok = await loadRazorpay();
+        if (!ok) throw new Error("Failed to load payment gateway");
+
+        const { data: createData, error: createErr } = await supabase.functions.invoke(
+          "create-shop-razorpay-order",
+          { body: { amount: grandTotal, customerName: name.trim(), customerPhone: phone.trim() } }
+        );
+        if (createErr || !createData?.razorpayOrderId) {
+          throw new Error(createErr?.message || createData?.error || "Payment init failed");
+        }
+
+        await new Promise<void>((resolve, reject) => {
+          const rzp = new window.Razorpay({
+            key: createData.keyId,
+            amount: createData.amount,
+            currency: createData.currency,
+            order_id: createData.razorpayOrderId,
+            name: "Anurag Mobile",
+            description: `Order for ${name.trim()}`,
+            prefill: { name: name.trim(), contact: phone.trim(), email: email.trim() || undefined },
+            theme: { color: "#f97316" },
+            handler: async (resp: any) => {
+              try {
+                const { data: verifyData, error: verifyErr } = await supabase.functions.invoke(
+                  "verify-shop-payment-and-place-order",
+                  {
+                    body: {
+                      razorpay_order_id: resp.razorpay_order_id,
+                      razorpay_payment_id: resp.razorpay_payment_id,
+                      razorpay_signature: resp.razorpay_signature,
+                      orderPayload: {
+                        customerName: name.trim(),
+                        customerPhone: phone.trim(),
+                        customerEmail: email.trim() || undefined,
+                        deliveryAddress: address.trim(),
+                        voucherId: voucher?.id ?? null,
+                        voucherCode: voucher?.code ?? null,
+                        discountAmount,
+                        items: itemsPayload,
+                      },
+                    },
+                  }
+                );
+                if (verifyErr || !verifyData?.orderId) {
+                  reject(new Error(verifyErr?.message || verifyData?.error || "Verification failed"));
+                  return;
+                }
+                setCart([]);
+                setCheckoutOpen(false);
+                navigate(`/order-success/${verifyData.orderId}`);
+                resolve();
+              } catch (e: any) {
+                reject(e);
+              }
+            },
+            modal: {
+              ondismiss: () => reject(new Error("Payment cancelled")),
+            },
+          });
+          rzp.on("payment.failed", (r: any) => reject(new Error(r?.error?.description || "Payment failed")));
+          rzp.open();
+        });
+      } else {
+        const order = await createCustomerOrder({
+          customerName: name.trim(),
+          customerPhone: phone.trim(),
+          customerEmail: email.trim() || undefined,
+          deliveryAddress: address.trim(),
+          paymentMethod,
+          voucherId: voucher?.id ?? null,
+          voucherCode: voucher?.code ?? null,
+          discountAmount,
+          items: itemsPayload,
+        });
+        setCart([]);
+        setCheckoutOpen(false);
+        navigate(`/order-success/${order.orderId}`);
+      }
     } catch (e: any) {
       toast({ title: "Order failed", description: e.message, variant: "destructive" });
     } finally {
