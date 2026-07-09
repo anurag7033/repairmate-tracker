@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
+import RequirementForm from "@/components/RequirementForm";
+
 
 const Index = () => {
   const [trackingId, setTrackingId] = useState("");
