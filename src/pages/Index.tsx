@@ -314,7 +314,27 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Place Your Requirement */}
+      <section className="container mx-auto py-16" aria-labelledby="requirement-heading">
+        <div className="max-w-3xl mx-auto text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 text-orange-600 text-xs font-semibold mb-3">
+            <Package className="w-3.5 h-3.5" />
+            Can't Find What You Need?
+          </div>
+          <h2 id="requirement-heading" className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+            Place Your Requirement
+          </h2>
+          <p className="text-muted-foreground text-base leading-relaxed">
+            Looking for a product not listed in our shop? Tell us what you need — we'll source it for you and notify you the moment it's available.
+          </p>
+        </div>
+        <div className="max-w-2xl mx-auto">
+          <RequirementForm />
+        </div>
+      </section>
+
       {/* Voucher Info */}
+
       <section className="container mx-auto py-16">
 
         <div className="max-w-2xl mx-auto bg-card rounded-3xl p-6 shadow-elevated border border-border">
