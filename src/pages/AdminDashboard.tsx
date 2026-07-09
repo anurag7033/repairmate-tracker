@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Plus, LogOut, Search, MessageCircle, Trash2,
-  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package, Receipt, ShoppingBag,
+  Edit, ExternalLink, Phone, Smartphone, ChevronDown, Ticket, Send, X, Printer, Users, Package, Receipt, ShoppingBag, ClipboardList,
 } from "lucide-react";
+
 import AdminVoucherSection from "@/components/AdminVoucherSection";
 import AdminBookingSection from "@/components/AdminBookingSection";
 import CustomersSection from "@/components/admin/CustomersSection";
 import ProductsSection from "@/components/admin/ProductsSection";
 import SalesInvoicesSection from "@/components/admin/SalesInvoicesSection";
 import OrdersSection from "@/components/admin/OrdersSection";
+import RequirementsSection from "@/components/admin/RequirementsSection";
+
 import CustomerPickerField from "@/components/admin/CustomerPickerField";
 import { Customer } from "@/types/customer";
 import BarcodeScanner from "@/components/BarcodeScanner";
@@ -82,7 +85,7 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState<RepairOrder[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "received" | "in_progress" | "repaired" | "delivered" | "returned">("all");
-  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers" | "products" | "sales" | "orders">("repairs");
+  const [activeTab, setActiveTab] = useState<"repairs" | "vouchers" | "bookings" | "customers" | "products" | "sales" | "orders" | "requirements">("repairs");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Partial<RepairOrder> | null>(null);
@@ -418,6 +421,14 @@ const AdminDashboard = () => {
             <ShoppingBag className="w-4 h-4 mr-2" />
             Orders
           </Button>
+          <Button
+            variant={activeTab === "requirements" ? "default" : "outline"}
+            onClick={() => setActiveTab("requirements")}
+            className="rounded-xl font-semibold"
+          >
+            <ClipboardList className="w-4 h-4 mr-2" />
+            Requirements
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
@@ -432,6 +443,9 @@ const AdminDashboard = () => {
           <SalesInvoicesSection />
         ) : activeTab === "orders" ? (
           <OrdersSection />
+        ) : activeTab === "requirements" ? (
+          <RequirementsSection />
+
         ) : (
         <>
 

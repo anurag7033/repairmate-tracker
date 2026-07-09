@@ -238,6 +238,42 @@ export type Database = {
           },
         ]
       }
+      customer_requirements: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          items: Json
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
