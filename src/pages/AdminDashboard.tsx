@@ -418,6 +418,14 @@ const AdminDashboard = () => {
             <ShoppingBag className="w-4 h-4 mr-2" />
             Orders
           </Button>
+          <Button
+            variant={activeTab === "requirements" ? "default" : "outline"}
+            onClick={() => setActiveTab("requirements")}
+            className="rounded-xl font-semibold"
+          >
+            <ClipboardList className="w-4 h-4 mr-2" />
+            Requirements
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
@@ -432,6 +440,9 @@ const AdminDashboard = () => {
           <SalesInvoicesSection />
         ) : activeTab === "orders" ? (
           <OrdersSection />
+        ) : activeTab === "requirements" ? (
+          <RequirementsSection />
+
         ) : (
         <>
 
