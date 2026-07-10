@@ -117,12 +117,13 @@ const CustomerPickerField = ({ value, onSelect, onClear, onRequirementLoaded }: 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search customer by name or phone..."
+              placeholder="Search by name, phone, or Requirement ID (REQ-...)"
               value={query}
               onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
               onFocus={() => setOpen(true)}
               className="pl-10 rounded-lg"
             />
+
           </div>
           {open && (
             <div className="absolute z-50 mt-1 w-full bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
