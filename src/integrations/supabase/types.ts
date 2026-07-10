@@ -247,6 +247,7 @@ export type Database = {
           id: string
           items: Json
           notes: string | null
+          requirement_id: string | null
           status: string
           updated_at: string
         }
@@ -258,6 +259,7 @@ export type Database = {
           id?: string
           items?: Json
           notes?: string | null
+          requirement_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -269,6 +271,7 @@ export type Database = {
           id?: string
           items?: Json
           notes?: string | null
+          requirement_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -872,6 +875,7 @@ export type Database = {
         Returns: Json
       }
       generate_customer_order_id: { Args: never; Returns: string }
+      generate_requirement_id: { Args: never; Returns: string }
       generate_sales_invoice_number: { Args: never; Returns: string }
       get_booking_by_id: {
         Args: { p_booking_id: string }
