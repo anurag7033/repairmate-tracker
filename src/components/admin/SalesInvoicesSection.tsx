@@ -424,8 +424,24 @@ const SalesInvoicesSection = () => {
               <CustomerPickerField
                 value={draft.customer}
                 onSelect={handleCustomerSelect}
-                onClear={() => setDraft((d) => ({ ...d, customer: null, customerName: "", customerPhone: "", customerEmail: "", customerAddress: "" }))}
+                onClear={() => { setLinkedRequirement(null); setDraft((d) => ({ ...d, customer: null, customerName: "", customerPhone: "", customerEmail: "", customerAddress: "" })); }}
+                onRequirementLoaded={(req) => setLinkedRequirement(req)}
               />
+              {linkedRequirement && (
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <span className="font-semibold">Linked Requirement: </span>
+                      <span className="font-mono">{linkedRequirement.requirement_id}</span>
+                      <span className="text-muted-foreground"> ({linkedRequirement.items.length} item{linkedRequirement.items.length !== 1 && "s"})</span>
+                    </div>
+                    <button type="button" onClick={() => setLinkedRequirement(null)} className="text-xs text-muted-foreground hover:text-destructive">Remove</button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Items requested: {linkedRequirement.items.join(", ")}</p>
+                  <p className="text-xs text-primary mt-1">Will be marked <b>Fulfilled</b> when invoice is saved.</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs">Name *</Label>
