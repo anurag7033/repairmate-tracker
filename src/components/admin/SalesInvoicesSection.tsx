@@ -80,6 +80,8 @@ const SalesInvoicesSection = () => {
   const [productQuery, setProductQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<SalesInvoice | null>(null);
+  const [linkedRequirement, setLinkedRequirement] = useState<CustomerRequirement | null>(null);
+
 
   const refresh = async () => {
     try {
