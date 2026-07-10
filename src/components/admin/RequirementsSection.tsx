@@ -143,8 +143,10 @@ For any questions, reply to this message.
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="min-w-0 flex-1 cursor-pointer" onClick={() => { setDetail(r); setAdminNotes(r.admin_notes ?? ""); }}>
                     <div className="flex items-center gap-2 flex-wrap">
+                      {r.requirement_id && <span className="font-mono text-xs bg-primary/10 text-primary px-2 py-0.5 rounded border border-primary/30">{r.requirement_id}</span>}
                       <h3 className="font-semibold">{r.customer_name}</h3>
                       <Badge variant="outline" className={meta.className}>
+
                         <span className="flex items-center gap-1">{meta.icon} {meta.label}</span>
                       </Badge>
                     </div>
