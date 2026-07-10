@@ -34,21 +34,23 @@ const RequirementForm = () => {
     if (items.length === 0) return toast.error("Add at least one item");
     setSubmitting(true);
     try {
-      await submitRequirement({
+      const created = await submitRequirement({
         customer_name: name.trim(),
         customer_phone: digits.slice(-10),
         items,
         notes: notes.trim() || undefined,
       });
+      setReqId(created.requirement_id);
       setDone(true);
       setName(""); setPhone(""); setItems([]); setNotes(""); setItemInput("");
-      toast.success("Requirement submitted! We'll contact you shortly.");
+      toast.success(`Requirement submitted! ID: ${created.requirement_id}`);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to submit");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   if (done) {
     return (
