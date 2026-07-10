@@ -130,8 +130,10 @@ const SalesInvoicesSection = () => {
   const openNew = () => {
     setDraft(emptyDraft());
     setProductQuery("");
+    setLinkedRequirement(null);
     setDialogOpen(true);
   };
+
 
   const handleCustomerSelect = (c: Customer) => {
     setDraft((d) => ({
