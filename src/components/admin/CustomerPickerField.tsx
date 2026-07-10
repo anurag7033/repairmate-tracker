@@ -31,6 +31,32 @@ const CustomerPickerField = ({ value, onSelect, onClear, onRequirementLoaded }: 
   const [saving, setSaving] = useState(false);
   const debounceRef = useRef<any>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [loadingReq, setLoadingReq] = useState(false);
+
+  const looksLikeReqId = /^req[- ]?\d/i.test(query.trim());
+
+  const loadRequirement = async () => {
+    const code = query.trim().toUpperCase().replace(/\s+/g, "-");
+    setLoadingReq(true);
+    try {
+      const req = await getRequirementByCode(code);
+      if (!req) { toast({ title: "Not found", description: `No requirement with ID ${code}`, variant: "destructive" }); return; }
+      // Find or create customer from requirement phone
+      const existing = await searchCustomers(req.customer_phone);
+      let cust: Customer;
+      if (existing.length > 0) cust = existing[0];
+      else cust = await createCustomer({ name: req.customer_name, phone: req.customer_phone });
+      onSelect(cust);
+      onRequirementLoaded?.(req);
+      setOpen(false);
+      setQuery("");
+      toast({ title: "Requirement loaded", description: `${req.requirement_id} • ${req.customer_name}` });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally { setLoadingReq(false); }
+  };
+
+
 
   useEffect(() => {
     if (!open) return;
