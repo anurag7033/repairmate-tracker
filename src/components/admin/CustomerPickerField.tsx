@@ -20,7 +20,7 @@ interface Props {
 }
 
 
-const CustomerPickerField = ({ value, onSelect, onClear }: Props) => {
+const CustomerPickerField = ({ value, onSelect, onClear, onRequirementLoaded }: Props) => {
   const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Customer[]>([]);
