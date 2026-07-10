@@ -268,11 +268,21 @@ const SalesInvoicesSection = () => {
         })),
       });
       toast({ title: "Invoice created", description: inv.invoiceNumber });
+      if (linkedRequirement) {
+        try {
+          await markRequirementFulfilled(linkedRequirement.id);
+          toast({ title: "Requirement fulfilled", description: linkedRequirement.requirement_id });
+        } catch (e: any) {
+          toast({ title: "Requirement update failed", description: e.message, variant: "destructive" });
+        }
+      }
       setDialogOpen(false);
+      setLinkedRequirement(null);
       await refresh();
       // open detail view
       const full = await getSalesInvoiceById(inv.id);
       if (full) setViewInvoice(full);
+
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
