@@ -14,6 +14,8 @@ const RequirementForm = () => {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [reqId, setReqId] = useState<string>("");
+
 
   const addItem = () => {
     const v = itemInput.trim();
@@ -32,15 +34,16 @@ const RequirementForm = () => {
     if (items.length === 0) return toast.error("Add at least one item");
     setSubmitting(true);
     try {
-      await submitRequirement({
+      const created = await submitRequirement({
         customer_name: name.trim(),
         customer_phone: digits.slice(-10),
         items,
         notes: notes.trim() || undefined,
       });
+      setReqId(created.requirement_id);
       setDone(true);
       setName(""); setPhone(""); setItems([]); setNotes(""); setItemInput("");
-      toast.success("Requirement submitted! We'll contact you shortly.");
+      toast.success(`Requirement submitted! ID: ${created.requirement_id}`);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to submit");
     } finally {
@@ -48,15 +51,23 @@ const RequirementForm = () => {
     }
   };
 
+
   if (done) {
     return (
       <div className="bg-card rounded-2xl p-8 text-center border border-border">
         <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
         <h3 className="font-display text-xl font-bold mb-2">Requirement Received!</h3>
+        {reqId && (
+          <div className="mb-3 inline-block bg-primary/10 border border-primary/30 rounded-lg px-4 py-2">
+            <p className="text-xs text-muted-foreground">Your Requirement ID</p>
+            <p className="font-mono font-bold text-primary text-lg">{reqId}</p>
+          </div>
+        )}
         <p className="text-muted-foreground text-sm mb-4">
-          Our team will reach out to you on WhatsApp once your items are available.
+          Save this ID. Our team will reach out to you on WhatsApp once your items are available.
         </p>
-        <Button onClick={() => setDone(false)} variant="outline">Submit Another</Button>
+        <Button onClick={() => { setDone(false); setReqId(""); }} variant="outline">Submit Another</Button>
+
       </div>
     );
   }

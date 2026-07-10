@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, UserPlus, Loader2, X } from "lucide-react";
+import { Search, UserPlus, Loader2, X, ClipboardList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,14 +10,17 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Customer } from "@/types/customer";
 import { searchCustomers, createCustomer } from "@/lib/customerStore";
+import { getRequirementByCode, CustomerRequirement } from "@/lib/requirementStore";
 
 interface Props {
   value: Customer | null;
   onSelect: (c: Customer) => void;
   onClear?: () => void;
+  onRequirementLoaded?: (req: CustomerRequirement) => void;
 }
 
-const CustomerPickerField = ({ value, onSelect, onClear }: Props) => {
+
+const CustomerPickerField = ({ value, onSelect, onClear, onRequirementLoaded }: Props) => {
   const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Customer[]>([]);
@@ -28,6 +31,32 @@ const CustomerPickerField = ({ value, onSelect, onClear }: Props) => {
   const [saving, setSaving] = useState(false);
   const debounceRef = useRef<any>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [loadingReq, setLoadingReq] = useState(false);
+
+  const looksLikeReqId = /^req[- ]?\d/i.test(query.trim());
+
+  const loadRequirement = async () => {
+    const code = query.trim().toUpperCase().replace(/\s+/g, "-");
+    setLoadingReq(true);
+    try {
+      const req = await getRequirementByCode(code);
+      if (!req) { toast({ title: "Not found", description: `No requirement with ID ${code}`, variant: "destructive" }); return; }
+      // Find or create customer from requirement phone
+      const existing = await searchCustomers(req.customer_phone);
+      let cust: Customer;
+      if (existing.length > 0) cust = existing[0];
+      else cust = await createCustomer({ name: req.customer_name, phone: req.customer_phone });
+      onSelect(cust);
+      onRequirementLoaded?.(req);
+      setOpen(false);
+      setQuery("");
+      toast({ title: "Requirement loaded", description: `${req.requirement_id} • ${req.customer_name}` });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally { setLoadingReq(false); }
+  };
+
+
 
   useEffect(() => {
     if (!open) return;
@@ -88,15 +117,28 @@ const CustomerPickerField = ({ value, onSelect, onClear }: Props) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search customer by name or phone..."
+              placeholder="Search by name, phone, or Requirement ID (REQ-...)"
               value={query}
               onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
               onFocus={() => setOpen(true)}
               className="pl-10 rounded-lg"
             />
+
           </div>
           {open && (
             <div className="absolute z-50 mt-1 w-full bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+              {looksLikeReqId && (
+                <button
+                  type="button"
+                  disabled={loadingReq}
+                  className="w-full text-left px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10 border-b border-border flex items-center gap-2"
+                  onClick={loadRequirement}
+                >
+                  {loadingReq ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
+                  Load Requirement {query.trim().toUpperCase()}
+                </button>
+              )}
+
               {searching ? (
                 <div className="p-3 text-sm text-muted-foreground flex items-center"><Loader2 className="w-4 h-4 animate-spin mr-2" />Searching...</div>
               ) : results.length === 0 ? (
