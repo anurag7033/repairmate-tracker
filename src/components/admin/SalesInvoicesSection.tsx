@@ -33,6 +33,8 @@ import {
   getSalesInvoiceById,
 } from "@/lib/salesInvoiceStore";
 import { createCustomer } from "@/lib/customerStore";
+import { markRequirementFulfilled, CustomerRequirement } from "@/lib/requirementStore";
+
 
 interface DraftItem {
   productId: string | null;
