@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, UserPlus, Loader2, X } from "lucide-react";
+import { Search, UserPlus, Loader2, X, ClipboardList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,12 +10,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Customer } from "@/types/customer";
 import { searchCustomers, createCustomer } from "@/lib/customerStore";
+import { getRequirementByCode, CustomerRequirement } from "@/lib/requirementStore";
 
 interface Props {
   value: Customer | null;
   onSelect: (c: Customer) => void;
   onClear?: () => void;
+  onRequirementLoaded?: (req: CustomerRequirement) => void;
 }
+
 
 const CustomerPickerField = ({ value, onSelect, onClear }: Props) => {
   const { toast } = useToast();
