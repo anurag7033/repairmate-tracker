@@ -14,6 +14,8 @@ const RequirementForm = () => {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [reqId, setReqId] = useState<string>("");
+
 
   const addItem = () => {
     const v = itemInput.trim();
