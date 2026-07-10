@@ -127,6 +127,18 @@ const CustomerPickerField = ({ value, onSelect, onClear, onRequirementLoaded }: 
           </div>
           {open && (
             <div className="absolute z-50 mt-1 w-full bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+              {looksLikeReqId && (
+                <button
+                  type="button"
+                  disabled={loadingReq}
+                  className="w-full text-left px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10 border-b border-border flex items-center gap-2"
+                  onClick={loadRequirement}
+                >
+                  {loadingReq ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
+                  Load Requirement {query.trim().toUpperCase()}
+                </button>
+              )}
+
               {searching ? (
                 <div className="p-3 text-sm text-muted-foreground flex items-center"><Loader2 className="w-4 h-4 animate-spin mr-2" />Searching...</div>
               ) : results.length === 0 ? (
