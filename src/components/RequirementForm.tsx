@@ -57,10 +57,17 @@ const RequirementForm = () => {
       <div className="bg-card rounded-2xl p-8 text-center border border-border">
         <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
         <h3 className="font-display text-xl font-bold mb-2">Requirement Received!</h3>
+        {reqId && (
+          <div className="mb-3 inline-block bg-primary/10 border border-primary/30 rounded-lg px-4 py-2">
+            <p className="text-xs text-muted-foreground">Your Requirement ID</p>
+            <p className="font-mono font-bold text-primary text-lg">{reqId}</p>
+          </div>
+        )}
         <p className="text-muted-foreground text-sm mb-4">
-          Our team will reach out to you on WhatsApp once your items are available.
+          Save this ID. Our team will reach out to you on WhatsApp once your items are available.
         </p>
-        <Button onClick={() => setDone(false)} variant="outline">Submit Another</Button>
+        <Button onClick={() => { setDone(false); setReqId(""); }} variant="outline">Submit Another</Button>
+
       </div>
     );
   }
