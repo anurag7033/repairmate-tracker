@@ -93,43 +93,28 @@ export interface CreateOrderInput {
 }
 
 export const createCustomerOrder = async (input: CreateOrderInput): Promise<CustomerOrder> => {
-  const subtotal = input.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
-  const discount = input.paymentMethod === "online" ? Math.max(0, input.discountAmount || 0) : 0;
-  const grand = Math.max(0, subtotal - discount);
-
-  const { data: orderRow, error: orderErr } = await supabase
-    .from("customer_orders")
-    .insert({
-      customer_name: input.customerName,
-      customer_phone: input.customerPhone,
-      customer_email: input.customerEmail || null,
-      delivery_address: input.deliveryAddress,
-      payment_method: input.paymentMethod,
-      subtotal,
-      discount_amount: discount,
-      grand_total: grand,
-      voucher_id: input.paymentMethod === "online" ? input.voucherId || null : null,
-      voucher_code: input.paymentMethod === "online" ? input.voucherCode || null : null,
-    })
-    .select("*")
-    .single();
-
-  if (orderErr) throw orderErr;
-
   const itemsPayload = input.items.map((i) => ({
-    order_id: orderRow.id,
     product_id: i.productId,
     product_code: i.productCode,
     product_name: i.productName,
     unit_price: i.unitPrice,
     quantity: i.quantity,
-    line_total: i.unitPrice * i.quantity,
   }));
 
-  const { error: itemsErr } = await supabase.from("customer_order_items").insert(itemsPayload);
-  if (itemsErr) throw itemsErr;
+  const { data, error } = await supabase.rpc("place_customer_order_public" as any, {
+    p_customer_name: input.customerName,
+    p_customer_phone: input.customerPhone,
+    p_customer_email: input.customerEmail || null,
+    p_delivery_address: input.deliveryAddress,
+    p_payment_method: input.paymentMethod,
+    p_items: itemsPayload as any,
+    p_voucher_id: input.paymentMethod === "online" ? input.voucherId || null : null,
+    p_voucher_code: input.paymentMethod === "online" ? input.voucherCode || null : null,
+    p_discount_amount: input.paymentMethod === "online" ? input.discountAmount || 0 : 0,
+  });
 
-  return mapOrder(orderRow);
+  if (error) throw error;
+  return mapOrder(data as any);
 };
 
 export const getAllCustomerOrders = async (): Promise<CustomerOrder[]> => {
