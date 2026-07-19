@@ -142,13 +142,10 @@ export const getAllCustomerOrders = async (): Promise<CustomerOrder[]> => {
 };
 
 export const getCustomerOrderByOrderId = async (orderId: string): Promise<CustomerOrder | null> => {
-  const { data, error } = await supabase
-    .from("customer_orders")
-    .select("*, customer_order_items(*)")
-    .eq("order_id", orderId)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("get_customer_order_public" as any, { p_order_id: orderId });
   if (error) throw error;
-  return data ? mapOrder(data) : null;
+  if (!data) return null;
+  return mapOrder(data as any);
 };
 
 export const updateOrderStatus = async (id: string, status: OrderStatus) => {
