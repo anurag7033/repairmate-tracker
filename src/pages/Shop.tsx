@@ -295,7 +295,7 @@ const Shop = () => {
               className="pl-10 h-10 rounded-xl bg-white text-foreground border-white/20"
             />
           </div>
-          <Sheet>
+          <Sheet open={cartOpen} onOpenChange={setCartOpen}>
             <SheetTrigger asChild>
               <Button className="relative h-10 rounded-xl bg-orange-500 hover:bg-orange-600 text-white shrink-0">
                 <ShoppingCart className="w-4 h-4 sm:mr-2" />
