@@ -899,6 +899,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_customer_order_public: { Args: { p_order_id: string }; Returns: Json }
       get_customers_with_stats: {
         Args: never
         Returns: {
