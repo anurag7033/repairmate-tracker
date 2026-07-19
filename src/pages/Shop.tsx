@@ -132,7 +132,7 @@ const Shop = () => {
       }
       return [...prev, { productId: p.id, qty: 1 }];
     });
-    toast({ title: "Added to cart", description: p.name });
+    toast({ title: "Added to cart", description: p.name, duration: 1500 });
   };
 
   const updateQty = (id: string, delta: number) => {
