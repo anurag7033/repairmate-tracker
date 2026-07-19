@@ -959,6 +959,15 @@ export type Database = {
         Args: { p_tracking_id: string }
         Returns: undefined
       }
+      submit_requirement_public: {
+        Args: {
+          p_customer_name: string
+          p_customer_phone: string
+          p_items: Json
+          p_notes: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       booking_payment_method: "online" | "cash"
