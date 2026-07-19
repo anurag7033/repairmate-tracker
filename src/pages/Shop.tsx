@@ -49,6 +49,7 @@ const Shop = () => {
     try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch { return []; }
   });
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
