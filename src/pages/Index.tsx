@@ -16,12 +16,17 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleTrack = async () => {
-    if (!trackingId.trim()) return;
+    const id = trackingId.trim();
+    if (!id) return;
 
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      navigate(`/track/${trackingId.trim()}`);
+      if (id.toUpperCase().startsWith("ORD-")) {
+        navigate(`/track-order/${id}`);
+      } else {
+        navigate(`/track/${id}`);
+      }
     }, 900);
   };
 
