@@ -16,12 +16,17 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleTrack = async () => {
-    if (!trackingId.trim()) return;
+    const id = trackingId.trim();
+    if (!id) return;
 
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      navigate(`/track/${trackingId.trim()}`);
+      if (id.toUpperCase().startsWith("ORD-")) {
+        navigate(`/track-order/${id}`);
+      } else {
+        navigate(`/track/${id}`);
+      }
     }, 900);
   };
 
@@ -99,15 +104,15 @@ const Index = () => {
         <div className="container mx-auto py-16 md:py-24 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground/90 text-sm font-medium mb-6 animate-fade-in">
             <Wrench className="w-4 h-4" />
-            Trusted Mobile Repair Service
+            Repairs • Shop • Real-Time Tracking
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            Track Your Mobile
+            Track Your Repair
             <br />
-            <span className="text-primary">Repair Status</span>
+            <span className="text-primary">or Order</span>
           </h1>
-          <p className="text-primary-foreground/70 text-lg md:text-xl max-w-xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Enter your tracking ID to check the real-time progress of your device repair.
+          <p className="text-primary-foreground/70 text-lg md:text-xl max-w-xl mx-auto mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            Enter your Repair Tracking ID (MR-XXXXXX) or Order ID (ORD-YYYY-####) to see live status.
           </p>
 
           <div className="max-w-md mx-auto flex gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
@@ -115,8 +120,8 @@ const Index = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 id="tracking-id"
-                aria-label="Repair tracking ID"
-                placeholder="Enter Tracking ID (e.g. MR-A1B2C3)"
+                aria-label="Repair or Order tracking ID"
+                placeholder="MR-A1B2C3  or  ORD-2026-0001"
                 value={trackingId}
                 onChange={(e) => setTrackingId(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleTrack()}
@@ -129,6 +134,24 @@ const Index = () => {
             >
               Track
               <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            <Button
+              onClick={() => navigate("/shop")}
+              className="h-11 px-5 gradient-primary hover:opacity-90 rounded-xl font-semibold"
+            >
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Order Now
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById("tracking-id")?.focus()}
+              className="h-11 px-5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent rounded-xl font-semibold"
+            >
+              <Wrench className="w-4 h-4 mr-2" />
+              Track Repair
             </Button>
           </div>
         </div>
