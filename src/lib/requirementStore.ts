@@ -55,10 +55,13 @@ export async function listRequirements(): Promise<CustomerRequirement[]> {
 export async function getRequirementByCode(code: string): Promise<CustomerRequirement | null> {
   const c = code.trim();
   if (!c) return null;
-  const { data, error } = await supabase.rpc("get_requirement_by_code" as any, { p_code: c });
+  const { data, error } = await supabase
+    .from("customer_requirements" as any)
+    .select("*")
+    .ilike("requirement_id", c)
+    .maybeSingle();
   if (error) throw error;
-  const row = Array.isArray(data) ? data[0] : data;
-  return row ? mapRow(row) : null;
+  return data ? mapRow(data) : null;
 }
 
 export async function updateRequirementStatus(id: string, status: RequirementStatus, admin_notes?: string) {

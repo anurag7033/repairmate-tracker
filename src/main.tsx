@@ -3,7 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { registerSW } from "virtual:pwa-register";
 
-// Guard: never register the service worker inside iframes or preview hosts
+// Guard: never register the service worker inside iframes or Lovable preview hosts
 const isInIframe = (() => {
   try {
     return window.self !== window.top;

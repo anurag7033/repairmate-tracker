@@ -939,20 +939,6 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_requirement_by_code: {
-        Args: { p_code: string }
-        Returns: {
-          created_at: string
-          customer_name: string
-          customer_phone: string
-          id: string
-          items: Json
-          notes: string
-          requirement_id: string
-          status: string
-          updated_at: string
-        }[]
-      }
       mark_received_public: { Args: { p_tracking_id: string }; Returns: Json }
       normalize_phone: { Args: { p: string }; Returns: string }
       remove_voucher_public: {
