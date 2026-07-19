@@ -77,6 +77,14 @@ const Shop = () => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }, [cart]);
 
+  useEffect(() => {
+    return () => {
+      setCart([]);
+      localStorage.removeItem(CART_KEY);
+    };
+  }, []);
+
+
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category).filter(Boolean))).sort(),
     [products]
