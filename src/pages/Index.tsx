@@ -88,7 +88,7 @@ const Index = () => {
             <img src={logo} alt="Anurag Mobile Logo" className="w-10 h-10 rounded-lg" />
             <div>
               <span className="font-display text-lg font-bold leading-tight">Anurag Mobile</span>
-              <p className="text-xs text-primary-foreground/60 leading-tight">Repair Tracking</p>
+              <p className="text-xs text-primary-foreground/60 leading-tight">Repairing Centre</p>
             </div>
           </div>
           <Button
