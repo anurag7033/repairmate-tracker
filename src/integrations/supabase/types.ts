@@ -955,6 +955,20 @@ export type Database = {
       }
       mark_received_public: { Args: { p_tracking_id: string }; Returns: Json }
       normalize_phone: { Args: { p: string }; Returns: string }
+      place_customer_order_public: {
+        Args: {
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_delivery_address: string
+          p_discount_amount: number
+          p_items: Json
+          p_payment_method: string
+          p_voucher_code: string
+          p_voucher_id: string
+        }
+        Returns: Json
+      }
       remove_voucher_public: {
         Args: { p_tracking_id: string }
         Returns: undefined
