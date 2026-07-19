@@ -357,7 +357,7 @@ const Shop = () => {
                     <span>Total</span>
                     <span className="text-lg">₹{cartTotal.toLocaleString("en-IN")}</span>
                   </div>
-                  <Button className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600" onClick={() => setCheckoutOpen(true)}>
+                  <Button className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>
                     Checkout
                   </Button>
                 </div>
