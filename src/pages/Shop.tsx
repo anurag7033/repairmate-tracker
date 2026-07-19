@@ -49,6 +49,7 @@ const Shop = () => {
     try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch { return []; }
   });
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -75,6 +76,14 @@ const Shop = () => {
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    return () => {
+      setCart([]);
+      localStorage.removeItem(CART_KEY);
+    };
+  }, []);
+
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category).filter(Boolean))).sort(),
@@ -295,7 +304,7 @@ const Shop = () => {
               className="pl-10 h-10 rounded-xl bg-white text-foreground border-white/20"
             />
           </div>
-          <Sheet>
+          <Sheet open={cartOpen} onOpenChange={setCartOpen}>
             <SheetTrigger asChild>
               <Button className="relative h-10 rounded-xl bg-orange-500 hover:bg-orange-600 text-white shrink-0">
                 <ShoppingCart className="w-4 h-4 sm:mr-2" />
@@ -356,7 +365,7 @@ const Shop = () => {
                     <span>Total</span>
                     <span className="text-lg">₹{cartTotal.toLocaleString("en-IN")}</span>
                   </div>
-                  <Button className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600" onClick={() => setCheckoutOpen(true)}>
+                  <Button className="w-full h-11 rounded-xl bg-orange-500 hover:bg-orange-600" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>
                     Checkout
                   </Button>
                 </div>
