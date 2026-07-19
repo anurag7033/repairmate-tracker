@@ -147,11 +147,11 @@ const Index = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => document.getElementById("tracking-id")?.focus()}
+              onClick={() => navigate("/book-repair")}
               className="h-11 px-5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent rounded-xl font-semibold"
             >
               <Wrench className="w-4 h-4 mr-2" />
-              Track Repair
+              Book Repair
             </Button>
           </div>
         </div>
