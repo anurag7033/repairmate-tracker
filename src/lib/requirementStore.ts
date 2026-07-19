@@ -29,18 +29,15 @@ export async function submitRequirement(input: {
   items: string[];
   notes?: string;
 }): Promise<CustomerRequirement> {
-  const { data, error } = await supabase
-    .from("customer_requirements" as any)
-    .insert({
-      customer_name: input.customer_name,
-      customer_phone: input.customer_phone,
-      items: input.items,
-      notes: input.notes ?? null,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc("submit_requirement_public" as any, {
+    p_customer_name: input.customer_name,
+    p_customer_phone: input.customer_phone,
+    p_items: input.items,
+    p_notes: input.notes ?? null,
+  });
   if (error) throw error;
   return mapRow(data);
+
 }
 
 export async function listRequirements(): Promise<CustomerRequirement[]> {
