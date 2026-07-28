@@ -22,7 +22,8 @@ const Index = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      navigate(`/track/${id}`);
+      if (id.toUpperCase().startsWith("ORD-")) navigate(`/track-order/${id.toUpperCase()}`);
+      else navigate(`/track/${id}`);
     }, 900);
   };
 
