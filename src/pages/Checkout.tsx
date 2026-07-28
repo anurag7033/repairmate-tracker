@@ -72,7 +72,7 @@ const Checkout = () => {
   const [method, setMethod] = useState<PayMethod>("razorpay");
   const [locating, setLocating] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
+  
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   // Voucher discount only applies to online payments
