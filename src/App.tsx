@@ -35,6 +35,7 @@ const App = () => (
             <Route path="/booking/:bookingId" element={<TrackBooking />} />
             <Route path="/invoice/:trackingId" element={<Invoice />} />
             <Route path="/book-repair" element={<BookRepair />} />
+            <Route path="/order-now" element={<OrderNow />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
