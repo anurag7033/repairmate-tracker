@@ -20,7 +20,7 @@ const PRICE_BUCKETS: { id: PriceBucket; label: string; test: (n: number) => bool
   { id: "2000+", label: "₹2,000 & Above", test: (n) => n >= 2000 },
 ];
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 16;
 
 const CategoryProducts = () => {
   const { category = "" } = useParams();
