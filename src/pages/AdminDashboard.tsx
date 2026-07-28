@@ -444,6 +444,9 @@ const AdminDashboard = () => {
           <SalesInvoicesSection />
         ) : activeTab === "requirements" ? (
           <RequirementsSection />
+        ) : activeTab === "orders" ? (
+          <OrdersSection />
+
 
         ) : (
         <>
