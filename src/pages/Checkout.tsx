@@ -157,8 +157,8 @@ const Checkout = () => {
       p_discount_amount: 0,
       p_items: itemsPayload() as unknown as never,
       p_payment_method: "cod",
-      p_voucher_code: "",
-      p_voucher_id: "",
+      p_voucher_code: null as unknown as string,
+      p_voucher_id: null as unknown as string,
     });
     if (error) throw new Error(error.message);
     const result = (data ?? {}) as { order_id?: string; orderId?: string };
