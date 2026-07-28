@@ -83,11 +83,11 @@ const Checkout = () => {
   const grandTotal = Math.max(0, taxableBase + tax);
 
   useEffect(() => {
-    if (cart.length === 0 && !successOrderId) {
+    if (cart.length === 0) {
       // Nothing to checkout — send back to cart
       navigate("/cart", { replace: true });
     }
-  }, [cart.length, successOrderId, navigate]);
+  }, [cart.length, navigate]);
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
