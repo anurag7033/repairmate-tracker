@@ -396,7 +396,7 @@ const Header = () => {
           <Link to="/" className="hover:text-orange-400">Home</Link>
           <Link to="/order-now" className="hover:text-orange-400">Categories</Link>
           <Link to="/order-now" className="hover:text-orange-400">Offers</Link>
-          <Link to="/order-now" className="hover:text-orange-400">Cart</Link>
+          <Link to="/cart" className="hover:text-orange-400">Cart</Link>
         </nav>
         <div className="flex-1" />
         <button aria-label="Search" className="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center"><Search className="w-5 h-5" /></button>
@@ -437,5 +437,60 @@ const SpecCard = ({
     <p className="text-xs text-muted-foreground mt-1">{note}</p>
   </div>
 );
-
 export default ProductDetail;
+
+const AddToCartButton = ({
+  product,
+  qty,
+  stockStatus,
+}: {
+  product: Product;
+  qty: number;
+  stockStatus: ReturnType<typeof stockStatusOf> | null;
+}) => {
+  const navigate = useNavigate();
+  const [added, setAdded] = useState(isInCart(product.id));
+  useEffect(() => {
+    setAdded(isInCart(product.id));
+  }, [product.id]);
+
+  if (added) {
+    return (
+      <Button
+        onClick={() => navigate("/cart")}
+        className="flex-1 h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-base"
+      >
+        <ShoppingCart className="w-5 h-5 mr-2" />
+        Go to Cart
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      disabled={stockStatus === "out_of_stock"}
+      onClick={() => {
+        addToCart(
+          {
+            productId: product.id,
+            name: product.name,
+            productCode: product.productCode,
+            brand: product.brand,
+            category: product.category,
+            imageUrl: product.imageUrl,
+            price: product.finalPrice,
+            mrp: product.sellingPrice,
+            maxStock: product.stockQuantity || 1,
+          },
+          qty
+        );
+        setAdded(true);
+        toast.success("Added to cart", { duration: 1500 });
+      }}
+      className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-base"
+    >
+      <ShoppingCart className="w-5 h-5 mr-2" />
+      Add to Cart
+    </Button>
+  );
+};
