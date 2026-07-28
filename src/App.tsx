@@ -14,6 +14,7 @@ import BookRepair from "./pages/BookRepair";
 import OrderNow from "./pages/OrderNow";
 import CategoryProducts from "./pages/CategoryProducts";
 import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ScrollToTop from "./components/ScrollToTop";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/order-now" element={<OrderNow />} />
             <Route path="/order-now/category/:category" element={<CategoryProducts />} />
             <Route path="/order-now/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
