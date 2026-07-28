@@ -5,6 +5,7 @@ import { Search, ShoppingCart, LayoutGrid, List, ArrowRight, Package, Zap } from
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
+import CartIconButton from "@/components/shop/CartIconButton";
 import logo from "@/assets/logo.png";
 import { getProducts } from "@/lib/productStore";
 import { Product, stockStatusOf } from "@/types/product";
@@ -98,12 +99,7 @@ const OrderNow = () => {
               className="pl-9 h-10 bg-white/10 border-white/10 text-white placeholder:text-white/50 rounded-full focus-visible:ring-orange-500"
             />
           </div>
-          <button
-            aria-label="Cart"
-            className="relative w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center"
-          >
-            <ShoppingCart className="w-5 h-5" />
-          </button>
+          <CartIconButton variant="dark" />
         </div>
         {/* Mobile search */}
         <div className="container mx-auto pb-3 sm:hidden">
