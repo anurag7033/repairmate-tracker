@@ -3,11 +3,11 @@ import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import {
   Search, ShoppingCart, Plus, Minus, Trash2, Package, ArrowLeft, X, Loader2,
-  Truck, CreditCard, Tag, Check, Loader, Home as HomeIcon, LayoutGrid, Ticket, Menu, ChevronRight,
+  Truck, CreditCard, Tag, Check, Loader, Home as HomeIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,6 +17,7 @@ import { Product, stockStatusOf } from "@/types/product";
 import { createCustomerOrder, applyVoucherToOrder } from "@/lib/customerOrderStore";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
+import Footer from "@/components/Footer";
 
 declare global {
   interface Window { Razorpay: any }
@@ -33,7 +34,6 @@ const loadRazorpay = () =>
   });
 
 type CartItem = { productId: string; qty: number };
-type Tab = "home" | "categories" | "offers" | "cart";
 
 const CART_KEY = "shop_cart_v1";
 
@@ -43,9 +43,7 @@ const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
   const [category, setCategory] = useState<string>("all");
-  const [tab, setTab] = useState<Tab>("home");
   const [cart, setCart] = useState<CartItem[]>(() => {
     try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch { return []; }
   });
@@ -85,26 +83,10 @@ const Shop = () => {
     };
   }, []);
 
-  const categoryList = useMemo(() => {
-    const map = new Map<string, { name: string; count: number; image?: string }>();
-    for (const p of products) {
-      const key = p.category || "Other";
-      const ex = map.get(key);
-      if (ex) {
-        ex.count += 1;
-        if (!ex.image && p.imageUrl) ex.image = p.imageUrl;
-      } else {
-        map.set(key, { name: key, count: 1, image: p.imageUrl || undefined });
-      }
-    }
-    return Array.from(map.values()).sort((a, b) => b.count - a.count);
-  }, [products]);
-
-  const trending = useMemo(() => {
-    return [...products]
-      .filter((p) => p.discountValue > 0)
-      .sort((a, b) => (b.discountValue || 0) - (a.discountValue || 0))
-      .slice(0, 6);
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach((p) => p.category && set.add(p.category));
+    return Array.from(set).sort();
   }, [products]);
 
   const filtered = useMemo(() => {
@@ -293,15 +275,6 @@ const Shop = () => {
     }
   };
 
-  const openCategory = (name: string) => {
-    setCategory(name);
-    setTab("categories");
-    setSearch("");
-    window.scrollTo({ top: 0 });
-  };
-
-  const showingResults = tab === "categories" || search.trim().length > 0;
-
   const ProductCard = ({ p }: { p: Product }) => {
     const ss = stockStatusOf(p);
     const oos = ss === "out_of_stock";
@@ -349,153 +322,108 @@ const Shop = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F7FB]">
+    <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
         <title>Shop Mobile Accessories Online — Anurag Mobile</title>
         <meta name="description" content="Browse and order mobile phones, chargers, earphones, covers and genuine accessories from Anurag Mobile with home delivery." />
         <link rel="canonical" href="https://tracking.anuragmobile.in/shop" />
       </Helmet>
 
-      {/* Dark app header */}
-      <header className="sticky top-0 z-30 bg-[#0B0B14] text-white">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/")} aria-label="Home" className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/10">
-              <Menu className="w-5 h-5" />
-            </button>
-            <button onClick={() => { setTab("home"); setCategory("all"); setSearch(""); }} className="flex items-center gap-2">
-              <img src={logo} alt="Anurag Mobile" className="w-7 h-7 rounded-md" />
-              <span className="font-display font-bold text-lg tracking-tight">Anurag Mobile</span>
-            </button>
-          </div>
-          <button onClick={() => setSearchOpen((s) => !s)} aria-label="Search" className="p-1.5 -mr-1.5 rounded-lg hover:bg-white/10">
-            <Search className="w-5 h-5" />
+      {/* Simple top bar */}
+      <header className="sticky top-0 z-30 bg-card/95 backdrop-blur border-b border-border">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 shrink-0">
+            <img src={logo} alt="Anurag Mobile" className="w-8 h-8 sm:w-9 sm:h-9 rounded-md" />
+            <div className="hidden sm:block leading-tight text-left">
+              <div className="font-display font-bold text-base">Anurag Mobile</div>
+              <div className="text-[10px] text-muted-foreground">Shop</div>
+            </div>
           </button>
+
+          <div className="flex-1 max-w-md relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="pl-9 h-10 rounded-xl"
+            />
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} aria-label="Home" className="hidden sm:inline-flex">
+              <HomeIcon className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setCartOpen(true)}
+              className="relative h-10 rounded-xl px-3"
+            >
+              <ShoppingCart className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
-        {searchOpen && (
-          <div className="max-w-3xl mx-auto px-4 pb-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                autoFocus
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products, brands, categories..."
-                className="pl-10 h-10 rounded-xl bg-white text-foreground border-white/20"
-              />
+
+        {/* Category chips */}
+        {categories.length > 0 && (
+          <div className="border-t border-border">
+            <div className="container mx-auto px-4 py-2 flex gap-2 overflow-x-auto scrollbar-none">
+              <button
+                onClick={() => setCategory("all")}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                  category === "all" ? "bg-orange-500 text-white border-orange-500" : "bg-background border-border text-foreground hover:bg-muted"
+                }`}
+              >
+                All
+              </button>
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCategory(c)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                    category === c ? "bg-orange-500 text-white border-orange-500" : "bg-background border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
           </div>
         )}
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 pt-5 pb-28">
+      <main className="flex-1 container mx-auto w-full px-4 py-6">
+        <div className="mb-5">
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">Order Now</h1>
+          <p className="text-muted-foreground text-sm">
+            {filtered.length} {filtered.length === 1 ? "product" : "products"}
+            {category !== "all" && ` in ${category}`}
+            {search.trim() && ` for "${search.trim()}"`}
+          </p>
+        </div>
+
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
+            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading products...
           </div>
-        ) : showingResults ? (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <Button variant="ghost" size="sm" onClick={() => { setTab("home"); setCategory("all"); setSearch(""); }} className="-ml-2 text-muted-foreground">
-                <ArrowLeft className="w-4 h-4 mr-1" /> Back
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                {category !== "all" ? category : search.trim() ? `"${search}"` : "All"} · {filtered.length}
-              </p>
-            </div>
-            {filtered.length === 0 ? (
-              <div className="text-center py-20 text-muted-foreground">
-                <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No products found.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {filtered.map((p) => <ProductCard key={p.id} p={p} />)}
-              </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>No products found.</p>
+            {(search || category !== "all") && (
+              <Button variant="link" onClick={() => { setSearch(""); setCategory("all"); }}>Clear filters</Button>
             )}
-          </>
-        ) : tab === "offers" ? (
-          <>
-            <h1 className="font-display text-3xl font-extrabold tracking-tight mb-1">Offers</h1>
-            <p className="text-muted-foreground text-sm mb-5">Discounted items available right now.</p>
-            {trending.length === 0 ? (
-              <div className="text-center py-20 text-muted-foreground">
-                <Ticket className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No active offers.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {trending.map((p) => <ProductCard key={p.id} p={p} />)}
-              </div>
-            )}
-          </>
+          </div>
         ) : (
-          <>
-            {/* Browse Categories */}
-            <h1 className="font-display text-3xl font-extrabold tracking-tight">Browse Categories</h1>
-            <p className="text-muted-foreground text-sm mt-1 mb-5">
-              Explore our curated selection of premium mobile essentials.
-            </p>
-
-            {categoryList.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No products available yet.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                {categoryList.map((c) => (
-                  <button
-                    key={c.name}
-                    onClick={() => openCategory(c.name)}
-                    className="relative aspect-square rounded-2xl overflow-hidden bg-muted text-left group shadow-sm hover:shadow-lg transition-shadow"
-                  >
-                    {c.image ? (
-                      <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300">
-                        <Package className="w-12 h-12 text-slate-500" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute top-3 left-3">
-                      <span className="text-white text-[11px] font-semibold bg-black/40 backdrop-blur px-2 py-0.5 rounded-full">
-                        {c.count} Items
-                      </span>
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <div className="text-white font-display font-bold text-lg leading-tight drop-shadow">{c.name}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Trending Collections */}
-            {trending.length > 0 && (
-              <>
-                <h2 className="font-display text-2xl font-extrabold tracking-tight mt-8 mb-4">Trending Collections</h2>
-                <div className="flex gap-3 sm:gap-4 overflow-x-auto -mx-4 px-4 pb-2 snap-x snap-mandatory">
-                  {[
-                    { title: "MagSafe Essentials", tag: "NEW ARRIVAL", desc: "Discover the future of charging with our magnetic ecosystem.", bg: "bg-orange-500", text: "text-white", cta: "bg-black text-white" },
-                    { title: "Work Anywhere", tag: "EDITOR'S PICK", desc: "Elevate your pro mobile setup with premium accessories.", bg: "bg-indigo-100", text: "text-slate-900", cta: "bg-black text-white" },
-                  ].map((coll) => (
-                    <div key={coll.title} className={`${coll.bg} ${coll.text} snap-start shrink-0 w-[280px] sm:w-[340px] rounded-2xl p-5 shadow-sm`}>
-                      <div className="text-[11px] font-bold tracking-wider opacity-80">{coll.tag}</div>
-                      <div className="font-display font-extrabold text-2xl leading-tight mt-2">{coll.title}</div>
-                      <p className="text-sm opacity-90 mt-2">{coll.desc}</p>
-                      <button
-                        onClick={() => { setTab("offers"); }}
-                        className={`${coll.cta} inline-flex mt-4 px-4 py-2 rounded-full text-sm font-semibold`}
-                      >
-                        {coll.tag === "NEW ARRIVAL" ? "View All" : "Explore"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+            {filtered.map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
         )}
       </main>
 
@@ -558,43 +486,6 @@ const Shop = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Bottom nav */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-border pb-[env(safe-area-inset-bottom)]">
-        <div className="max-w-3xl mx-auto grid grid-cols-4">
-          {([
-            { key: "home", label: "Home", icon: HomeIcon },
-            { key: "categories", label: "Categories", icon: LayoutGrid },
-            { key: "offers", label: "Offers", icon: Ticket },
-            { key: "cart", label: "Cart", icon: ShoppingCart },
-          ] as const).map(({ key, label, icon: Icon }) => {
-            const active = key === "cart" ? cartOpen : tab === key && !search.trim();
-            return (
-              <button
-                key={key}
-                onClick={() => {
-                  if (key === "cart") { setCartOpen(true); return; }
-                  setSearch("");
-                  if (key === "categories") { setCategory("all"); setTab("categories"); }
-                  else { setTab(key); setCategory("all"); }
-                  window.scrollTo({ top: 0 });
-                }}
-                className="flex flex-col items-center gap-1 py-2.5 relative"
-              >
-                <div className={`flex items-center justify-center h-9 px-4 rounded-full transition-colors ${active ? "bg-orange-500 text-white" : "text-slate-500"}`}>
-                  <Icon className="w-5 h-5" />
-                  {key === "cart" && cartCount > 0 && (
-                    <span className={`ml-1.5 text-[10px] font-bold rounded-full px-1.5 py-0.5 ${active ? "bg-white text-orange-600" : "bg-orange-500 text-white"}`}>
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-                <span className={`text-[11px] font-semibold ${active ? "text-orange-600" : "text-slate-500"}`}>{label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
       {/* Checkout dialog */}
       {checkoutOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setCheckoutOpen(false)}>
@@ -606,7 +497,7 @@ const Shop = () => {
               </button>
             </div>
             <div className="p-5 overflow-y-auto flex-1 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="ck-name">Name *</Label>
                   <Input id="ck-name" value={name} onChange={(e) => setName(e.target.value)} className="h-10 rounded-lg" />
@@ -627,7 +518,7 @@ const Shop = () => {
 
               <div>
                 <Label className="mb-2 block">Payment Method *</Label>
-                <RadioGroup value={paymentMethod} onValueChange={(v) => { setPaymentMethod(v as any); if (v !== "online") setVoucher(null); }} className="grid grid-cols-2 gap-2">
+                <RadioGroup value={paymentMethod} onValueChange={(v) => { setPaymentMethod(v as any); if (v !== "online") setVoucher(null); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <label className={`flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer ${paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"}`}>
                     <RadioGroupItem value="cod" id="pm-cod" />
                     <Truck className="w-4 h-4" />
@@ -681,6 +572,8 @@ const Shop = () => {
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 };
