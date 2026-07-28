@@ -11,7 +11,7 @@ import RequirementForm from "@/components/RequirementForm";
 
 const Index = () => {
   const [trackingId, setTrackingId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<"order" | "repair" | null>(null);
 
   const navigate = useNavigate();
 
@@ -19,10 +19,12 @@ const Index = () => {
     const id = trackingId.trim();
     if (!id) return;
 
-    setLoading(true);
+    const upper = id.toUpperCase();
+    const isOrder = upper.startsWith("ORD-");
+    setLoading(isOrder ? "order" : "repair");
     setTimeout(() => {
-      setLoading(false);
-      if (id.toUpperCase().startsWith("ORD-")) navigate(`/track-order/${id.toUpperCase()}`);
+      setLoading(null);
+      if (isOrder) navigate(`/track-order/${upper}`);
       else navigate(`/track/${id}`);
     }, 900);
   };
@@ -35,7 +37,9 @@ const Index = () => {
       <div className="min-h-screen bg-blue-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="loader" />
-          <p className="text-white text-lg sm:text-xl font-semibold">Loading Your Repair</p>
+          <p className="text-white text-lg sm:text-xl font-semibold">
+            {loading === "order" ? "Loading Your Order" : "Loading Your Repair"}
+          </p>
         </div>
       </div>
     );
