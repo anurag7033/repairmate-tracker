@@ -192,7 +192,7 @@ const CategoryProducts = () => {
             ) : pageItems.length === 0 ? (
               <div className="text-center py-16 bg-card border border-border rounded-2xl text-muted-foreground">No products match your filters.</div>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
                 {pageItems.map((p) => {
                   const s = stockStatusOf(p);
                   const hasDiscount = p.sellingPrice > p.finalPrice;
