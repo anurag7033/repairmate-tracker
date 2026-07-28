@@ -133,6 +133,13 @@ const Index = () => {
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 animate-fade-in" style={{ animationDelay: "0.4s" }}>
             <Button
+              onClick={() => navigate("/order-now")}
+              className="h-11 px-5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/30"
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Order Now
+            </Button>
+            <Button
               variant="outline"
               onClick={() => navigate("/book-repair")}
               className="h-11 px-5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent rounded-xl font-semibold"
