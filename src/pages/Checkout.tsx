@@ -141,10 +141,10 @@ const Checkout = () => {
 
   const itemsPayload = () =>
     cart.map((c) => ({
-      productId: c.productId,
-      productCode: c.productCode,
-      productName: c.name,
-      unitPrice: c.price,
+      product_id: c.productId,
+      product_code: c.productCode,
+      product_name: c.name,
+      unit_price: c.price,
       quantity: c.quantity,
     }));
 
