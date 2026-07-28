@@ -11,7 +11,7 @@ import RequirementForm from "@/components/RequirementForm";
 
 const Index = () => {
   const [trackingId, setTrackingId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<"order" | "repair" | null>(null);
 
   const navigate = useNavigate();
 
@@ -19,10 +19,12 @@ const Index = () => {
     const id = trackingId.trim();
     if (!id) return;
 
-    setLoading(true);
+    const upper = id.toUpperCase();
+    const isOrder = upper.startsWith("ORD-");
+    setLoading(isOrder ? "order" : "repair");
     setTimeout(() => {
-      setLoading(false);
-      if (id.toUpperCase().startsWith("ORD-")) navigate(`/track-order/${id.toUpperCase()}`);
+      setLoading(null);
+      if (isOrder) navigate(`/track-order/${upper}`);
       else navigate(`/track/${id}`);
     }, 900);
   };
@@ -35,7 +37,9 @@ const Index = () => {
       <div className="min-h-screen bg-blue-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="loader" />
-          <p className="text-white text-lg sm:text-xl font-semibold">Loading Your Repair</p>
+          <p className="text-white text-lg sm:text-xl font-semibold">
+            {loading === "order" ? "Loading Your Order" : "Loading Your Repair"}
+          </p>
         </div>
       </div>
     );
@@ -101,13 +105,13 @@ const Index = () => {
         <div className="container mx-auto py-16 md:py-24 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground/90 text-sm font-medium mb-6 animate-fade-in">
             <Wrench className="w-4 h-4" />
-            Repairs • Real-Time Tracking
+            Repairs & Orders • Real-Time Tracking
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            Track Your Mobile Repair Status
+            Track Your Repair or Order
           </h1>
           <p className="text-primary-foreground/70 text-lg md:text-xl max-w-xl mx-auto mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Enter your Repair Tracking ID (MR-XXXXXX) to see live status.
+            Enter your Repair ID (MR-XXXXXX) or Order ID (ORD-YYYY-XXXX) to see live status.
           </p>
 
           <div className="max-w-md mx-auto flex gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
