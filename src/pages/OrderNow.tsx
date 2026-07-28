@@ -161,8 +161,8 @@ const OrderNow = () => {
                 return (
                   <button
                     key={c.name}
-                    onClick={() => setActiveCategory(isActive ? null : c.name)}
-                    className={`group relative aspect-[4/3] rounded-2xl overflow-hidden text-left shadow-card border transition-all ${isActive ? "border-orange-500 ring-2 ring-orange-500/40" : "border-border hover:border-orange-500/40"}`}
+                    onClick={() => navigate(`/order-now/category/${encodeURIComponent(c.name)}`)}
+                    className={`group relative aspect-[4/3] rounded-2xl overflow-hidden text-left shadow-card border transition-all border-border hover:border-orange-500/40`}
                   >
                     {c.image ? (
                       <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
@@ -185,8 +185,8 @@ const OrderNow = () => {
                 return (
                   <button
                     key={c.name}
-                    onClick={() => setActiveCategory(isActive ? null : c.name)}
-                    className={`flex items-center gap-4 p-3 rounded-xl border bg-card transition-colors ${isActive ? "border-orange-500" : "border-border hover:border-orange-500/40"}`}
+                    onClick={() => navigate(`/order-now/category/${encodeURIComponent(c.name)}`)}
+                    className={`flex items-center gap-4 p-3 rounded-xl border bg-card transition-colors border-border hover:border-orange-500/40`}
                   >
                     <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0">
                       {c.image && <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />}
