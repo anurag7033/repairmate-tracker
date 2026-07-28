@@ -11,6 +11,7 @@ import AdminBookingSection from "@/components/AdminBookingSection";
 import CustomersSection from "@/components/admin/CustomersSection";
 import ProductsSection from "@/components/admin/ProductsSection";
 import SalesInvoicesSection from "@/components/admin/SalesInvoicesSection";
+import OrdersSection from "@/components/admin/OrdersSection";
 
 import RequirementsSection from "@/components/admin/RequirementsSection";
 
