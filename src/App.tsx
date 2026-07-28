@@ -11,9 +11,6 @@ import TrackRepair from "./pages/TrackRepair";
 import TrackBooking from "./pages/TrackBooking";
 import Invoice from "./pages/Invoice";
 import BookRepair from "./pages/BookRepair";
-import Shop from "./pages/Shop";
-import OrderSuccess from "./pages/OrderSuccess";
-import TrackOrder from "./pages/TrackOrder";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ScrollToTop from "./components/ScrollToTop";
@@ -37,11 +34,6 @@ const App = () => (
             <Route path="/booking/:bookingId" element={<TrackBooking />} />
             <Route path="/invoice/:trackingId" element={<Invoice />} />
             <Route path="/book-repair" element={<BookRepair />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/order-success/:orderId" element={<OrderSuccess />} />
-            <Route path="/track-order" element={<TrackOrder />} />
-            <Route path="/track-order/:orderId" element={<TrackOrder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

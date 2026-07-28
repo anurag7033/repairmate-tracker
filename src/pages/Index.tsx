@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Truck, Tag, Smartphone, Wallet, Phone, MessageCircle, MapPin, Calendar, ShoppingBag, Package, Zap } from "lucide-react";
+import { Search, Shield, ArrowRight, Wrench, Clock, CreditCard, CheckCircle2, Truck, Tag, Smartphone, Wallet, Phone, MessageCircle, MapPin, Calendar, Package, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -22,11 +22,7 @@ const Index = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      if (id.toUpperCase().startsWith("ORD-")) {
-        navigate(`/track-order/${id}`);
-      } else {
-        navigate(`/track/${id}`);
-      }
+      navigate(`/track/${id}`);
     }, 900);
   };
 
