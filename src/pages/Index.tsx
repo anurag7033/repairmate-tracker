@@ -100,15 +100,13 @@ const Index = () => {
         <div className="container mx-auto py-16 md:py-24 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground/90 text-sm font-medium mb-6 animate-fade-in">
             <Wrench className="w-4 h-4" />
-            Repairs • Shop • Real-Time Tracking
+            Repairs • Real-Time Tracking
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            Track Your Repair
-            <br />
-            <span className="text-primary">or Order</span>
+            Track Your Mobile Repair Status
           </h1>
           <p className="text-primary-foreground/70 text-lg md:text-xl max-w-xl mx-auto mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Enter your Repair Tracking ID (MR-XXXXXX) or Order ID (ORD-YYYY-####) to see live status.
+            Enter your Repair Tracking ID (MR-XXXXXX) to see live status.
           </p>
 
           <div className="max-w-md mx-auto flex gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
@@ -134,13 +132,6 @@ const Index = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <Button
-              onClick={() => navigate("/shop")}
-              className="h-11 px-5 gradient-primary hover:opacity-90 rounded-xl font-semibold"
-            >
-              <ShoppingBag className="w-4 h-4 mr-2" />
-              Order Now
-            </Button>
             <Button
               variant="outline"
               onClick={() => navigate("/book-repair")}
@@ -254,78 +245,6 @@ const Index = () => {
                   </div>
                   <h4 className="font-semibold text-sm text-foreground mb-1">{s.title}</h4>
                   <p className="text-xs text-muted-foreground">{s.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Order Products Online */}
-      <section className="container mx-auto py-16" aria-labelledby="order-heading">
-        <div className="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-elevated border border-border relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white">
-          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-orange-500/30 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-blue-400/20 blur-3xl" />
-
-          <div className="relative z-10 grid md:grid-cols-2 gap-8 p-8 md:p-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur text-white text-xs font-semibold mb-4">
-                <ShoppingBag className="w-3.5 h-3.5" />
-                Shop From Anywhere
-              </div>
-              <h2 id="order-heading" className="font-display text-3xl md:text-4xl font-bold mb-4">
-                Order Mobile Accessories &amp; Products Online
-              </h2>
-              <p className="text-white/80 text-base mb-6 leading-relaxed">
-                Browse our latest range of mobile phones, chargers, earphones, covers, screen protectors and genuine accessories. Get them delivered to your doorstep or pick up from our store.
-              </p>
-
-              <ul className="space-y-2.5 mb-6">
-                {[
-                  "Genuine products with warranty",
-                  "Fast delivery across the city",
-                  "Cash on delivery available",
-                  "Best prices, unbeatable offers",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
-                    <span className="text-white/90">{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  onClick={() => navigate("/shop")}
-                  className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/40"
-                >
-                  <ShoppingBag className="w-4 h-4 mr-2" />
-                  Order Now
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => window.open("https://wa.me/917033067221?text=Hello%2C%20I%20want%20to%20order%20a%20product", "_blank")}
-                  className="h-12 px-6 rounded-xl font-semibold border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Order via WhatsApp
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { icon: <Smartphone className="w-5 h-5" />, title: "Mobile Phones", desc: "Latest smartphones" },
-                { icon: <Zap className="w-5 h-5" />, title: "Chargers & Cables", desc: "Fast charging gear" },
-                { icon: <Package className="w-5 h-5" />, title: "Accessories", desc: "Covers, protectors & more" },
-                { icon: <Truck className="w-5 h-5" />, title: "Home Delivery", desc: "Delivered to your door" },
-              ].map((s) => (
-                <div key={s.title} className="bg-white/10 backdrop-blur rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center mb-3">
-                    {s.icon}
-                  </div>
-                  <h4 className="font-semibold text-sm mb-1">{s.title}</h4>
-                  <p className="text-xs text-white/70">{s.desc}</p>
                 </div>
               ))}
             </div>
