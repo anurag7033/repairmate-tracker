@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Footer from "@/components/Footer";
+import CartIconButton from "@/components/shop/CartIconButton";
 import logo from "@/assets/logo.png";
 import { getProducts } from "@/lib/productStore";
 import { Product, stockStatusOf } from "@/types/product";
@@ -106,11 +107,11 @@ const CategoryProducts = () => {
             <Link to="/" className="hover:text-orange-400">Home</Link>
             <Link to="/order-now" className="text-orange-500 border-b-2 border-orange-500 pb-0.5">Categories</Link>
             <a href="#" className="hover:text-orange-400">Offers</a>
-            <a href="#" className="hover:text-orange-400">Cart</a>
+            <Link to="/cart" className="hover:text-orange-400">Cart</Link>
           </nav>
           <div className="flex-1" />
           <button aria-label="Search" className="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center"><Search className="w-5 h-5" /></button>
-          <button aria-label="Cart" className="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center"><ShoppingCart className="w-5 h-5" /></button>
+          <CartIconButton variant="dark" />
         </div>
       </header>
 
