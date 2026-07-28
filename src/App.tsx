@@ -11,6 +11,7 @@ import TrackRepair from "./pages/TrackRepair";
 import TrackBooking from "./pages/TrackBooking";
 import Invoice from "./pages/Invoice";
 import BookRepair from "./pages/BookRepair";
+import OrderNow from "./pages/OrderNow";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ScrollToTop from "./components/ScrollToTop";
