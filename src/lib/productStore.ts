@@ -346,6 +346,18 @@ export async function findProductByCode(code: string): Promise<Product | null> {
   return data ? mapRow(data as Row) : null;
 }
 
+/** Lookup a single product by its UUID id. */
+export async function getProductById(id: string): Promise<Product | null> {
+  if (!id) return null;
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapRow(data as Row) : null;
+}
+
 /** Increment product stock by a delta (negative allowed but clamped to 0). */
 export async function adjustProductStock(id: string, delta: number): Promise<Product> {
   const { data: cur, error: ge } = await supabase

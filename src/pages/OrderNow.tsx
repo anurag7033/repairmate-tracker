@@ -225,17 +225,17 @@ const OrderNow = () => {
                 {filtered.slice(0, 24).map((p) => {
                   const s = stockStatusOf(p);
                   return (
-                    <div key={p.id} className="bg-card rounded-2xl border border-border overflow-hidden shadow-card">
+                    <Link key={p.id} to={`/order-now/product/${p.id}`} className="bg-card rounded-2xl border border-border overflow-hidden shadow-card group hover:border-orange-500/40 transition-colors">
                       <div className="aspect-square bg-muted overflow-hidden">
                         {p.imageUrl ? (
-                          <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
                         )}
                       </div>
                       <div className="p-3">
                         <p className="text-xs text-muted-foreground truncate">{p.brand || p.category}</p>
-                        <p className="font-semibold text-sm line-clamp-2 min-h-[2.5rem]">{p.name}</p>
+                        <p className="font-semibold text-sm line-clamp-2 min-h-[2.5rem] group-hover:text-orange-600 transition-colors">{p.name}</p>
                         <div className="flex items-center justify-between mt-2">
                           <p className="font-bold text-orange-600">₹{p.finalPrice.toLocaleString("en-IN")}</p>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${s === "in_stock" ? "bg-green-100 text-green-700" : s === "low_stock" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
@@ -243,7 +243,7 @@ const OrderNow = () => {
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

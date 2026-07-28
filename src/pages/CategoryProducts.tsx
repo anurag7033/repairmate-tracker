@@ -199,7 +199,7 @@ const CategoryProducts = () => {
                   const off = hasDiscount ? Math.round(((p.sellingPrice - p.finalPrice) / p.sellingPrice) * 100) : 0;
                   return (
                     <article key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-card group">
-                      <div className="relative aspect-square bg-muted overflow-hidden">
+                      <Link to={`/order-now/product/${p.id}`} className="block relative aspect-square bg-muted overflow-hidden">
                         {p.imageUrl ? (
                           <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                         ) : (
@@ -214,20 +214,24 @@ const CategoryProducts = () => {
                         {s === "out_of_stock" && (
                           <span className="absolute top-3 left-3 bg-slate-700 text-white text-xs font-bold px-2 py-1 rounded">OUT OF STOCK</span>
                         )}
-                        <button aria-label="Wishlist" className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white">
+                        <button aria-label="Wishlist" className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white" onClick={(e) => e.preventDefault()}>
                           <Heart className="w-4 h-4 text-muted-foreground" />
                         </button>
-                      </div>
+                      </Link>
                       <div className="p-4">
                         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{p.brand || "Anurag Mobile"}</p>
-                        <h3 className="font-semibold text-base leading-snug mt-1 line-clamp-2 min-h-[2.75rem]">{p.name}</h3>
+                        <Link to={`/order-now/product/${p.id}`}>
+                          <h3 className="font-semibold text-base leading-snug mt-1 line-clamp-2 min-h-[2.75rem] hover:text-orange-600 transition-colors">{p.name}</h3>
+                        </Link>
                         <div className="flex items-baseline gap-2 mt-3">
                           <span className="font-bold text-lg text-orange-600">₹{p.finalPrice.toLocaleString("en-IN")}</span>
                           {hasDiscount && <span className="text-sm text-muted-foreground line-through">₹{p.sellingPrice.toLocaleString("en-IN")}</span>}
                         </div>
-                        <Button disabled={s === "out_of_stock"} className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-11">
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          {s === "out_of_stock" ? "Unavailable" : "Add to Cart"}
+                        <Button asChild disabled={s === "out_of_stock"} className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-11">
+                          <Link to={`/order-now/product/${p.id}`}>
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            {s === "out_of_stock" ? "Unavailable" : "View Details"}
+                          </Link>
                         </Button>
                       </div>
                     </article>
