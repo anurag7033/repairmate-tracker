@@ -260,11 +260,13 @@ const Checkout = () => {
       const orderId =
         method === "razorpay" ? await placeRazorpayOrder() : await placeCodOrder();
       if (!orderId) throw new Error("Could not create order");
+      placedRef.current = true;
       clearCart();
       navigate(`/order-success/${orderId}`, {
         replace: true,
         state: { paymentMethod: method },
       });
+
     } catch (e: any) {
       toast.error(e?.message || "Order failed");
     } finally {
