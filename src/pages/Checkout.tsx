@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -82,12 +82,15 @@ const Checkout = () => {
   const tax = Math.round(taxableBase * TAX_RATE);
   const grandTotal = Math.max(0, taxableBase + tax);
 
+  const placedRef = useRef(false);
+
   useEffect(() => {
-    if (cart.length === 0) {
+    if (cart.length === 0 && !placedRef.current) {
       // Nothing to checkout — send back to cart
       navigate("/cart", { replace: true });
     }
   }, [cart.length, navigate]);
+
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
@@ -257,11 +260,13 @@ const Checkout = () => {
       const orderId =
         method === "razorpay" ? await placeRazorpayOrder() : await placeCodOrder();
       if (!orderId) throw new Error("Could not create order");
+      placedRef.current = true;
       clearCart();
       navigate(`/order-success/${orderId}`, {
         replace: true,
         state: { paymentMethod: method },
       });
+
     } catch (e: any) {
       toast.error(e?.message || "Order failed");
     } finally {
