@@ -20,7 +20,7 @@ const PRICE_BUCKETS: { id: PriceBucket; label: string; test: (n: number) => bool
   { id: "2000+", label: "₹2,000 & Above", test: (n) => n >= 2000 },
 ];
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 16;
 
 const CategoryProducts = () => {
   const { category = "" } = useParams();
@@ -184,15 +184,15 @@ const CategoryProducts = () => {
             </div>
 
             {loading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {Array.from({ length: 6 }).map((_, i) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="aspect-[3/4] bg-muted rounded-2xl animate-pulse" />
                 ))}
               </div>
             ) : pageItems.length === 0 ? (
               <div className="text-center py-16 bg-card border border-border rounded-2xl text-muted-foreground">No products match your filters.</div>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
                 {pageItems.map((p) => {
                   const s = stockStatusOf(p);
                   const hasDiscount = p.sellingPrice > p.finalPrice;
