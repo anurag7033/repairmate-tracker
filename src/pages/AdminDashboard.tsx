@@ -422,6 +422,14 @@ const AdminDashboard = () => {
             <ClipboardList className="w-4 h-4 mr-2" />
             Requirements
           </Button>
+          <Button
+            variant={activeTab === "orders" ? "default" : "outline"}
+            onClick={() => setActiveTab("orders")}
+            className="rounded-xl font-semibold"
+          >
+            <Package className="w-4 h-4 mr-2" />
+            Orders
+          </Button>
         </div>
 
         {activeTab === "vouchers" ? (
