@@ -105,13 +105,13 @@ const Index = () => {
         <div className="container mx-auto py-16 md:py-24 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground/90 text-sm font-medium mb-6 animate-fade-in">
             <Wrench className="w-4 h-4" />
-            Repairs • Real-Time Tracking
+            Repairs & Orders • Real-Time Tracking
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            Track Your Mobile Repair Status
+            Track Your Repair or Order
           </h1>
           <p className="text-primary-foreground/70 text-lg md:text-xl max-w-xl mx-auto mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Enter your Repair Tracking ID (MR-XXXXXX) to see live status.
+            Enter your Repair ID (MR-XXXXXX) or Order ID (ORD-YYYY-XXXX) to see live status.
           </p>
 
           <div className="max-w-md mx-auto flex gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
