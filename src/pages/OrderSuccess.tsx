@@ -223,9 +223,15 @@ const OrderSuccess = () => {
                 </div>
 
                 <Button
+                  onClick={() => navigate(`/track-order/${orderId}`)}
+                  className="w-full mt-5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+                >
+                  Track Your Order <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+                <Button
                   onClick={() => navigate("/order-now")}
                   variant="outline"
-                  className="w-full mt-5 rounded-xl border-slate-300 font-semibold"
+                  className="w-full mt-2 rounded-xl border-slate-300 font-semibold"
                 >
                   Continue Shopping <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
