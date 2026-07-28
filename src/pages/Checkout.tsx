@@ -489,36 +489,6 @@ const Checkout = () => {
 
       <Footer />
 
-      <Dialog open={!!successOrderId} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="w-14 h-14 rounded-full bg-green-100 text-green-600 mx-auto flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <DialogTitle className="text-center font-display text-2xl">
-              Order placed successfully!
-            </DialogTitle>
-          </DialogHeader>
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">Your order reference</p>
-            <p className="font-mono text-lg font-bold text-orange-600">{successOrderId}</p>
-            <p className="text-xs text-muted-foreground pt-2">
-              We'll contact you shortly to confirm delivery.
-            </p>
-          </div>
-          <DialogFooter className="sm:justify-center gap-2">
-            <Button
-              onClick={() => navigate("/order-now")}
-              className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl"
-            >
-              Continue shopping <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/")} className="rounded-xl">
-              Back to home
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
