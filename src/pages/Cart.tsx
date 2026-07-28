@@ -54,7 +54,11 @@ const Cart = () => {
 
   const proceedToCheckout = () => {
     if (cart.length === 0) return;
-    toast.info("Checkout flow coming soon");
+    navigate("/checkout", {
+      state: applied
+        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label }
+        : {},
+    });
   };
 
   return (
