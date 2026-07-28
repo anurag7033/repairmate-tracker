@@ -13,7 +13,6 @@ import Invoice from "./pages/Invoice";
 import BookRepair from "./pages/BookRepair";
 import OrderNow from "./pages/OrderNow";
 import CategoryProducts from "./pages/CategoryProducts";
-import CategoryProducts from "./pages/CategoryProducts";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import ScrollToTop from "./components/ScrollToTop";
