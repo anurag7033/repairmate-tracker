@@ -82,6 +82,8 @@ const Checkout = () => {
   const tax = Math.round(taxableBase * TAX_RATE);
   const grandTotal = Math.max(0, taxableBase + tax);
 
+  const placedRef = useRef(false);
+
   useEffect(() => {
     if (cart.length === 0 && !placedRef.current) {
       // Nothing to checkout — send back to cart
