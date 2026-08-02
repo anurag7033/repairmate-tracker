@@ -19,7 +19,7 @@ const Cart = () => {
   const [coupon, setCoupon] = useState("");
   const [couponPhone, setCouponPhone] = useState("");
   const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState<{ code: string; discount: number; label: string } | null>(null);
+  const [applied, setApplied] = useState<{ code: string; discount: number; label: string; name?: string } | null>(null);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   const shipping = 0; // free
