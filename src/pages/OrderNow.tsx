@@ -167,82 +167,34 @@ const OrderNow = () => {
       </header>
 
       <main className="container mx-auto py-8 md:py-12 flex-1">
-        {/* Browse Categories */}
+        {/* Shop header + category chips (no folder cards) */}
         <section aria-labelledby="cats-heading">
-          <div className="flex items-end justify-between gap-4 mb-6">
-            <div>
-              <h1 id="cats-heading" className="font-display text-3xl md:text-5xl font-bold text-foreground">Browse Categories</h1>
-              <p className="text-muted-foreground mt-1 text-sm md:text-base">Explore our curated selection of premium mobile essentials.</p>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
-              <span className="hidden sm:inline">View:</span>
-              <div className="inline-flex rounded-lg border border-border bg-card p-1">
-                <button
-                  onClick={() => setView("grid")}
-                  className={`w-8 h-8 rounded-md flex items-center justify-center ${view === "grid" ? "bg-orange-500 text-white" : "text-muted-foreground"}`}
-                  aria-label="Grid view"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setView("list")}
-                  className={`w-8 h-8 rounded-md flex items-center justify-center ${view === "list" ? "bg-orange-500 text-white" : "text-muted-foreground"}`}
-                  aria-label="List view"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+          <div className="mb-6">
+            <h1 id="cats-heading" className="font-display text-3xl md:text-5xl font-bold text-foreground">Shop Accessories</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">Explore our curated selection of premium mobile essentials.</p>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-[4/3] rounded-2xl bg-muted animate-pulse" />
-              ))}
-            </div>
-          ) : view === "grid" ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+          {!loading && categories.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+              <button
+                onClick={() => setActiveCategory(null)}
+                className={`shrink-0 px-4 h-9 rounded-full text-sm font-semibold border transition-colors ${
+                  !activeCategory ? "bg-orange-500 text-white border-orange-500" : "bg-card text-foreground border-border hover:border-orange-500/40"
+                }`}
+              >
+                All
+              </button>
               {categories.map((c) => {
                 const isActive = activeCategory?.toLowerCase() === c.name.toLowerCase();
                 return (
                   <button
                     key={c.name}
-                    onClick={() => navigate(`/order-now/category/${encodeURIComponent(c.name)}`)}
-                    className={`group relative aspect-[4/3] rounded-2xl overflow-hidden text-left shadow-card border transition-all border-border hover:border-orange-500/40`}
+                    onClick={() => setActiveCategory(isActive ? null : c.name)}
+                    className={`shrink-0 px-4 h-9 rounded-full text-sm font-semibold border capitalize transition-colors ${
+                      isActive ? "bg-orange-500 text-white border-orange-500" : "bg-card text-foreground border-border hover:border-orange-500/40"
+                    }`}
                   >
-                    {c.image ? (
-                      <img src={c.image} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-500 flex items-center justify-center text-white/60 text-xs">img</div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <p className="text-orange-400 text-xs font-semibold mb-1">{c.count} {c.count === 1 ? "Item" : "Items"}</p>
-                      <p className="text-white font-bold text-lg leading-tight capitalize">{c.name.toLowerCase()}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              {categories.map((c) => {
-                const isActive = activeCategory?.toLowerCase() === c.name.toLowerCase();
-                return (
-                  <button
-                    key={c.name}
-                    onClick={() => navigate(`/order-now/category/${encodeURIComponent(c.name)}`)}
-                    className={`flex items-center gap-4 p-3 rounded-xl border bg-card transition-colors border-border hover:border-orange-500/40`}
-                  >
-                    <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0">
-                      {c.image && <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold capitalize">{c.name.toLowerCase()}</p>
-                      <p className="text-xs text-muted-foreground">{c.count} items</p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    {c.name.toLowerCase()} <span className="opacity-60">({c.count})</span>
                   </button>
                 );
               })}
@@ -251,7 +203,7 @@ const OrderNow = () => {
         </section>
 
         {/* Products list (filtered) */}
-        {(activeCategory || search) && (
+        {true && (
           <section className="mt-12">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-2xl font-bold">
