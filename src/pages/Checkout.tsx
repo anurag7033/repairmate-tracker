@@ -408,11 +408,24 @@ const Checkout = () => {
                   title="Cash on Delivery"
                   subtitle="Pay when you receive your order"
                 />
-                {location.state?.voucherCode && method !== "razorpay" && (
-                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    Voucher <span className="font-bold">{location.state.voucherCode}</span> applies
-                    only on online payments.
-                  </p>
+                {location.state?.voucherCode && (
+                  method === "razorpay" ? (
+                    <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      Voucher applied:{" "}
+                      <span className="font-bold">
+                        {location.state.voucherName || location.state.voucherCode}
+                      </span>{" "}
+                      ({location.state.voucherCode}) — you save ₹{discount.toLocaleString("en-IN")}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Voucher{" "}
+                      <span className="font-bold">
+                        {location.state.voucherName || location.state.voucherCode}
+                      </span>{" "}
+                      applies only on online payments.
+                    </p>
+                  )
                 )}
               </div>
             </section>
