@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Search, ShoppingCart, ChevronRight, Menu, Heart, Mail } from "lucide-react";
+import { Search, ShoppingCart, ChevronRight, Menu, Heart, Mail, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,6 +34,7 @@ const CategoryProducts = () => {
   const [brandFilters, setBrandFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<"popularity" | "price_asc" | "price_desc" | "newest">("popularity");
   const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
   const catName = decodeURIComponent(category);
 
@@ -70,6 +71,8 @@ const CategoryProducts = () => {
     else if (sortBy === "newest") list = [...list].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     return list;
   }, [all, search, brandFilters, priceFilters, sortBy]);
+
+  const activeFilterCount = priceFilters.size + brandFilters.size + (search.trim() ? 1 : 0);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
