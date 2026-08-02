@@ -324,6 +324,8 @@ export type Database = {
           final_price: number
           id: string
           image_url: string | null
+          is_premium: boolean
+          is_trending: boolean
           low_stock_threshold: number
           name: string
           product_code: string
@@ -343,6 +345,8 @@ export type Database = {
           final_price?: number
           id?: string
           image_url?: string | null
+          is_premium?: boolean
+          is_trending?: boolean
           low_stock_threshold?: number
           name: string
           product_code: string
@@ -362,6 +366,8 @@ export type Database = {
           final_price?: number
           id?: string
           image_url?: string | null
+          is_premium?: boolean
+          is_trending?: boolean
           low_stock_threshold?: number
           name?: string
           product_code?: string
@@ -806,7 +812,9 @@ export type Database = {
       }
       vouchers: {
         Row: {
+          applies_to: string
           created_at: string
+          customer_phone: string | null
           discount_amount: number
           discount_percentage: number
           discount_type: string
@@ -824,7 +832,9 @@ export type Database = {
           voucher_type: string
         }
         Insert: {
+          applies_to?: string
           created_at?: string
+          customer_phone?: string | null
           discount_amount?: number
           discount_percentage?: number
           discount_type?: string
@@ -842,7 +852,9 @@ export type Database = {
           voucher_type?: string
         }
         Update: {
+          applies_to?: string
           created_at?: string
+          customer_phone?: string | null
           discount_amount?: number
           discount_percentage?: number
           discount_type?: string

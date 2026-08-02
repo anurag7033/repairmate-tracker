@@ -17,6 +17,8 @@ export interface Product {
   stockQuantity: number;
   lowStockThreshold: number;
   status: ProductStatus;
+  isTrending: boolean;
+  isPremium: boolean;
   createdAt: string;
   updatedAt: string;
 }

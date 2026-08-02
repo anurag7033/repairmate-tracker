@@ -17,6 +17,8 @@ type Row = {
   stock_quantity: number;
   low_stock_threshold: number;
   status: string;
+  is_trending?: boolean;
+  is_premium?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +39,8 @@ const mapRow = (r: Row): Product => ({
   stockQuantity: Number(r.stock_quantity) || 0,
   lowStockThreshold: Number(r.low_stock_threshold) || 0,
   status: (r.status as Product["status"]) || "active",
+  isTrending: !!r.is_trending,
+  isPremium: !!r.is_premium,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
 });
@@ -64,6 +68,8 @@ export interface ProductInput {
   stockQuantity: number;
   lowStockThreshold: number;
   status: "active" | "inactive";
+  isTrending?: boolean;
+  isPremium?: boolean;
 }
 
 const toRow = (p: ProductInput) => ({
@@ -80,7 +86,47 @@ const toRow = (p: ProductInput) => ({
   stock_quantity: p.stockQuantity,
   low_stock_threshold: p.lowStockThreshold,
   status: p.status,
+  is_trending: !!p.isTrending,
+  is_premium: !!p.isPremium,
 });
+
+/** Toggle the trending / premium showcase flags for a product. */
+export async function setProductShowcase(
+  id: string,
+  flags: { isTrending?: boolean; isPremium?: boolean }
+): Promise<Product> {
+  const patch: Record<string, boolean> = {};
+  if (flags.isTrending !== undefined) patch.is_trending = flags.isTrending;
+  if (flags.isPremium !== undefined) patch.is_premium = flags.isPremium;
+  const { data, error } = await supabase
+    .from("products")
+    .update(patch)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapRow(data as Row);
+}
+
+/** Generate a product description with AI (falls back to a sensible default). */
+export function defaultProductDescription(p: {
+  name: string; brand?: string; category?: string; finalPrice?: number;
+}): string {
+  const bits = [p.brand, p.category].filter(Boolean).join(" ");
+  return `${p.name}${bits ? ` — genuine ${bits.toLowerCase()} accessory` : ""} available at Anurag Mobile. Reliable everyday performance, quality checked before dispatch${p.finalPrice ? `, priced at ₹${p.finalPrice.toLocaleString("en-IN")}` : ""}. Visit the store or order online with fast local delivery and after-sales support.`;
+}
+
+export async function generateProductDescription(p: {
+  name: string; brand?: string; category?: string; sellingPrice?: number; finalPrice?: number;
+}): Promise<string> {
+  const { data, error } = await supabase.functions.invoke("generate-product-description", {
+    body: p,
+  });
+  if (error) throw new Error(error.message || "AI description failed");
+  const text = (data as any)?.description?.trim();
+  if (!text) throw new Error("AI returned an empty description");
+  return text;
+}
 
 
 export async function addProduct(p: ProductInput): Promise<Product> {

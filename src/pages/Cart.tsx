@@ -9,14 +9,7 @@ import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
 import { useCart, updateQuantity, removeFromCart } from "@/lib/cartStore";
 import { toast } from "sonner";
-
-// Very light coupon table — for display parity with the reference UI.
-// Real discounts remain enforced server-side (voucher table).
-const COUPONS: Record<string, { type: "percent" | "flat"; value: number; label: string }> = {
-  TECH20: { type: "percent", value: 20, label: "20% off" },
-  SAVE10: { type: "percent", value: 10, label: "10% off" },
-  FLAT100: { type: "flat", value: 100, label: "₹100 off" },
-};
+import { supabase } from "@/integrations/supabase/client";
 
 const TAX_RATE = 0.08; // 8% estimated tax to match the reference summary card
 
@@ -24,6 +17,8 @@ const Cart = () => {
   const cart = useCart();
   const navigate = useNavigate();
   const [coupon, setCoupon] = useState("");
+  const [couponPhone, setCouponPhone] = useState("");
+  const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState<{ code: string; discount: number; label: string } | null>(null);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
@@ -34,17 +29,31 @@ const Cart = () => {
   const total = Math.max(0, taxableBase + tax + shipping);
   const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
 
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
     if (!code) return;
-    const c = COUPONS[code];
-    if (!c) {
-      toast.error("Invalid coupon code");
-      return;
+    try {
+      setApplying(true);
+      const { data, error } = await supabase.rpc("apply_voucher_to_customer_order", {
+        p_voucher_code: code,
+        p_subtotal: subtotal,
+        p_phone: couponPhone.trim(),
+      });
+      if (error) throw error;
+      const res = data as any;
+      const value = Math.min(Number(res?.discount_amount) || 0, subtotal);
+      if (value <= 0) {
+        toast.error("This voucher gives no discount on your cart");
+        return;
+      }
+      const label = `₹${value.toLocaleString("en-IN")} off`;
+      setApplied({ code: res?.voucher_code || code, discount: value, label });
+      toast.success(`Voucher ${code} applied — ${label}`);
+    } catch (e: any) {
+      toast.error(e.message || "Invalid voucher code");
+    } finally {
+      setApplying(false);
     }
-    const value = c.type === "percent" ? Math.round((subtotal * c.value) / 100) : c.value;
-    setApplied({ code, discount: Math.min(value, subtotal), label: c.label });
-    toast.success(`Coupon ${code} applied — ${c.label}`);
   };
 
   const removeCoupon = () => {
@@ -191,13 +200,14 @@ const Cart = () => {
               {/* Coupon */}
               <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5">
                 <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
-                  Have a coupon?
+                  Have a voucher?
                 </p>
                 <div className="flex gap-2">
                   <Input
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                    placeholder="Code: TECH20"
+                    placeholder="Enter voucher code"
+                    disabled={!!applied}
                     className="h-11 bg-white border-border rounded-xl"
                   />
                   {applied ? (
@@ -210,12 +220,22 @@ const Cart = () => {
                   ) : (
                     <Button
                       onClick={applyCoupon}
+                      disabled={applying}
                       className="h-11 rounded-xl bg-[#0b0b12] hover:bg-black text-white px-5 font-bold"
                     >
-                      APPLY
+                      {applying ? "..." : "APPLY"}
                     </Button>
                   )}
                 </div>
+                {!applied && (
+                  <Input
+                    value={couponPhone}
+                    onChange={(e) => setCouponPhone(e.target.value)}
+                    placeholder="Your mobile number (for personal vouchers)"
+                    inputMode="tel"
+                    className="h-10 mt-2 bg-white border-border rounded-xl text-sm"
+                  />
+                )}
                 {applied && (
                   <p className="text-xs text-green-700 mt-2 font-medium">
                     ✓ {applied.code} — {applied.label} applied

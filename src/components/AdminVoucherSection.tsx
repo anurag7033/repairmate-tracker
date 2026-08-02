@@ -33,6 +33,8 @@ interface Voucher {
   expiry_date: string | null;
   usage_limit: number;
   used_count: number;
+  applies_to?: string | null;
+  customer_phone?: string | null;
 }
 
 interface Redemption {
@@ -70,6 +72,9 @@ const AdminVoucherSection = () => {
   const [voucherType, setVoucherType] = useState<"public" | "private" | "new_customer">("public");
   const [expiryDate, setExpiryDate] = useState("");
   const [usageLimit, setUsageLimit] = useState(1);
+  const [appliesTo, setAppliesTo] = useState<"both" | "repair" | "shop">("both");
+  const [customerPhone, setCustomerPhone] = useState("");
+
 
   const fetchVouchers = async () => {
     const { data, error } = await supabase
@@ -97,7 +102,10 @@ const AdminVoucherSection = () => {
     setVoucherType("public");
     setExpiryDate("");
     setUsageLimit(1);
+    setAppliesTo("both");
+    setCustomerPhone("");
   };
+
 
   const handleCreate = async () => {
     if (discountType === "amount" && discountAmount <= 0) {
@@ -132,6 +140,8 @@ const AdminVoucherSection = () => {
           expiry_date: expiryDate || null,
           usage_limit: voucherType === "private" ? 1 : usageLimit,
           used_count: 0,
+          applies_to: appliesTo,
+          customer_phone: customerPhone.trim() ? customerPhone.trim() : null,
         } as any);
       if (error) throw error;
       toast({ title: "Voucher Created", description: `Code: ${code}` });
@@ -310,6 +320,46 @@ const AdminVoucherSection = () => {
                 </div>
               )}
 
+              {/* Where the voucher works */}
+              <div>
+                <Label className="text-xs">Valid For</Label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {([
+                    { v: "both", label: "Repairs + Shop" },
+                    { v: "shop", label: "Online Orders" },
+                    { v: "repair", label: "Repairs only" },
+                  ] as const).map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => setAppliesTo(o.v)}
+                      className={`px-2 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                        appliesTo === o.v
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card text-muted-foreground border-border hover:bg-muted"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Individual customer targeting */}
+              <div>
+                <Label className="text-xs">Customer Mobile (optional — individual voucher)</Label>
+                <Input
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  inputMode="tel"
+                  placeholder="Leave blank to allow all customers"
+                  className="rounded-lg mt-1"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  If filled, only this mobile number can redeem the voucher.
+                </p>
+              </div>
+
               {/* Expiry Date */}
               <div>
                 <Label className="text-xs">Expiry Date (optional)</Label>
@@ -417,6 +467,14 @@ const AdminVoucherSection = () => {
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.voucher_type === "public" ? "bg-blue-500/10 text-blue-600" : v.voucher_type === "new_customer" ? "bg-purple-500/10 text-purple-600" : "bg-amber-500/10 text-amber-600"}`}>
                         {v.voucher_type === "public" ? <><Users className="w-3 h-3 inline mr-1" />Public</> : v.voucher_type === "new_customer" ? <><Sparkles className="w-3 h-3 inline mr-1" />New Customer</> : <><Lock className="w-3 h-3 inline mr-1" />Private</>}
                       </span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/10 text-orange-600">
+                        {v.applies_to === "shop" ? "Online Orders" : v.applies_to === "repair" ? "Repairs only" : "Repairs + Shop"}
+                      </span>
+                      {v.customer_phone && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                          <Lock className="w-3 h-3 inline mr-1" />{v.customer_phone}
+                        </span>
+                      )}
                     </div>
                     {v.voucher_name && <p className="text-sm font-medium">{v.voucher_name}</p>}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
