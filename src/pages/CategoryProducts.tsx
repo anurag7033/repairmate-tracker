@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Search, ShoppingCart, ChevronRight, Menu, Heart, Mail } from "lucide-react";
+import { Search, ShoppingCart, ChevronRight, Menu, Heart, Mail, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,6 +34,7 @@ const CategoryProducts = () => {
   const [brandFilters, setBrandFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<"popularity" | "price_asc" | "price_desc" | "newest">("popularity");
   const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
   const catName = decodeURIComponent(category);
 
@@ -70,6 +71,8 @@ const CategoryProducts = () => {
     else if (sortBy === "newest") list = [...list].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     return list;
   }, [all, search, brandFilters, priceFilters, sortBy]);
+
+  const activeFilterCount = priceFilters.size + brandFilters.size + (search.trim() ? 1 : 0);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -128,9 +131,24 @@ const CategoryProducts = () => {
         <h1 className="font-display text-3xl md:text-4xl font-bold capitalize">{catName.toLowerCase()}</h1>
         <p className="text-muted-foreground mt-1 max-w-2xl">Explore our range of {catName.toLowerCase()} — engineered for reliability, style, and everyday performance.</p>
 
-        <div className="grid lg:grid-cols-[260px_1fr] gap-6 mt-8">
+        <div className="mt-6">
+          <Button
+            onClick={() => setShowFilters((v) => !v)}
+            variant="outline"
+            className="rounded-full h-10 border-border"
+          >
+            <SlidersHorizontal className="w-4 h-4 mr-2" />
+            {showFilters ? "Hide Filters" : "Filters"}
+            {activeFilterCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-orange-500 text-white text-xs font-bold">{activeFilterCount}</span>
+            )}
+          </Button>
+        </div>
+
+        <div className={`grid gap-6 mt-4 ${showFilters ? "lg:grid-cols-[260px_1fr]" : "grid-cols-1"}`}>
           {/* Filters */}
-          <aside className="bg-card border border-border rounded-2xl p-5 h-fit lg:sticky lg:top-24">
+          <aside className={`bg-card border border-border rounded-2xl p-5 h-fit lg:sticky lg:top-24 ${showFilters ? "" : "hidden"}`}>
+
             <h2 className="font-display text-xl font-bold mb-4">Filters</h2>
             <div className="relative mb-5">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
