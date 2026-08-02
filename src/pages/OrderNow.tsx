@@ -167,52 +167,63 @@ const OrderNow = () => {
       </header>
 
       <main className="container mx-auto py-8 md:py-12 flex-1">
-        {/* Shop header + category chips (no folder cards) */}
+        {/* Browse Categories */}
         <section aria-labelledby="cats-heading">
           <div className="mb-6">
-            <h1 id="cats-heading" className="font-display text-3xl md:text-5xl font-bold text-foreground">Shop Accessories</h1>
-            <p className="text-muted-foreground mt-1 text-sm md:text-base">Explore our curated selection of premium mobile essentials.</p>
+            <h1 id="cats-heading" className="font-display text-3xl md:text-5xl font-bold text-foreground">Browse Categories</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">Pick a category to see the products inside.</p>
           </div>
 
-          {!loading && categories.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-              <button
-                onClick={() => setActiveCategory(null)}
-                className={`shrink-0 px-4 h-9 rounded-full text-sm font-semibold border transition-colors ${
-                  !activeCategory ? "bg-orange-500 text-white border-orange-500" : "bg-card text-foreground border-border hover:border-orange-500/40"
-                }`}
-              >
-                All
-              </button>
-              {categories.map((c) => {
-                const isActive = activeCategory?.toLowerCase() === c.name.toLowerCase();
-                return (
-                  <button
-                    key={c.name}
-                    onClick={() => setActiveCategory(isActive ? null : c.name)}
-                    className={`shrink-0 px-4 h-9 rounded-full text-sm font-semibold border capitalize transition-colors ${
-                      isActive ? "bg-orange-500 text-white border-orange-500" : "bg-card text-foreground border-border hover:border-orange-500/40"
-                    }`}
-                  >
-                    {c.name.toLowerCase()} <span className="opacity-60">({c.count})</span>
-                  </button>
-                );
-              })}
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="aspect-[4/3] rounded-2xl bg-muted animate-pulse" />
+              ))}
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Package className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              No categories available yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {categories.map((c) => (
+                <Link
+                  key={c.name}
+                  to={`/order-now/category/${encodeURIComponent(c.name)}`}
+                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-card shadow-card"
+                >
+                  {c.image ? (
+                    <img src={c.image} alt={c.name} loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                      <Package className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b12]/85 via-[#0b0b12]/25 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <p className="font-display font-bold text-white text-lg capitalize leading-tight">{c.name.toLowerCase()}</p>
+                    <p className="text-white/70 text-xs mt-0.5">{c.count} product{c.count > 1 ? "s" : ""}</p>
+                  </div>
+                  <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowRight className="w-4 h-4 text-[#0b0b12]" />
+                  </span>
+                </Link>
+              ))}
             </div>
           )}
         </section>
 
-        {/* Products list (filtered) */}
-        {(
-          <section className="mt-8">
+        {/* Search results only */}
+        {search.trim() && (
+          <section className="mt-10">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-2xl font-bold">
-                {activeCategory ? <span className="capitalize">{activeCategory.toLowerCase()}</span> : search ? "Search results" : "All Products"}
+                Search results
                 <span className="text-muted-foreground text-base font-normal ml-2">({filtered.length})</span>
               </h2>
-              {activeCategory && (
-                <Button variant="ghost" size="sm" onClick={() => setActiveCategory(null)}>Clear</Button>
-              )}
+              <Button variant="ghost" size="sm" onClick={() => setSearch("")}>Clear</Button>
             </div>
             {filtered.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
@@ -249,6 +260,7 @@ const OrderNow = () => {
             )}
           </section>
         )}
+
 
         {/* Trending Collection — admin curated */}
         {trending.length > 0 && (
