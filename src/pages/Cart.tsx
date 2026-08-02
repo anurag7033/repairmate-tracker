@@ -9,6 +9,7 @@ import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
 import { useCart, updateQuantity, removeFromCart } from "@/lib/cartStore";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const TAX_RATE = 0.08; // 8% estimated tax to match the reference summary card
 
