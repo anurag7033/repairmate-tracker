@@ -261,11 +261,33 @@ const Checkout = () => {
         method === "razorpay" ? await placeRazorpayOrder() : await placeCodOrder();
       if (!orderId) throw new Error("Could not create order");
       placedRef.current = true;
+
+      // Fire-and-forget admin email alert (Gmail)
+      supabase.functions
+        .invoke("notify-order-email", {
+          body: {
+            order_id: orderId,
+            customer_name: addr.name.trim(),
+            customer_phone: addr.phone.trim(),
+            customer_email: addr.email.trim() || null,
+            delivery_address: fullAddress(),
+            payment_method: method === "razorpay" ? "online" : "cod",
+            items: itemsPayload(),
+            subtotal,
+            discount_amount: discount,
+            grand_total: grandTotal,
+            voucher_code: location.state?.voucherCode || null,
+            voucher_name: location.state?.voucherName || null,
+          },
+        })
+        .catch(() => {});
+
       clearCart();
       navigate(`/order-success/${orderId}`, {
         replace: true,
         state: { paymentMethod: method },
       });
+
 
     } catch (e: any) {
       toast.error(e?.message || "Order failed");
