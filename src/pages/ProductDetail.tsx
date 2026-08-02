@@ -318,8 +318,7 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <SpecCard icon={<Smartphone className="w-5 h-5" />} title="Compatible With" value="Smartphones, Tablets & Accessories" note="Universal fit for major brands" />
+          <div className="grid sm:grid-cols-3 gap-4">
             <SpecCard icon={<Box className="w-5 h-5" />} title="Stock Available" value={`${product.stockQuantity} Units`} note={STOCK_STATUS_LABEL[stockStatus!]} />
             <SpecCard icon={<Hash className="w-5 h-5" />} title="Product Code" value={product.productCode} note="Scan or quote for quick billing" />
             <SpecCard icon={<Layers className="w-5 h-5" />} title="Category" value={product.category} note={`Browse more ${product.category.toLowerCase()}`} />
