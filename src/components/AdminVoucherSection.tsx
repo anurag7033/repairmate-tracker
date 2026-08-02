@@ -72,6 +72,9 @@ const AdminVoucherSection = () => {
   const [voucherType, setVoucherType] = useState<"public" | "private" | "new_customer">("public");
   const [expiryDate, setExpiryDate] = useState("");
   const [usageLimit, setUsageLimit] = useState(1);
+  const [appliesTo, setAppliesTo] = useState<"both" | "repair" | "shop">("both");
+  const [customerPhone, setCustomerPhone] = useState("");
+
 
   const fetchVouchers = async () => {
     const { data, error } = await supabase
