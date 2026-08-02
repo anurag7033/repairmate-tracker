@@ -61,7 +61,12 @@ const OrderNow = () => {
     });
   }, [products, search, activeCategory]);
 
-  const trending = useMemo(() => products.slice(0, 6), [products]);
+  const trending = useMemo(() => {
+    const picked = products.filter((p) => p.isTrending);
+    return (picked.length > 0 ? picked : products).slice(0, 8);
+  }, [products]);
+
+  const premium = useMemo(() => products.filter((p) => p.isPremium).slice(0, 8), [products]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(240_20%_97%)]">
