@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet, Eye, Download,
+  Plus, Search, Edit, Trash2, Loader2, Package, ImagePlus, X, Upload, Barcode as BarcodeIcon, FileSpreadsheet, Eye, Download, Sparkles, TrendingUp, Crown,
 } from "lucide-react";
 import BulkStockUpdateDialog from "./BulkStockUpdateDialog";
 import BulkProductImportDialog from "./BulkProductImportDialog";
