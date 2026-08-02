@@ -467,6 +467,14 @@ const AdminVoucherSection = () => {
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.voucher_type === "public" ? "bg-blue-500/10 text-blue-600" : v.voucher_type === "new_customer" ? "bg-purple-500/10 text-purple-600" : "bg-amber-500/10 text-amber-600"}`}>
                         {v.voucher_type === "public" ? <><Users className="w-3 h-3 inline mr-1" />Public</> : v.voucher_type === "new_customer" ? <><Sparkles className="w-3 h-3 inline mr-1" />New Customer</> : <><Lock className="w-3 h-3 inline mr-1" />Private</>}
                       </span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/10 text-orange-600">
+                        {v.applies_to === "shop" ? "Online Orders" : v.applies_to === "repair" ? "Repairs only" : "Repairs + Shop"}
+                      </span>
+                      {v.customer_phone && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                          <Lock className="w-3 h-3 inline mr-1" />{v.customer_phone}
+                        </span>
+                      )}
                     </div>
                     {v.voucher_name && <p className="text-sm font-medium">{v.voucher_name}</p>}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
