@@ -320,6 +320,46 @@ const AdminVoucherSection = () => {
                 </div>
               )}
 
+              {/* Where the voucher works */}
+              <div>
+                <Label className="text-xs">Valid For</Label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {([
+                    { v: "both", label: "Repairs + Shop" },
+                    { v: "shop", label: "Online Orders" },
+                    { v: "repair", label: "Repairs only" },
+                  ] as const).map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => setAppliesTo(o.v)}
+                      className={`px-2 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                        appliesTo === o.v
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card text-muted-foreground border-border hover:bg-muted"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Individual customer targeting */}
+              <div>
+                <Label className="text-xs">Customer Mobile (optional — individual voucher)</Label>
+                <Input
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  inputMode="tel"
+                  placeholder="Leave blank to allow all customers"
+                  className="rounded-lg mt-1"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  If filled, only this mobile number can redeem the voucher.
+                </p>
+              </div>
+
               {/* Expiry Date */}
               <div>
                 <Label className="text-xs">Expiry Date (optional)</Label>
