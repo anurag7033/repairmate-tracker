@@ -83,6 +83,20 @@ const ProductsSection = () => {
   const [uploading, setUploading] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
 
+  const toggleShowcase = async (p: Product, key: "isTrending" | "isPremium") => {
+    try {
+      const updated = await setProductShowcase(p.id, { [key]: !p[key] } as any);
+      setProducts((list) => list.map((x) => (x.id === updated.id ? updated : x)));
+      toast({
+        title: key === "isTrending"
+          ? (updated.isTrending ? "Added to Trending Collection" : "Removed from Trending Collection")
+          : (updated.isPremium ? "Published as Premium" : "Removed from Premium"),
+      });
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    }
+  };
+
   const [bulkOpen, setBulkOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
