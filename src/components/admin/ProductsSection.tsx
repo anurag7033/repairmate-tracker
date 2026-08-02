@@ -31,8 +31,9 @@ import {
 } from "@/types/product";
 import {
   getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage,
-  ProductInput,
+  ProductInput, generateProductDescription, defaultProductDescription, setProductShowcase,
 } from "@/lib/productStore";
+import { Switch } from "@/components/ui/switch";
 import * as XLSX from "xlsx";
 
 const emptyInput = (): ProductInput => ({
