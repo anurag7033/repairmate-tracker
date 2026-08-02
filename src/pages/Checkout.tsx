@@ -58,7 +58,7 @@ const Checkout = () => {
   const cart = useCart();
   const navigate = useNavigate();
   const location = useLocation() as {
-    state?: { discountAmount?: number; voucherCode?: string; voucherLabel?: string };
+    state?: { discountAmount?: number; voucherCode?: string; voucherLabel?: string; voucherName?: string };
   };
 
   const [addr, setAddr] = useState<Address>({
