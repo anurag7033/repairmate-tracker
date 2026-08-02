@@ -440,6 +440,24 @@ const ProductsSection = () => {
                           <Button
                             size="sm"
                             variant="outline"
+                            className={`rounded-lg text-xs ${p.isTrending ? "bg-orange-500/10 text-orange-600 border-orange-500/30" : ""}`}
+                            title={p.isTrending ? "Remove from Trending Collection" : "Add to Trending Collection"}
+                            onClick={() => toggleShowcase(p, "isTrending")}
+                          >
+                            <TrendingUp className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className={`rounded-lg text-xs ${p.isPremium ? "bg-primary/10 text-primary border-primary/30" : ""}`}
+                            title={p.isPremium ? "Unpublish from Premium" : "Publish as Premium"}
+                            onClick={() => toggleShowcase(p, "isPremium")}
+                          >
+                            <Crown className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="rounded-lg text-xs"
                             title="View details"
                             onClick={() => setDetailsProduct(p)}
