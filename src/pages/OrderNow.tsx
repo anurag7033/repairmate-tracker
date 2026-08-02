@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Search, ShoppingCart, LayoutGrid, List, ArrowRight, Package, Zap } from "lucide-react";
+import { Search, ShoppingCart, LayoutGrid, List, ArrowRight, Package, Zap, TrendingUp, Crown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
@@ -11,6 +11,52 @@ import { getProducts } from "@/lib/productStore";
 import { Product, stockStatusOf } from "@/types/product";
 
 type ViewMode = "grid" | "list";
+
+const ShowcaseCard = ({
+  product, tone, onOpen,
+}: { product: Product; tone: "trending" | "premium"; onOpen: () => void }) => {
+  const out = stockStatusOf(product) === "out_of_stock";
+  return (
+    <button
+      onClick={onOpen}
+      className="text-left bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group"
+    >
+      <div className="relative aspect-square bg-muted overflow-hidden">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="w-10 h-10 text-muted-foreground" />
+          </div>
+        )}
+        <span className={`absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold ${
+          tone === "premium" ? "bg-[#0b0b12] text-white" : "bg-orange-500 text-white"
+        }`}>
+          {tone === "premium" ? <Crown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+          {tone === "premium" ? "PREMIUM" : "TRENDING"}
+        </span>
+        {out && (
+          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+            OUT OF STOCK
+          </span>
+        )}
+      </div>
+      <div className="p-3">
+        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{product.brand || product.category}</p>
+        <h3 className="font-semibold text-sm line-clamp-2 mt-0.5">{product.name}</h3>
+        <div className="flex items-baseline gap-2 mt-2">
+          <span className="font-bold text-base">₹{product.finalPrice.toLocaleString("en-IN")}</span>
+          {product.finalPrice < product.sellingPrice && (
+            <span className="text-xs text-muted-foreground line-through">
+              ₹{product.sellingPrice.toLocaleString("en-IN")}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+};
 
 const OrderNow = () => {
   const navigate = useNavigate();
