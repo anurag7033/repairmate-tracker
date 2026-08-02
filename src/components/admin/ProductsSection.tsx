@@ -81,6 +81,7 @@ const ProductsSection = () => {
   const [form, setForm] = useState<ProductInput>(emptyInput());
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
 
   const [bulkOpen, setBulkOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
