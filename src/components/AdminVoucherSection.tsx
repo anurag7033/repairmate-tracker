@@ -33,6 +33,8 @@ interface Voucher {
   expiry_date: string | null;
   usage_limit: number;
   used_count: number;
+  applies_to?: string | null;
+  customer_phone?: string | null;
 }
 
 interface Redemption {
