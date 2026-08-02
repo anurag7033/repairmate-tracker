@@ -620,9 +620,35 @@ const ProductsSection = () => {
               <span className="text-sm text-muted-foreground">Final Price (auto)</span>
               <span className="text-lg font-bold text-primary">₹{finalPreview.toLocaleString("en-IN")}</span>
             </div>
+            <div className="sm:col-span-2 grid sm:grid-cols-2 gap-3">
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border">
+                <div>
+                  <Label className="text-sm">Show in Trending Collection</Label>
+                  <p className="text-xs text-muted-foreground">Appears on the Order Now page</p>
+                </div>
+                <Switch checked={!!form.isTrending} onCheckedChange={(v) => setForm(f => ({ ...f, isTrending: v }))} />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border">
+                <div>
+                  <Label className="text-sm">Premium Product</Label>
+                  <p className="text-xs text-muted-foreground">Published in the Premium showcase</p>
+                </div>
+                <Switch checked={!!form.isPremium} onCheckedChange={(v) => setForm(f => ({ ...f, isPremium: v }))} />
+              </div>
+            </div>
             <div className="sm:col-span-2">
-              <Label>Description</Label>
-              <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="rounded-xl" />
+              <div className="flex items-center justify-between mb-1">
+                <Label>Description</Label>
+                <Button
+                  type="button" size="sm" variant="outline" className="rounded-lg text-xs"
+                  disabled={aiBusy} onClick={handleAiDescription}
+                >
+                  {aiBusy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                  Description by AI
+                </Button>
+              </div>
+              <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={4} className="rounded-xl" />
+              <p className="text-xs text-muted-foreground mt-1">Leave blank and a description will be generated automatically on save.</p>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
