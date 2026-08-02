@@ -200,13 +200,14 @@ const Cart = () => {
               {/* Coupon */}
               <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5">
                 <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
-                  Have a coupon?
+                  Have a voucher?
                 </p>
                 <div className="flex gap-2">
                   <Input
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                    placeholder="Code: TECH20"
+                    placeholder="Enter voucher code"
+                    disabled={!!applied}
                     className="h-11 bg-white border-border rounded-xl"
                   />
                   {applied ? (
@@ -219,12 +220,22 @@ const Cart = () => {
                   ) : (
                     <Button
                       onClick={applyCoupon}
+                      disabled={applying}
                       className="h-11 rounded-xl bg-[#0b0b12] hover:bg-black text-white px-5 font-bold"
                     >
-                      APPLY
+                      {applying ? "..." : "APPLY"}
                     </Button>
                   )}
                 </div>
+                {!applied && (
+                  <Input
+                    value={couponPhone}
+                    onChange={(e) => setCouponPhone(e.target.value)}
+                    placeholder="Your mobile number (for personal vouchers)"
+                    inputMode="tel"
+                    className="h-10 mt-2 bg-white border-border rounded-xl text-sm"
+                  />
+                )}
                 {applied && (
                   <p className="text-xs text-green-700 mt-2 font-medium">
                     ✓ {applied.code} — {applied.label} applied
