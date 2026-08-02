@@ -73,6 +73,7 @@ const ProductsSection = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [newCategoryMode, setNewCategoryMode] = useState(false);
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [stockFilter, setStockFilter] = useState<"all" | StockStatus>("all");
 
@@ -585,7 +586,43 @@ const ProductsSection = () => {
             </div>
             <div>
               <Label>Category</Label>
-              <Input value={form.category} onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))} placeholder="e.g. Display, Battery" className="rounded-xl" />
+              {newCategoryMode ? (
+                <div className="flex gap-2">
+                  <Input
+                    autoFocus
+                    value={form.category}
+                    onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
+                    placeholder="New category name"
+                    className="rounded-xl flex-1"
+                  />
+                  <Button type="button" variant="outline" className="rounded-xl shrink-0"
+                    onClick={() => setNewCategoryMode(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={form.category || ""}
+                  onValueChange={(v) => {
+                    if (v === "__new__") {
+                      setNewCategoryMode(true);
+                      setForm(f => ({ ...f, category: "" }));
+                    } else {
+                      setForm(f => ({ ...f, category: v }));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                    <SelectItem value="__new__">+ Add new category…</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div>
               <Label>Brand</Label>

@@ -19,7 +19,7 @@ const Cart = () => {
   const [coupon, setCoupon] = useState("");
   const [couponPhone, setCouponPhone] = useState("");
   const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState<{ code: string; discount: number; label: string } | null>(null);
+  const [applied, setApplied] = useState<{ code: string; discount: number; label: string; name?: string } | null>(null);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   const shipping = 0; // free
@@ -46,8 +46,11 @@ const Cart = () => {
         toast.error("This voucher gives no discount on your cart");
         return;
       }
-      const label = `₹${value.toLocaleString("en-IN")} off`;
-      setApplied({ code: res?.voucher_code || code, discount: value, label });
+      const name = (res?.voucher_name as string) || "";
+      const label = name
+        ? `${name} — ₹${value.toLocaleString("en-IN")} off`
+        : `₹${value.toLocaleString("en-IN")} off`;
+      setApplied({ code: res?.voucher_code || code, discount: value, label, name });
       toast.success(`Voucher ${code} applied — ${label}`);
     } catch (e: any) {
       toast.error(e.message || "Invalid voucher code");
@@ -65,7 +68,7 @@ const Cart = () => {
     if (cart.length === 0) return;
     navigate("/checkout", {
       state: applied
-        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label }
+        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label, voucherName: applied.name }
         : {},
     });
   };

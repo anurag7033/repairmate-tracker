@@ -58,7 +58,7 @@ const Checkout = () => {
   const cart = useCart();
   const navigate = useNavigate();
   const location = useLocation() as {
-    state?: { discountAmount?: number; voucherCode?: string; voucherLabel?: string };
+    state?: { discountAmount?: number; voucherCode?: string; voucherLabel?: string; voucherName?: string };
   };
 
   const [addr, setAddr] = useState<Address>({
@@ -261,11 +261,33 @@ const Checkout = () => {
         method === "razorpay" ? await placeRazorpayOrder() : await placeCodOrder();
       if (!orderId) throw new Error("Could not create order");
       placedRef.current = true;
+
+      // Fire-and-forget admin email alert (Gmail)
+      supabase.functions
+        .invoke("notify-order-email", {
+          body: {
+            order_id: orderId,
+            customer_name: addr.name.trim(),
+            customer_phone: addr.phone.trim(),
+            customer_email: addr.email.trim() || null,
+            delivery_address: fullAddress(),
+            payment_method: method === "razorpay" ? "online" : "cod",
+            items: itemsPayload(),
+            subtotal,
+            discount_amount: discount,
+            grand_total: grandTotal,
+            voucher_code: location.state?.voucherCode || null,
+            voucher_name: location.state?.voucherName || null,
+          },
+        })
+        .catch(() => {});
+
       clearCart();
       navigate(`/order-success/${orderId}`, {
         replace: true,
         state: { paymentMethod: method },
       });
+
 
     } catch (e: any) {
       toast.error(e?.message || "Order failed");
@@ -408,11 +430,24 @@ const Checkout = () => {
                   title="Cash on Delivery"
                   subtitle="Pay when you receive your order"
                 />
-                {location.state?.voucherCode && method !== "razorpay" && (
-                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    Voucher <span className="font-bold">{location.state.voucherCode}</span> applies
-                    only on online payments.
-                  </p>
+                {location.state?.voucherCode && (
+                  method === "razorpay" ? (
+                    <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      Voucher applied:{" "}
+                      <span className="font-bold">
+                        {location.state.voucherName || location.state.voucherCode}
+                      </span>{" "}
+                      ({location.state.voucherCode}) — you save ₹{discount.toLocaleString("en-IN")}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Voucher{" "}
+                      <span className="font-bold">
+                        {location.state.voucherName || location.state.voucherCode}
+                      </span>{" "}
+                      applies only on online payments.
+                    </p>
+                  )
                 )}
               </div>
             </section>
@@ -452,7 +487,7 @@ const Checkout = () => {
                 <Row label="Estimated Tax (8%)" value={`₹${tax.toLocaleString("en-IN")}`} />
                 {discount > 0 && (
                   <Row
-                    label={`Discount (${location.state?.voucherCode})`}
+                    label={`Discount — ${location.state?.voucherName || "Voucher"} (${location.state?.voucherCode})`}
                     value={`-₹${discount.toLocaleString("en-IN")}`}
                     valueClass="text-green-600 font-semibold"
                   />
