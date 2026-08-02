@@ -158,6 +158,8 @@ const ProductsSection = () => {
       stockQuantity: p.stockQuantity,
       lowStockThreshold: p.lowStockThreshold,
       status: p.status,
+      isTrending: p.isTrending,
+      isPremium: p.isPremium,
     });
     setDialogOpen(true);
   };
