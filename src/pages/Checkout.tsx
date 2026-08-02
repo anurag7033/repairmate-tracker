@@ -465,7 +465,7 @@ const Checkout = () => {
                 <Row label="Estimated Tax (8%)" value={`₹${tax.toLocaleString("en-IN")}`} />
                 {discount > 0 && (
                   <Row
-                    label={`Discount (${location.state?.voucherCode})`}
+                    label={`Discount — ${location.state?.voucherName || "Voucher"} (${location.state?.voucherCode})`}
                     value={`-₹${discount.toLocaleString("en-IN")}`}
                     valueClass="text-green-600 font-semibold"
                   />
