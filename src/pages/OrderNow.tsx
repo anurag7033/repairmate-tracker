@@ -203,11 +203,11 @@ const OrderNow = () => {
         </section>
 
         {/* Products list (filtered) */}
-        {true && (
-          <section className="mt-12">
+        {(
+          <section className="mt-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-2xl font-bold">
-                {activeCategory ? <span className="capitalize">{activeCategory.toLowerCase()}</span> : "Search results"}
+                {activeCategory ? <span className="capitalize">{activeCategory.toLowerCase()}</span> : search ? "Search results" : "All Products"}
                 <span className="text-muted-foreground text-base font-normal ml-2">({filtered.length})</span>
               </h2>
               {activeCategory && (
