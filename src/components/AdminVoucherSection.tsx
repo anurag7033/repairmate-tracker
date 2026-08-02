@@ -140,6 +140,8 @@ const AdminVoucherSection = () => {
           expiry_date: expiryDate || null,
           usage_limit: voucherType === "private" ? 1 : usageLimit,
           used_count: 0,
+          applies_to: appliesTo,
+          customer_phone: customerPhone.trim() ? customerPhone.trim() : null,
         } as any);
       if (error) throw error;
       toast({ title: "Voucher Created", description: `Code: ${code}` });
