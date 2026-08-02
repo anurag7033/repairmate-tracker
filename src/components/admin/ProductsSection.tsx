@@ -73,6 +73,7 @@ const ProductsSection = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [newCategoryMode, setNewCategoryMode] = useState(false);
   const [brandFilter, setBrandFilter] = useState<string>("all");
   const [stockFilter, setStockFilter] = useState<"all" | StockStatus>("all");
 
