@@ -247,54 +247,42 @@ const OrderNow = () => {
           </section>
         )}
 
-        {/* Trending Collections */}
-        <section id="trending" className="mt-14 pt-8 border-t border-border">
-          <div className="flex items-end justify-between mb-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold">Trending Collections</h2>
-            <a href="#" className="text-orange-600 font-semibold text-sm hidden sm:inline-flex items-center gap-1">
-              View All Collections <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-          <div className="grid md:grid-cols-3 gap-4 md:gap-5">
-            {/* Orange */}
-            <div className="rounded-2xl p-6 bg-orange-500 text-white relative overflow-hidden min-h-[220px] flex flex-col">
-              <span className="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold w-fit">NEW ARRIVAL</span>
-              <h3 className="font-display text-3xl font-bold mt-4 leading-tight">MagSafe<br />Essentials</h3>
-              <p className="text-white/90 text-sm mt-2">The future of magnetic charging.</p>
-              <Zap className="absolute -right-4 -bottom-4 w-40 h-40 text-white/10" />
-              <Button
-                onClick={() => { setActiveCategory("Charger"); window.scrollTo({ top: 400, behavior: "smooth" }); }}
-                className="mt-auto w-fit bg-black hover:bg-black/80 text-white rounded-full"
-              >
-                Explore Collection
-              </Button>
+        {/* Trending Collection — admin curated */}
+        {trending.length > 0 && (
+          <section id="trending" className="mt-14 pt-8 border-t border-border">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold">Trending Collection</h2>
+                <p className="text-sm text-muted-foreground mt-1">Handpicked favourites from our store</p>
+              </div>
+              <Link to="/order-now#all" className="text-orange-600 font-semibold text-sm hidden sm:inline-flex items-center gap-1">
+                Shop All <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-            {/* Blue soft */}
-            <div className="rounded-2xl p-6 bg-blue-100 text-slate-900 relative overflow-hidden min-h-[220px] flex flex-col">
-              <span className="inline-block bg-white px-3 py-1 rounded-full text-xs font-semibold w-fit text-orange-600">EDITOR'S CHOICE</span>
-              <h3 className="font-display text-3xl font-bold mt-4 leading-tight">Pro Work<br />Setups</h3>
-              <p className="text-slate-700 text-sm mt-2">Elevate your mobile productivity.</p>
-              <Button
-                onClick={() => { setActiveCategory("HOLDER"); window.scrollTo({ top: 400, behavior: "smooth" }); }}
-                className="mt-auto w-fit bg-black hover:bg-black/80 text-white rounded-full"
-              >
-                View Details
-              </Button>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+              {trending.map((p) => (
+                <ShowcaseCard key={p.id} product={p} tone="trending" onOpen={() => navigate(`/order-now/product/${p.id}`)} />
+              ))}
             </div>
-            {/* Black */}
-            <div className="rounded-2xl p-6 bg-[#0b0b12] text-white relative overflow-hidden min-h-[220px] flex flex-col">
-              <span className="inline-block bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-xs font-semibold w-fit">LIMITED OFFER</span>
-              <h3 className="font-display text-3xl font-bold mt-4 leading-tight">Flash<br />Clearance</h3>
-              <p className="text-white/70 text-sm mt-2">Up to 60% off favorites.</p>
-              <Button
-                onClick={() => { setActiveCategory("Tempered"); window.scrollTo({ top: 400, behavior: "smooth" }); }}
-                className="mt-auto w-fit bg-orange-500 hover:bg-orange-600 text-white rounded-full"
-              >
-                Shop Deals
-              </Button>
+          </section>
+        )}
+
+        {/* Premium Products — admin published */}
+        {premium.length > 0 && (
+          <section id="premium" className="mt-14 pt-8 border-t border-border">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold">Premium Products</h2>
+                <p className="text-sm text-muted-foreground mt-1">Top-tier accessories, quality checked</p>
+              </div>
             </div>
-          </div>
-        </section>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+              {premium.map((p) => (
+                <ShowcaseCard key={p.id} product={p} tone="premium" onOpen={() => navigate(`/order-now/product/${p.id}`)} />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       <Footer />
