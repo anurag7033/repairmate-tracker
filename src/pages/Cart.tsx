@@ -46,8 +46,11 @@ const Cart = () => {
         toast.error("This voucher gives no discount on your cart");
         return;
       }
-      const label = `₹${value.toLocaleString("en-IN")} off`;
-      setApplied({ code: res?.voucher_code || code, discount: value, label });
+      const name = (res?.voucher_name as string) || "";
+      const label = name
+        ? `${name} — ₹${value.toLocaleString("en-IN")} off`
+        : `₹${value.toLocaleString("en-IN")} off`;
+      setApplied({ code: res?.voucher_code || code, discount: value, label, name });
       toast.success(`Voucher ${code} applied — ${label}`);
     } catch (e: any) {
       toast.error(e.message || "Invalid voucher code");
