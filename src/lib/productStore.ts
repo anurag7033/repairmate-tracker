@@ -17,6 +17,8 @@ type Row = {
   stock_quantity: number;
   low_stock_threshold: number;
   status: string;
+  is_trending?: boolean;
+  is_premium?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +39,8 @@ const mapRow = (r: Row): Product => ({
   stockQuantity: Number(r.stock_quantity) || 0,
   lowStockThreshold: Number(r.low_stock_threshold) || 0,
   status: (r.status as Product["status"]) || "active",
+  isTrending: !!r.is_trending,
+  isPremium: !!r.is_premium,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
 });
