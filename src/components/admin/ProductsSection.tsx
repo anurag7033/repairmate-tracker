@@ -49,6 +49,8 @@ const emptyInput = (): ProductInput => ({
   stockQuantity: 0,
   lowStockThreshold: 5,
   status: "active",
+  isTrending: false,
+  isPremium: false,
 });
 
 const computeFinalPrice = (p: Pick<ProductInput, "sellingPrice" | "discountType" | "discountValue">) => {
