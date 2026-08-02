@@ -102,7 +102,10 @@ const AdminVoucherSection = () => {
     setVoucherType("public");
     setExpiryDate("");
     setUsageLimit(1);
+    setAppliesTo("both");
+    setCustomerPhone("");
   };
+
 
   const handleCreate = async () => {
     if (discountType === "amount" && discountAmount <= 0) {
