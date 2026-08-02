@@ -68,7 +68,7 @@ const Cart = () => {
     if (cart.length === 0) return;
     navigate("/checkout", {
       state: applied
-        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label }
+        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label, voucherName: applied.name }
         : {},
     });
   };
