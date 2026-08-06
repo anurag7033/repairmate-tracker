@@ -18,61 +18,17 @@ const TAX_RATE = 0.08; // 8% estimated tax to match the reference summary card
 const Cart = () => {
   const cart = useCart();
   const navigate = useNavigate();
-  const [coupon, setCoupon] = useState("");
-  const [couponPhone, setCouponPhone] = useState("");
-  const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState<{ code: string; discount: number; label: string; name?: string } | null>(null);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   const shipping = 0; // free
-  const discount = applied?.discount ?? 0;
-  const taxableBase = Math.max(0, subtotal - discount);
+  const taxableBase = Math.max(0, subtotal);
   const tax = Math.round(taxableBase * TAX_RATE);
   const total = Math.max(0, taxableBase + tax + shipping);
   const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
 
-  const applyCoupon = async () => {
-    const code = coupon.trim().toUpperCase();
-    if (!code) return;
-    try {
-      setApplying(true);
-      const { data, error } = await supabase.rpc("apply_voucher_to_customer_order", {
-        p_voucher_code: code,
-        p_subtotal: subtotal,
-        p_phone: couponPhone.trim(),
-      });
-      if (error) throw error;
-      const res = data as any;
-      const value = Math.min(Number(res?.discount_amount) || 0, subtotal);
-      if (value <= 0) {
-        toast.error("This voucher gives no discount on your cart");
-        return;
-      }
-      const name = (res?.voucher_name as string) || "";
-      const label = name
-        ? `${name} — ₹${value.toLocaleString("en-IN")} off`
-        : `₹${value.toLocaleString("en-IN")} off`;
-      setApplied({ code: res?.voucher_code || code, discount: value, label, name });
-      toast.success(`Voucher ${code} applied — ${label}`);
-    } catch (e: any) {
-      toast.error(e.message || "Invalid voucher code");
-    } finally {
-      setApplying(false);
-    }
-  };
-
-  const removeCoupon = () => {
-    setApplied(null);
-    setCoupon("");
-  };
-
   const proceedToCheckout = () => {
     if (cart.length === 0) return;
-    navigate("/checkout", {
-      state: applied
-        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label, voucherName: applied.name }
-        : {},
-    });
+    navigate("/checkout");
   };
 
   return (
