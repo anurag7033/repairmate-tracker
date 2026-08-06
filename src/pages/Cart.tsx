@@ -158,54 +158,15 @@ const Cart = () => {
 
             {/* Right: summary */}
             <aside className="space-y-4 lg:sticky lg:top-24 self-start">
-              {/* Coupon */}
+              {/* Voucher note */}
               <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
-                    Have a voucher?
-                  </p>
-                  <PublicVouchersDialog onSelect={(code) => setCoupon(code)} />
-                </div>
-
-                <div className="flex gap-2">
-                  <Input
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                    placeholder="Enter voucher code"
-                    disabled={!!applied}
-                    className="h-11 bg-white border-border rounded-xl"
-                  />
-                  {applied ? (
-                    <Button
-                      onClick={removeCoupon}
-                      className="h-11 rounded-xl bg-white text-foreground border border-border hover:bg-muted px-5 font-bold"
-                    >
-                      REMOVE
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={applyCoupon}
-                      disabled={applying}
-                      className="h-11 rounded-xl bg-[#0b0b12] hover:bg-black text-white px-5 font-bold"
-                    >
-                      {applying ? "..." : "APPLY"}
-                    </Button>
-                  )}
-                </div>
-                {!applied && (
-                  <Input
-                    value={couponPhone}
-                    onChange={(e) => setCouponPhone(e.target.value)}
-                    placeholder="Your mobile number (for personal vouchers)"
-                    inputMode="tel"
-                    className="h-10 mt-2 bg-white border-border rounded-xl text-sm"
-                  />
-                )}
-                {applied && (
-                  <p className="text-xs text-green-700 mt-2 font-medium">
-                    ✓ {applied.code} — {applied.label} applied
-                  </p>
-                )}
+                <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
+                  Have a voucher?
+                </p>
+                <p className="text-sm text-blue-900 mt-1">
+                  Apply your voucher code at checkout — we&apos;ll also show the offers available for your
+                  mobile number.
+                </p>
               </div>
 
               {/* Order Summary */}
@@ -225,13 +186,8 @@ const Cart = () => {
                     <dt className="text-muted-foreground">Estimated Tax</dt>
                     <dd className="font-semibold">₹{tax.toLocaleString("en-IN")}</dd>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">Discount</dt>
-                    <dd className={`font-semibold ${discount > 0 ? "text-green-600" : ""}`}>
-                      {discount > 0 ? "-" : ""}₹{discount.toLocaleString("en-IN")}
-                    </dd>
-                  </div>
                 </dl>
+
 
                 <div className="border-t border-border mt-4 pt-4 flex items-baseline justify-between">
                   <span className="font-display text-xl font-bold">Total</span>
