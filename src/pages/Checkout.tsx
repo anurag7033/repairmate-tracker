@@ -314,7 +314,7 @@ const Checkout = () => {
                     items: itemsPayload(),
                     discountAmount: discount,
                     voucherId: null,
-                    voucherCode: location.state?.voucherCode || null,
+                    voucherCode: applied?.code || null,
                   },
                 },
               }
