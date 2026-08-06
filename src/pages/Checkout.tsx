@@ -54,12 +54,29 @@ const loadRazorpay = () =>
     document.body.appendChild(s);
   });
 
+interface PhoneVoucher {
+  voucher_code: string;
+  voucher_name: string | null;
+  discount_type: string;
+  discount_amount: number;
+  discount_percentage: number;
+  min_order_amount: number;
+  max_order_amount: number;
+  expiry_date: string | null;
+  personal: boolean;
+}
+
+interface PhoneLookup {
+  valid: boolean;
+  is_new_customer: boolean;
+  order_count: number;
+  repair_count: number;
+  vouchers: PhoneVoucher[];
+}
+
 const Checkout = () => {
   const cart = useCart();
   const navigate = useNavigate();
-  const location = useLocation() as {
-    state?: { discountAmount?: number; voucherCode?: string; voucherLabel?: string; voucherName?: string };
-  };
 
   const [addr, setAddr] = useState<Address>({
     name: "",
@@ -72,11 +89,17 @@ const Checkout = () => {
   const [method, setMethod] = useState<PayMethod>("razorpay");
   const [locating, setLocating] = useState(false);
   const [placing, setPlacing] = useState(false);
-  
+
+  // Voucher state (checkout-only)
+  const [voucherInput, setVoucherInput] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState<{ code: string; name: string; discount: number } | null>(null);
+  const [lookup, setLookup] = useState<PhoneLookup | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   // Voucher discount only applies to online payments
-  const rawDiscount = Math.max(0, Number(location.state?.discountAmount || 0));
+  const rawDiscount = Math.max(0, Number(applied?.discount || 0));
   const discount = method === "razorpay" ? Math.min(rawDiscount, subtotal) : 0;
   const taxableBase = Math.max(0, subtotal - discount);
   const tax = Math.round(taxableBase * TAX_RATE);
@@ -90,6 +113,72 @@ const Checkout = () => {
       navigate("/cart", { replace: true });
     }
   }, [cart.length, navigate]);
+
+  // Look up the customer (new vs returning) + their vouchers from the entered number
+  const digits = addr.phone.replace(/\D/g, "");
+  useEffect(() => {
+    if (digits.length < 10) {
+      setLookup(null);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setLookingUp(true);
+      const { data, error } = await supabase.rpc("get_checkout_vouchers_for_phone", {
+        p_phone: digits,
+      });
+      if (!cancelled) {
+        if (error) setLookup(null);
+        else setLookup((data as unknown) as PhoneLookup);
+        setLookingUp(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [digits]);
+
+  const applyVoucher = async (codeArg?: string) => {
+    const code = (codeArg ?? voucherInput).trim().toUpperCase();
+    if (!code) return;
+    if (digits.length < 10) {
+      toast.error("Enter your mobile number first");
+      return;
+    }
+    try {
+      setApplying(true);
+      const { data, error } = await supabase.rpc("apply_voucher_to_customer_order", {
+        p_voucher_code: code,
+        p_subtotal: subtotal,
+        p_phone: digits,
+      });
+      if (error) throw error;
+      const res = data as any;
+      const value = Math.min(Number(res?.discount_amount) || 0, subtotal);
+      if (value <= 0) {
+        toast.error("This voucher gives no discount on your cart");
+        return;
+      }
+      setApplied({
+        code: res?.voucher_code || code,
+        name: res?.voucher_name || "",
+        discount: value,
+      });
+      setVoucherInput(res?.voucher_code || code);
+      toast.success(`Voucher applied — you save ₹${value.toLocaleString("en-IN")}`);
+    } catch (e: any) {
+      toast.error(e.message || "Invalid voucher code");
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setApplied(null);
+    setVoucherInput("");
+  };
+
 
 
   const useMyLocation = () => {
