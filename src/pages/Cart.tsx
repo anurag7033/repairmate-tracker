@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
+import PublicVouchersDialog from "@/components/shop/PublicVouchersDialog";
+
 import { useCart, updateQuantity, removeFromCart } from "@/lib/cartStore";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
