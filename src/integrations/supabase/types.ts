@@ -886,6 +886,10 @@ export type Database = {
         Args: { p_phone: string; p_subtotal: number; p_voucher_code: string }
         Returns: Json
       }
+      apply_voucher_to_order_public: {
+        Args: { p_order_id: string; p_voucher_code: string }
+        Returns: Json
+      }
       generate_customer_order_id: { Args: never; Returns: string }
       generate_requirement_id: { Args: never; Returns: string }
       generate_sales_invoice_number: { Args: never; Returns: string }
@@ -963,6 +967,19 @@ export type Database = {
           requirement_id: string
           status: string
           updated_at: string
+        }[]
+      }
+      list_public_vouchers: {
+        Args: never
+        Returns: {
+          discount_amount: number
+          discount_percentage: number
+          discount_type: string
+          expiry_date: string
+          max_order_amount: number
+          min_order_amount: number
+          voucher_code: string
+          voucher_name: string
         }[]
       }
       mark_received_public: { Args: { p_tracking_id: string }; Returns: Json }
