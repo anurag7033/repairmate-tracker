@@ -79,6 +79,10 @@ const Footer = () => {
             <a href="https://share.google/plBuR31t4H9GN4agC" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
               Your Local Mobile Repair Expert
             </a>
+            <span className="mx-1">•</span>
+            <button onClick={() => window.location.href = '/admin'} className="hover:text-primary transition-colors">
+              Admin
+            </button>
           </p>
         </div>
       </div>

@@ -92,14 +92,6 @@ const Index = () => {
               <p className="text-xs text-primary-foreground/60 leading-tight">Repairing Centre</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
-            onClick={() => navigate("/admin")}
-          >
-            <Shield className="w-4 h-4 mr-2" />
-            Admin
-          </Button>
         </nav>
 
         <div className="container mx-auto py-16 md:py-24 text-center relative z-10">
