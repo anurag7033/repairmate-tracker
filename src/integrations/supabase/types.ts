@@ -973,6 +973,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      is_returning_customer: { Args: { p_phone: string }; Returns: boolean }
       list_public_vouchers: {
         Args: never
         Returns: {
