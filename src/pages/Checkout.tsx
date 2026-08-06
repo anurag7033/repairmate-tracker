@@ -365,8 +365,8 @@ const Checkout = () => {
             subtotal,
             discount_amount: discount,
             grand_total: grandTotal,
-            voucher_code: location.state?.voucherCode || null,
-            voucher_name: location.state?.voucherName || null,
+            voucher_code: applied?.code || null,
+            voucher_name: applied?.name || null,
           },
         })
         .catch(() => {});
