@@ -83,6 +83,16 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "CANCELLED",
 };
 
+const loadRazorpay = () =>
+  new Promise<boolean>((resolve) => {
+    if ((window as any).Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+
 const TrackOrder = () => {
   const { orderId = "" } = useParams();
   const navigate = useNavigate();
@@ -90,21 +100,123 @@ const TrackOrder = () => {
   const [loading, setLoading] = useState(!!orderId);
   const [notFound, setNotFound] = useState(false);
   const [query, setQuery] = useState("");
+  const [voucherInput, setVoucherInput] = useState("");
+  const [applyingVoucher, setApplyingVoucher] = useState(false);
+  const [paying, setPaying] = useState(false);
+
+  const fetchOrder = useCallback(async () => {
+    const { data } = await supabase.rpc("get_customer_order_public", {
+      p_order_id: orderId,
+    });
+    const parsed = (data as unknown) as OrderData | null;
+    if (!parsed) setNotFound(true);
+    setOrder(parsed);
+    return parsed;
+  }, [orderId]);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setNotFound(false);
-      const { data } = await supabase.rpc("get_customer_order_public", {
-        p_order_id: orderId,
-      });
-      const parsed = (data as unknown) as OrderData | null;
-      if (!parsed) setNotFound(true);
-      setOrder(parsed);
+      await fetchOrder();
       setLoading(false);
     };
     if (orderId) load();
-  }, [orderId]);
+  }, [orderId, fetchOrder]);
+
+  const applyVoucher = async () => {
+    const code = voucherInput.trim().toUpperCase();
+    if (!code) return;
+    try {
+      setApplyingVoucher(true);
+      const { data, error } = await supabase.rpc("apply_voucher_to_order_public", {
+        p_order_id: orderId,
+        p_voucher_code: code,
+      });
+      if (error) throw error;
+      const res = (data as any) || {};
+      toast.success(
+        `${res.voucher_code || code} applied — you save ₹${Number(
+          res.discount_amount || 0
+        ).toLocaleString("en-IN")}`
+      );
+      setVoucherInput("");
+      await fetchOrder();
+    } catch (e: any) {
+      toast.error(e?.message || "Invalid voucher code");
+    } finally {
+      setApplyingVoucher(false);
+    }
+  };
+
+  const payNow = async () => {
+    if (!order) return;
+    try {
+      setPaying(true);
+      const createRes = await supabase.functions.invoke("create-shop-razorpay-order", {
+        body: {
+          amount: Number(order.grand_total),
+          customerName: order.customer_name,
+          customerPhone: order.customer_phone,
+        },
+      });
+      if (createRes.error || !createRes.data?.razorpayOrderId) {
+        throw new Error(createRes.error?.message || "Could not start payment");
+      }
+      const { razorpayOrderId, amount, currency, keyId } = createRes.data as {
+        razorpayOrderId: string;
+        amount: number;
+        currency: string;
+        keyId: string;
+      };
+      const ok = await loadRazorpay();
+      if (!ok) throw new Error("Failed to load payment gateway");
+
+      const rzp = new (window as any).Razorpay({
+        key: keyId,
+        amount,
+        currency,
+        order_id: razorpayOrderId,
+        name: "Anurag Mobile",
+        description: `Payment for order ${order.order_id}`,
+        prefill: { name: order.customer_name, contact: order.customer_phone },
+        theme: { color: "#f97316" },
+        modal: {
+          ondismiss: () => {
+            setPaying(false);
+            toast.error("Payment cancelled");
+          },
+        },
+        handler: async (response: any) => {
+          const verifyRes = await supabase.functions.invoke("verify-order-payment", {
+            body: {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderId: order.order_id,
+            },
+          });
+          if (verifyRes.error || !verifyRes.data?.success) {
+            toast.error(verifyRes.error?.message || "Payment verification failed");
+            setPaying(false);
+            return;
+          }
+          toast.success("Payment successful!");
+          await fetchOrder();
+          setPaying(false);
+        },
+      });
+      rzp.on("payment.failed", (resp: any) => {
+        toast.error(resp?.error?.description || "Payment failed");
+        setPaying(false);
+      });
+      rzp.open();
+    } catch (e: any) {
+      toast.error(e?.message || "Payment could not be started");
+      setPaying(false);
+    }
+  };
+
 
   const cancelled = order?.order_status === "cancelled";
   const activeStep = stepIndexFor(order?.order_status || "placed");
