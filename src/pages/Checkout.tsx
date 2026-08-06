@@ -33,7 +33,7 @@ import { useCart, clearCart } from "@/lib/cartStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const TAX_RATE = 0.08;
+
 
 type PayMethod = "razorpay" | "cod";
 
@@ -103,9 +103,7 @@ const Checkout = () => {
   // Voucher discount only applies to online payments
   const rawDiscount = Math.max(0, Number(applied?.discount || 0));
   const discount = method === "razorpay" ? Math.min(rawDiscount, subtotal) : 0;
-  const taxableBase = Math.max(0, subtotal - discount);
-  const tax = Math.round(taxableBase * TAX_RATE);
-  const grandTotal = Math.max(0, taxableBase + tax);
+  const grandTotal = Math.max(0, subtotal - discount);
 
   const placedRef = useRef(false);
 
@@ -697,7 +695,6 @@ const Checkout = () => {
               <dl className="mt-4 space-y-2 text-sm border-t border-border pt-4">
                 <Row label="Subtotal" value={`₹${subtotal.toLocaleString("en-IN")}`} />
                 <Row label="Shipping" value="FREE" valueClass="text-green-600 font-bold" />
-                <Row label="Estimated Tax (8%)" value={`₹${tax.toLocaleString("en-IN")}`} />
                 {discount > 0 && (
                   <Row
                     label={`Discount — ${applied?.name || "Voucher"} (${applied?.code})`}
