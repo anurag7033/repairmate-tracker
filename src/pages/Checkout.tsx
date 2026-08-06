@@ -33,7 +33,7 @@ import { useCart, clearCart } from "@/lib/cartStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const TAX_RATE = 0.08;
+
 
 type PayMethod = "razorpay" | "cod";
 
