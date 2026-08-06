@@ -202,9 +202,13 @@ const Cart = () => {
             <aside className="space-y-4 lg:sticky lg:top-24 self-start">
               {/* Coupon */}
               <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5">
-                <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
-                  Have a voucher?
-                </p>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
+                    Have a voucher?
+                  </p>
+                  <PublicVouchersDialog onSelect={(code) => setCoupon(code)} />
+                </div>
+
                 <div className="flex gap-2">
                   <Input
                     value={coupon}
