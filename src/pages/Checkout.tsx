@@ -695,7 +695,6 @@ const Checkout = () => {
               <dl className="mt-4 space-y-2 text-sm border-t border-border pt-4">
                 <Row label="Subtotal" value={`₹${subtotal.toLocaleString("en-IN")}`} />
                 <Row label="Shipping" value="FREE" valueClass="text-green-600 font-bold" />
-                <Row label="Estimated Tax (8%)" value={`₹${tax.toLocaleString("en-IN")}`} />
                 {discount > 0 && (
                   <Row
                     label={`Discount — ${applied?.name || "Voucher"} (${applied?.code})`}
