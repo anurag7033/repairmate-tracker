@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
+import PublicVouchersDialog from "@/components/shop/PublicVouchersDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 interface OrderItem {
@@ -46,6 +47,7 @@ interface OrderData {
   discount_amount: number;
   grand_total: number;
   voucher_code: string | null;
+  voucher_name?: string | null;
   created_at: string;
   updated_at: string;
   customer_order_items: OrderItem[];
@@ -221,6 +223,7 @@ const TrackOrder = () => {
 
 
   const cancelled = order?.order_status === "cancelled";
+  const isPaid = (order?.payment_status || "").toLowerCase() === "paid";
   const activeStep = stepIndexFor(order?.order_status || "placed");
   const fmt = (n: number) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
   const fmtDate = (iso?: string) =>
