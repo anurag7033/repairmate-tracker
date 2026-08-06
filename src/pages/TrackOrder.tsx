@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -22,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
+import PublicVouchersDialog from "@/components/shop/PublicVouchersDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 interface OrderItem {
@@ -44,6 +47,7 @@ interface OrderData {
   discount_amount: number;
   grand_total: number;
   voucher_code: string | null;
+  voucher_name?: string | null;
   created_at: string;
   updated_at: string;
   customer_order_items: OrderItem[];
@@ -83,6 +87,16 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "CANCELLED",
 };
 
+const loadRazorpay = () =>
+  new Promise<boolean>((resolve) => {
+    if ((window as any).Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+
 const TrackOrder = () => {
   const { orderId = "" } = useParams();
   const navigate = useNavigate();
@@ -90,23 +104,126 @@ const TrackOrder = () => {
   const [loading, setLoading] = useState(!!orderId);
   const [notFound, setNotFound] = useState(false);
   const [query, setQuery] = useState("");
+  const [voucherInput, setVoucherInput] = useState("");
+  const [applyingVoucher, setApplyingVoucher] = useState(false);
+  const [paying, setPaying] = useState(false);
+
+  const fetchOrder = useCallback(async () => {
+    const { data } = await supabase.rpc("get_customer_order_public", {
+      p_order_id: orderId,
+    });
+    const parsed = (data as unknown) as OrderData | null;
+    if (!parsed) setNotFound(true);
+    setOrder(parsed);
+    return parsed;
+  }, [orderId]);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setNotFound(false);
-      const { data } = await supabase.rpc("get_customer_order_public", {
-        p_order_id: orderId,
-      });
-      const parsed = (data as unknown) as OrderData | null;
-      if (!parsed) setNotFound(true);
-      setOrder(parsed);
+      await fetchOrder();
       setLoading(false);
     };
     if (orderId) load();
-  }, [orderId]);
+  }, [orderId, fetchOrder]);
+
+  const applyVoucher = async () => {
+    const code = voucherInput.trim().toUpperCase();
+    if (!code) return;
+    try {
+      setApplyingVoucher(true);
+      const { data, error } = await supabase.rpc("apply_voucher_to_order_public", {
+        p_order_id: orderId,
+        p_voucher_code: code,
+      });
+      if (error) throw error;
+      const res = (data as any) || {};
+      toast.success(
+        `${res.voucher_code || code} applied — you save ₹${Number(
+          res.discount_amount || 0
+        ).toLocaleString("en-IN")}`
+      );
+      setVoucherInput("");
+      await fetchOrder();
+    } catch (e: any) {
+      toast.error(e?.message || "Invalid voucher code");
+    } finally {
+      setApplyingVoucher(false);
+    }
+  };
+
+  const payNow = async () => {
+    if (!order) return;
+    try {
+      setPaying(true);
+      const createRes = await supabase.functions.invoke("create-shop-razorpay-order", {
+        body: {
+          amount: Number(order.grand_total),
+          customerName: order.customer_name,
+          customerPhone: order.customer_phone,
+        },
+      });
+      if (createRes.error || !createRes.data?.razorpayOrderId) {
+        throw new Error(createRes.error?.message || "Could not start payment");
+      }
+      const { razorpayOrderId, amount, currency, keyId } = createRes.data as {
+        razorpayOrderId: string;
+        amount: number;
+        currency: string;
+        keyId: string;
+      };
+      const ok = await loadRazorpay();
+      if (!ok) throw new Error("Failed to load payment gateway");
+
+      const rzp = new (window as any).Razorpay({
+        key: keyId,
+        amount,
+        currency,
+        order_id: razorpayOrderId,
+        name: "Anurag Mobile",
+        description: `Payment for order ${order.order_id}`,
+        prefill: { name: order.customer_name, contact: order.customer_phone },
+        theme: { color: "#f97316" },
+        modal: {
+          ondismiss: () => {
+            setPaying(false);
+            toast.error("Payment cancelled");
+          },
+        },
+        handler: async (response: any) => {
+          const verifyRes = await supabase.functions.invoke("verify-order-payment", {
+            body: {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderId: order.order_id,
+            },
+          });
+          if (verifyRes.error || !verifyRes.data?.success) {
+            toast.error(verifyRes.error?.message || "Payment verification failed");
+            setPaying(false);
+            return;
+          }
+          toast.success("Payment successful!");
+          await fetchOrder();
+          setPaying(false);
+        },
+      });
+      rzp.on("payment.failed", (resp: any) => {
+        toast.error(resp?.error?.description || "Payment failed");
+        setPaying(false);
+      });
+      rzp.open();
+    } catch (e: any) {
+      toast.error(e?.message || "Payment could not be started");
+      setPaying(false);
+    }
+  };
+
 
   const cancelled = order?.order_status === "cancelled";
+  const isPaid = (order?.payment_status || "").toLowerCase() === "paid";
   const activeStep = stepIndexFor(order?.order_status || "placed");
   const fmt = (n: number) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
   const fmtDate = (iso?: string) =>
@@ -380,7 +497,77 @@ const TrackOrder = () => {
                     <span className="font-display font-bold">Grand Total</span>
                     <span className="font-display text-2xl font-bold">{fmt(order.grand_total)}</span>
                   </div>
+                  {isPaid && (
+                    <p className="mt-3 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      ✓ Payment received — balance ₹0
+                    </p>
+                  )}
                 </div>
+
+                {/* Pay now + voucher */}
+                {!isPaid && !cancelled && (
+                  <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold">
+                        Payment Pending
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Amount due:{" "}
+                        <span className="font-bold text-slate-900">{fmt(order.grand_total)}</span>
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold">
+                          Apply Voucher
+                        </p>
+                        <PublicVouchersDialog onSelect={(code) => setVoucherInput(code)} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={voucherInput}
+                          onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => e.key === "Enter" && applyVoucher()}
+                          placeholder="Enter voucher code"
+                          className="h-11 rounded-xl"
+                        />
+                        <Button
+                          onClick={applyVoucher}
+                          disabled={applyingVoucher || !voucherInput.trim()}
+                          className="h-11 rounded-xl bg-slate-900 hover:bg-black text-white px-5 font-bold"
+                        >
+                          {applyingVoucher ? <Loader2 className="w-4 h-4 animate-spin" /> : "APPLY"}
+                        </Button>
+                      </div>
+                      {order.voucher_code && (
+                        <p className="text-xs text-green-700 mt-2 font-medium">
+                          ✓ {order.voucher_name || order.voucher_code} ({order.voucher_code}) applied
+                        </p>
+                      )}
+                    </div>
+
+                    <Button
+                      onClick={payNow}
+                      disabled={paying}
+                      className="w-full h-12 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold"
+                    >
+                      {paying ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Opening gateway...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-4 h-4 mr-2" /> Pay Now {fmt(order.grand_total)}
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      Secure payment via Razorpay
+                    </p>
+                  </div>
+                )}
+
 
                 {/* Assistance */}
                 <div className="bg-slate-900 text-white rounded-2xl p-5">
