@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Search, ShoppingCart, Trash2, Minus, Plus, ArrowRight, Lock, Truck, Package, ShieldCheck, CreditCard } from "lucide-react";
@@ -7,11 +7,8 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
-import PublicVouchersDialog from "@/components/shop/PublicVouchersDialog";
 
 import { useCart, updateQuantity, removeFromCart } from "@/lib/cartStore";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const TAX_RATE = 0.08; // 8% estimated tax to match the reference summary card
 
