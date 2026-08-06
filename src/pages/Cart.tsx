@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Search, ShoppingCart, Trash2, Minus, Plus, ArrowRight, Lock, Truck, Package, ShieldCheck, CreditCard } from "lucide-react";
@@ -7,72 +7,25 @@ import { Input } from "@/components/ui/input";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import CartIconButton from "@/components/shop/CartIconButton";
-import PublicVouchersDialog from "@/components/shop/PublicVouchersDialog";
 
 import { useCart, updateQuantity, removeFromCart } from "@/lib/cartStore";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const TAX_RATE = 0.08; // 8% estimated tax to match the reference summary card
 
 const Cart = () => {
   const cart = useCart();
   const navigate = useNavigate();
-  const [coupon, setCoupon] = useState("");
-  const [couponPhone, setCouponPhone] = useState("");
-  const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState<{ code: string; discount: number; label: string; name?: string } | null>(null);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   const shipping = 0; // free
-  const discount = applied?.discount ?? 0;
-  const taxableBase = Math.max(0, subtotal - discount);
+  const taxableBase = Math.max(0, subtotal);
   const tax = Math.round(taxableBase * TAX_RATE);
   const total = Math.max(0, taxableBase + tax + shipping);
   const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
 
-  const applyCoupon = async () => {
-    const code = coupon.trim().toUpperCase();
-    if (!code) return;
-    try {
-      setApplying(true);
-      const { data, error } = await supabase.rpc("apply_voucher_to_customer_order", {
-        p_voucher_code: code,
-        p_subtotal: subtotal,
-        p_phone: couponPhone.trim(),
-      });
-      if (error) throw error;
-      const res = data as any;
-      const value = Math.min(Number(res?.discount_amount) || 0, subtotal);
-      if (value <= 0) {
-        toast.error("This voucher gives no discount on your cart");
-        return;
-      }
-      const name = (res?.voucher_name as string) || "";
-      const label = name
-        ? `${name} — ₹${value.toLocaleString("en-IN")} off`
-        : `₹${value.toLocaleString("en-IN")} off`;
-      setApplied({ code: res?.voucher_code || code, discount: value, label, name });
-      toast.success(`Voucher ${code} applied — ${label}`);
-    } catch (e: any) {
-      toast.error(e.message || "Invalid voucher code");
-    } finally {
-      setApplying(false);
-    }
-  };
-
-  const removeCoupon = () => {
-    setApplied(null);
-    setCoupon("");
-  };
-
   const proceedToCheckout = () => {
     if (cart.length === 0) return;
-    navigate("/checkout", {
-      state: applied
-        ? { discountAmount: applied.discount, voucherCode: applied.code, voucherLabel: applied.label, voucherName: applied.name }
-        : {},
-    });
+    navigate("/checkout");
   };
 
   return (
@@ -202,54 +155,15 @@ const Cart = () => {
 
             {/* Right: summary */}
             <aside className="space-y-4 lg:sticky lg:top-24 self-start">
-              {/* Coupon */}
+              {/* Voucher note */}
               <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
-                    Have a voucher?
-                  </p>
-                  <PublicVouchersDialog onSelect={(code) => setCoupon(code)} />
-                </div>
-
-                <div className="flex gap-2">
-                  <Input
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                    placeholder="Enter voucher code"
-                    disabled={!!applied}
-                    className="h-11 bg-white border-border rounded-xl"
-                  />
-                  {applied ? (
-                    <Button
-                      onClick={removeCoupon}
-                      className="h-11 rounded-xl bg-white text-foreground border border-border hover:bg-muted px-5 font-bold"
-                    >
-                      REMOVE
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={applyCoupon}
-                      disabled={applying}
-                      className="h-11 rounded-xl bg-[#0b0b12] hover:bg-black text-white px-5 font-bold"
-                    >
-                      {applying ? "..." : "APPLY"}
-                    </Button>
-                  )}
-                </div>
-                {!applied && (
-                  <Input
-                    value={couponPhone}
-                    onChange={(e) => setCouponPhone(e.target.value)}
-                    placeholder="Your mobile number (for personal vouchers)"
-                    inputMode="tel"
-                    className="h-10 mt-2 bg-white border-border rounded-xl text-sm"
-                  />
-                )}
-                {applied && (
-                  <p className="text-xs text-green-700 mt-2 font-medium">
-                    ✓ {applied.code} — {applied.label} applied
-                  </p>
-                )}
+                <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
+                  Have a voucher?
+                </p>
+                <p className="text-sm text-blue-900 mt-1">
+                  Apply your voucher code at checkout — we&apos;ll also show the offers available for your
+                  mobile number.
+                </p>
               </div>
 
               {/* Order Summary */}
@@ -269,13 +183,8 @@ const Cart = () => {
                     <dt className="text-muted-foreground">Estimated Tax</dt>
                     <dd className="font-semibold">₹{tax.toLocaleString("en-IN")}</dd>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">Discount</dt>
-                    <dd className={`font-semibold ${discount > 0 ? "text-green-600" : ""}`}>
-                      {discount > 0 ? "-" : ""}₹{discount.toLocaleString("en-IN")}
-                    </dd>
-                  </div>
                 </dl>
+
 
                 <div className="border-t border-border mt-4 pt-4 flex items-baseline justify-between">
                   <span className="font-display text-xl font-bold">Total</span>

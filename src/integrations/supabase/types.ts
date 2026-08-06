@@ -915,6 +915,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_checkout_vouchers_for_phone: {
+        Args: { p_phone: string }
+        Returns: Json
+      }
       get_customer_order_public: { Args: { p_order_id: string }; Returns: Json }
       get_customers_with_stats: {
         Args: never

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   MapPin,
@@ -12,6 +12,8 @@ import {
   Package,
   CheckCircle2,
   ArrowRight,
+  Ticket,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,12 +56,29 @@ const loadRazorpay = () =>
     document.body.appendChild(s);
   });
 
+interface PhoneVoucher {
+  voucher_code: string;
+  voucher_name: string | null;
+  discount_type: string;
+  discount_amount: number;
+  discount_percentage: number;
+  min_order_amount: number;
+  max_order_amount: number;
+  expiry_date: string | null;
+  personal: boolean;
+}
+
+interface PhoneLookup {
+  valid: boolean;
+  is_new_customer: boolean;
+  order_count: number;
+  repair_count: number;
+  vouchers: PhoneVoucher[];
+}
+
 const Checkout = () => {
   const cart = useCart();
   const navigate = useNavigate();
-  const location = useLocation() as {
-    state?: { discountAmount?: number; voucherCode?: string; voucherLabel?: string; voucherName?: string };
-  };
 
   const [addr, setAddr] = useState<Address>({
     name: "",
@@ -72,11 +91,17 @@ const Checkout = () => {
   const [method, setMethod] = useState<PayMethod>("razorpay");
   const [locating, setLocating] = useState(false);
   const [placing, setPlacing] = useState(false);
-  
+
+  // Voucher state (checkout-only)
+  const [voucherInput, setVoucherInput] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState<{ code: string; name: string; discount: number } | null>(null);
+  const [lookup, setLookup] = useState<PhoneLookup | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
 
   const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
   // Voucher discount only applies to online payments
-  const rawDiscount = Math.max(0, Number(location.state?.discountAmount || 0));
+  const rawDiscount = Math.max(0, Number(applied?.discount || 0));
   const discount = method === "razorpay" ? Math.min(rawDiscount, subtotal) : 0;
   const taxableBase = Math.max(0, subtotal - discount);
   const tax = Math.round(taxableBase * TAX_RATE);
@@ -90,6 +115,72 @@ const Checkout = () => {
       navigate("/cart", { replace: true });
     }
   }, [cart.length, navigate]);
+
+  // Look up the customer (new vs returning) + their vouchers from the entered number
+  const digits = addr.phone.replace(/\D/g, "");
+  useEffect(() => {
+    if (digits.length < 10) {
+      setLookup(null);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setLookingUp(true);
+      const { data, error } = await supabase.rpc("get_checkout_vouchers_for_phone", {
+        p_phone: digits,
+      });
+      if (!cancelled) {
+        if (error) setLookup(null);
+        else setLookup((data as unknown) as PhoneLookup);
+        setLookingUp(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [digits]);
+
+  const applyVoucher = async (codeArg?: string) => {
+    const code = (codeArg ?? voucherInput).trim().toUpperCase();
+    if (!code) return;
+    if (digits.length < 10) {
+      toast.error("Enter your mobile number first");
+      return;
+    }
+    try {
+      setApplying(true);
+      const { data, error } = await supabase.rpc("apply_voucher_to_customer_order", {
+        p_voucher_code: code,
+        p_subtotal: subtotal,
+        p_phone: digits,
+      });
+      if (error) throw error;
+      const res = data as any;
+      const value = Math.min(Number(res?.discount_amount) || 0, subtotal);
+      if (value <= 0) {
+        toast.error("This voucher gives no discount on your cart");
+        return;
+      }
+      setApplied({
+        code: res?.voucher_code || code,
+        name: res?.voucher_name || "",
+        discount: value,
+      });
+      setVoucherInput(res?.voucher_code || code);
+      toast.success(`Voucher applied — you save ₹${value.toLocaleString("en-IN")}`);
+    } catch (e: any) {
+      toast.error(e.message || "Invalid voucher code");
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setApplied(null);
+    setVoucherInput("");
+  };
+
 
 
   const useMyLocation = () => {
@@ -225,7 +316,7 @@ const Checkout = () => {
                     items: itemsPayload(),
                     discountAmount: discount,
                     voucherId: null,
-                    voucherCode: location.state?.voucherCode || null,
+                    voucherCode: applied?.code || null,
                   },
                 },
               }
@@ -276,8 +367,8 @@ const Checkout = () => {
             subtotal,
             discount_amount: discount,
             grand_total: grandTotal,
-            voucher_code: location.state?.voucherCode || null,
-            voucher_name: location.state?.voucherName || null,
+            voucher_code: applied?.code || null,
+            voucher_name: applied?.name || null,
           },
         })
         .catch(() => {});
@@ -430,27 +521,149 @@ const Checkout = () => {
                   title="Cash on Delivery"
                   subtitle="Pay when you receive your order"
                 />
-                {location.state?.voucherCode && (
+                {applied && (
                   method === "razorpay" ? (
                     <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
                       Voucher applied:{" "}
-                      <span className="font-bold">
-                        {location.state.voucherName || location.state.voucherCode}
-                      </span>{" "}
-                      ({location.state.voucherCode}) — you save ₹{discount.toLocaleString("en-IN")}
+                      <span className="font-bold">{applied.name || applied.code}</span> ({applied.code}) — you
+                      save ₹{discount.toLocaleString("en-IN")}
                     </p>
                   ) : (
                     <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      Voucher{" "}
-                      <span className="font-bold">
-                        {location.state.voucherName || location.state.voucherCode}
-                      </span>{" "}
-                      applies only on online payments.
+                      Voucher <span className="font-bold">{applied.name || applied.code}</span> applies only on
+                      online payments.
                     </p>
                   )
                 )}
               </div>
             </section>
+
+            {/* Vouchers & offers */}
+            <section className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Ticket className="w-5 h-5 text-orange-500" />
+                <h2 className="font-display text-lg md:text-xl font-bold">Vouchers &amp; Offers</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                Discounts apply on online (Razorpay) payments only.
+              </p>
+
+              {digits.length < 10 ? (
+                <p className="text-sm text-muted-foreground bg-muted/40 border border-border rounded-xl px-4 py-3">
+                  Enter your mobile number above to see the vouchers available for you.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {/* New / returning customer */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {lookingUp ? (
+                      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Checking your number...
+                      </span>
+                    ) : lookup ? (
+                      lookup.is_new_customer ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                          <UserPlus className="w-3.5 h-3.5" /> New customer — welcome!
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Returning customer ·{" "}
+                          {lookup.order_count} order{lookup.order_count === 1 ? "" : "s"} ·{" "}
+                          {lookup.repair_count} repair{lookup.repair_count === 1 ? "" : "s"}
+                        </span>
+                      )
+                    ) : null}
+                  </div>
+
+                  {/* Apply code */}
+                  <div className="flex gap-2">
+                    <Input
+                      value={voucherInput}
+                      onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                      placeholder="Enter voucher code"
+                      disabled={!!applied}
+                      className="h-11 rounded-xl"
+                    />
+                    {applied ? (
+                      <Button
+                        onClick={removeVoucher}
+                        variant="outline"
+                        className="h-11 rounded-xl px-5 font-bold"
+                      >
+                        REMOVE
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => applyVoucher()}
+                        disabled={applying}
+                        className="h-11 rounded-xl bg-[#0b0b12] hover:bg-black text-white px-5 font-bold"
+                      >
+                        {applying ? "..." : "APPLY"}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Vouchers for this number */}
+                  {lookup && lookup.vouchers?.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
+                        Available for {digits}
+                      </p>
+                      <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        {lookup.vouchers.map((v) => (
+                          <div
+                            key={v.voucher_code}
+                            className="border border-dashed border-orange-200 bg-orange-50/60 rounded-xl p-3 flex items-start justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono font-bold text-sm">{v.voucher_code}</span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-500 text-white">
+                                  {v.discount_type === "percentage"
+                                    ? `${Number(v.discount_percentage)}% OFF`
+                                    : `₹${Number(v.discount_amount).toLocaleString("en-IN")} OFF`}
+                                </span>
+                                {v.personal && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-600 text-white">
+                                    ONLY FOR YOU
+                                  </span>
+                                )}
+                              </div>
+                              {v.voucher_name && (
+                                <p className="text-sm font-medium mt-0.5">{v.voucher_name}</p>
+                              )}
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
+                                {Number(v.min_order_amount) > 0
+                                  ? `Min order ₹${Number(v.min_order_amount).toLocaleString("en-IN")}`
+                                  : "No minimum order"}
+                                {v.expiry_date
+                                  ? ` · Valid till ${new Date(v.expiry_date).toLocaleDateString("en-IN")}`
+                                  : ""}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              disabled={applying || applied?.code === v.voucher_code}
+                              onClick={() => applyVoucher(v.voucher_code)}
+                              className="shrink-0 bg-slate-900 hover:bg-black text-white rounded-lg"
+                            >
+                              {applied?.code === v.voucher_code ? "Applied" : "Use"}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {lookup && lookup.vouchers?.length === 0 && !lookingUp && (
+                    <p className="text-sm text-muted-foreground">
+                      No vouchers available for this number right now.
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+
           </div>
 
           {/* Right column: summary */}
@@ -487,7 +700,7 @@ const Checkout = () => {
                 <Row label="Estimated Tax (8%)" value={`₹${tax.toLocaleString("en-IN")}`} />
                 {discount > 0 && (
                   <Row
-                    label={`Discount — ${location.state?.voucherName || "Voucher"} (${location.state?.voucherCode})`}
+                    label={`Discount — ${applied?.name || "Voucher"} (${applied?.code})`}
                     value={`-₹${discount.toLocaleString("en-IN")}`}
                     valueClass="text-green-600 font-semibold"
                   />
