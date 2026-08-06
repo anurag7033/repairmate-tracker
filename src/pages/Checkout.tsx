@@ -103,9 +103,7 @@ const Checkout = () => {
   // Voucher discount only applies to online payments
   const rawDiscount = Math.max(0, Number(applied?.discount || 0));
   const discount = method === "razorpay" ? Math.min(rawDiscount, subtotal) : 0;
-  const taxableBase = Math.max(0, subtotal - discount);
-  const tax = Math.round(taxableBase * TAX_RATE);
-  const grandTotal = Math.max(0, taxableBase + tax);
+  const grandTotal = Math.max(0, subtotal - discount);
 
   const placedRef = useRef(false);
 
